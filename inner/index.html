@@ -5,13 +5,35 @@
 		<title>Mobmap for Chrome</title>
 	</head>
 	<body>
-	
+
+		<!-- |||||||||| |  | Main screen, 3 panes view |  | |||||||||| -->
+		
+		<div id="mobmap-panes-view">
+			<div id="tools-pane">
+			</div>
+			<div id="body-pane">
+
+				<!-- DATA LIST / TOOL OPTIONS -->
+				<div id="info-pane">
+					<div id="mm-info-tabstrip">
+						
+					</div>
+				</div>
+				
+				<!-- MAP -->
+				<div id="content-pane"></div>
+
+			</div>
+		</div>
+
 		<!-- - - - - - - Script includes - - - - - - -->
 		 <!-- - - - - - - Libraries - - - - - - -->
 		<script type="text/javascript" src="js/jquery-1.10.2.js"></script>
 		<script type="text/javascript" src="kendo/kendo.web.min.js"></script>
 
 		 <!-- - - - - - - Application code - - - - - - -->
+		<script type="text/javascript" src="js/ui/mm-3panes-screen.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
 
 	</body>
 </html>
