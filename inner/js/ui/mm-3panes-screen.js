@@ -5,7 +5,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	// Pane View Manager - - - - - - - - - - - - - - - - -
 	function Mobmap3PanesScreen(paneOuterId, bodyPaneId, toolsPaneId) {
-		this.toolsPaneElement = this.outerElement = this.jOuterElement = null;
+		this.toolsPaneElement = this.outerElement = this.infoPaneElement = 
+		 this.contentElement = this.jOuterElement = null;
 		this.outerSplitter = null;
 		// ----------------------------------------------------------
 
@@ -17,6 +18,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	var proto = Mobmap3PanesScreen.prototype;
+	proto.getToolsPaneElement = function() { return this.toolsPaneElement; };
+	proto.getContentPaneElement = function() { return this.contentElement; };
+	proto.getInfoPaneElement = function() { return this.infoPaneElement; };
 
 	// Initialize ------------------------------------------
 	proto.fetchElements = function(paneOuterId, bodyPaneId, toolsPaneId) {
@@ -44,10 +48,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		//  Loader,Layers |  Map
 
 		var bodyPane = document.getElementById(bodyPaneId);
-		var splitter = $(bodyPane).kendoSplitter({
+		var jBody = $(bodyPane);
+		var splitter = jBody.kendoSplitter({
 			orientation: "horizontal",
-			panes:[{collapsible: true, size:'192px'},{}]
+			panes:[{collapsible: true, size:'224px'},{}]
 		});
+		
+		// Pick up child panes
+		var childPanes = jBody.find('>div.mm-pane');
+		this.infoPaneElement = childPanes[0] || null;
+		this.contentElement  = childPanes[1] || null;
 	};
 	
 	// Resize handler --------------------------------------
