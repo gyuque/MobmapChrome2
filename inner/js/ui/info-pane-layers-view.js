@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function LayersView(containerElement) {
+		this.ownerApp = null;
 		this.jWelcomeBox = null;
 		// -----------------
 		this.containerElement = containerElement;
@@ -13,6 +14,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 
 	LayersView.prototype = {
+		setApp: function(a) {
+			this.ownerApp = a;
+		},
+
 		generateWelcomeBox: function() {
 			var box = $H('div');
 			box.id = 'mm-layers-welcome';
@@ -38,7 +43,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		requestAddLocalCSVLayer: function() {
-			
+			this.ownerApp.loadLocalCSVMovingData();
 		}
 	};
 	

@@ -4,13 +4,39 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function Mobmap2App(appScreen) {
-		this.mapPane = this.infoPane = this.layersView = null;
+		this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
+		this.jEventDispatcherElement = $(document.body);
+		this.localfilePicker = new mobmap.LocalFilePicker();
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
+		this.connectWithViews();
+
+		this.newProject();
 	}
 	
+	Mobmap2App.PROJECT_SET_EVENT = 'mm-app-project-set';
+	
 	Mobmap2App.prototype = {
+		eventDispatcher: function() {
+			return this.jEventDispatcherElement;
+		},
+		
+		newProject: function() {
+			var prj = new mobmap.MMProject();
+			this.setProject();
+		},
+		
+		setProject: function(prj) {
+			this.currentProject = prj;
+			this.eventDispatcher().trigger(Mobmap2App.PROJECT_SET_EVENT, prj);
+		},
+		
+		// -----------------------------------------------------
+		// Operations
+		loadLocalCSVMovingData: function() {
+			this.localfilePicker.open();
+		},
 		
 		// -----------------------------------------------------
 		// Screen builder
@@ -34,6 +60,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var layersBoxEl = this.infoPane.getBoxByName('layers');
 			this.layersView = new mobmap.LayersView(layersBoxEl);
+		},
+		
+		connectWithViews: function() {
+			this.infoPane.setApp(this);
+			this.layersView.setApp(this);
+		},
+		
+		getCurrentProject: function() {
+			console.log('IMPLEMENT HERE');
 		}
 	};
 

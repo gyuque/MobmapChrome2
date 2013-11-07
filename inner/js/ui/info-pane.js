@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function InfoPane(containerElement) {
+		this.ownerApp = null;
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
 		this.tabList = new TabList(this.containerElement);
@@ -12,6 +13,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 
 	InfoPane.prototype = {
+		setApp: function(a) {
+			this.ownerApp = a;
+		},
+		
 		observeScreenResize: function(scr) {
 			scr.eventDispatcher().bind(mobmap.Mobmap3PanesScreen.RESIZE_EVENT,
 				this.afterScreenResize.bind(this));
