@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.outerSplitter = null;
 		// ----------------------------------------------------------
 
+		this.jEventDispatcherElement = $(document.body);
 		this.toolsHeight = 28;
 		this.fetchElements(paneOuterId, bodyPaneId, toolsPaneId);
 		
@@ -18,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	var proto = Mobmap3PanesScreen.prototype;
+	Mobmap3PanesScreen.RESIZE_EVENT = "mmscreen-resize";
 	proto.getToolsPaneElement = function() { return this.toolsPaneElement; };
 	proto.getContentPaneElement = function() { return this.contentElement; };
 	proto.getInfoPaneElement = function() { return this.infoPaneElement; };
@@ -51,13 +53,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		var jBody = $(bodyPane);
 		var splitter = jBody.kendoSplitter({
 			orientation: "horizontal",
-			panes:[{collapsible: true, size:'224px'},{}]
+			panes:[{collapsible: true, size:'224px', scrollable:false},{scrollable:false}]
 		});
 		
 		// Pick up child panes
 		var childPanes = jBody.find('>div.mm-pane');
 		this.infoPaneElement = childPanes[0] || null;
 		this.contentElement  = childPanes[1] || null;
+	};
+	
+	proto.eventDispatcher = function() {
+		return this.jEventDispatcherElement;
 	};
 	
 	// Resize handler --------------------------------------
@@ -72,6 +78,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	proto.resizePanes = function(jResizeParent) {
 		var h = jResizeParent.height();
 		this.jOuterElement.height(h);
+		
+		this.eventDispatcher().trigger(Mobmap3PanesScreen.RESIZE_EVENT);
 	};
 	
 	// +++ Export +++

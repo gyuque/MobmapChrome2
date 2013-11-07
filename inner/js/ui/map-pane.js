@@ -3,7 +3,7 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	var DARKMAP_ID = 'dark';
-	
+
 	function MapPane(containerElement) {
 		this.gmap = null;
 		this.initialLocation = {
