@@ -26,6 +26,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jContainerElement.kendoTabStrip({animation: false});
 		},
 		
+		selectFirstTab: function() {
+			this.jContainerElement.data("kendoTabStrip").select(0);
+		},
+		
 		afterScreenResize: function() {
 			var containerHeight = this.jContainerElement.height();
 			var tabsHeight = this.tabList.jElement.height();
@@ -36,6 +40,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		setBoxHeightAll: function(h) {
 			this.jContainerElement.find('.'+PANEBOX_CLASS).height(h);
+		},
+
+		getBoxByName: function(name) {
+			return this.tabList.getBoxByName(name);
 		}
 	};
 
@@ -69,12 +77,30 @@ if (!window.mobmap) { window.mobmap={}; }
 					// XXX
 				}
 			}
+		},
+		
+		getBoxByName: function(name) {
+			var ls = this.containerElement.childNodes;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var el = ls[i];
+				if (!el.getAttribute) {continue;}
+				
+				var el_nm = el.getAttribute('data-itemname');
+				var el_bx = el.getAttribute('data-tabbedbox') | 0;
+				if (el_bx === 1 && el_nm === name) {
+					return el;
+				}
+			}
+			
+			return null;
 		}
 	};
 	
 	function generateTabbedBox(container, name) {
 		var box = $H('div', PANEBOX_CLASS);
 		box.setAttribute('data-itemname', name);
+		box.setAttribute('data-tabbedbox', '1');
 		container.appendChild(box);
 	}
 

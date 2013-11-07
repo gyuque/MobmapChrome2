@@ -4,7 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function Mobmap2App(appScreen) {
-		this.mapPane = this.infoPane = null;
+		this.mapPane = this.infoPane = this.layersView = null;
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
@@ -17,6 +17,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		setupScreen: function() {
 			this.setupMapPane();
 			this.setupInfoPane();
+			
+			this.infoPane.selectFirstTab();
 		},
 		
 		setupMapPane: function() {
@@ -28,6 +30,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetPaneElement = this.appScreen.getInfoPaneElement();
 			this.infoPane = new mobmap.InfoPane(targetPaneElement);
 			this.infoPane.observeScreenResize(this.appScreen);
+			this.infoPane.afterScreenResize();
+			
+			var layersBoxEl = this.infoPane.getBoxByName('layers');
+			this.layersView = new mobmap.LayersView(layersBoxEl);
 		}
 	};
 
