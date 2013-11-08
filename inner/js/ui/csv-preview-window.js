@@ -4,8 +4,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function CSVPreviewWindow() {
-		this.element = this.jElement = null;
+		this.element = this.jElement = this.previewContainer = null;
 		this.csvLoader = null;
+		this.previewTable = null;
 		// ----------------------------------
 		this.buildElements();
 	}
@@ -16,6 +17,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jElement = $(this.element);
 			this.element.id = 'mm-csv-preview-inner';
 			document.body.appendChild(this.element);
+			
+			this.previewContainer = $H('div', 'mm-csv-preview-table-container');
+			this.element.appendChild(this.previewContainer);
 
 			this.jElement.show().kendoWindow({
 				modal:true,
@@ -37,7 +41,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		open: function() {
 			this.jElement.data("kendoWindow").open();
 		},
-		
+
+
+		// Preload and preview ===================
 		generatePreview: function(sourceFile) {
 			this.csvLoader = new mobmap.GeoCSVLoader(sourceFile);
 			this.csvLoader.preload(this);
@@ -54,9 +60,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 		},
 		
-		onPreviewLoadFinish: function(success) {
-			
+		onPreviewLoadFinish: function(success, previewRecords) {
+			if (success) {
+				this.previewTable = new CSVPreviewTable(previewRecords);
+			}
 		}
+	};
+
+
+	function CSVPreviewTable(sourceRecords) {
+		
+	}
+	
+	CSVPreviewTable.prototype = {
+		
 	};
 
 	// +++ Export +++

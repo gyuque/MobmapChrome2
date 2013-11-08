@@ -13,6 +13,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		countLines: function() { return this.baseLoader.countLines(); },
 		
 		startPreviewLoad: function(callback) {
+			this.previewSink.finishCallback = callback;
 			this.baseLoader.startPreviewLoad(this.previewSink);
 		}
 	};
@@ -21,13 +22,16 @@ if (!window.mobmap) { window.mobmap={}; }
 	function PreviewSink(owner) {
 		this.records = [];
 		this.hasError = false;
+		this.errorObject = null;
 		this.owner = owner;
+		this.finishCallback = null;
 	}
 	
 	PreviewSink.prototype = {
 		init: function() {
 			this.records.length = 0;
 			this.hasError = false;
+			this.errorObject = null;
 		},
 		
 		csvloaderReadLine: function(fields, lineno) {
@@ -38,8 +42,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			);
 		},
 		
+		csvloaderLineError: function(e) {
+			this.hasError = true;
+			this.errorObject = e;
+		},
+		
 		csvloaderLoadFinish: function() {
-			console.log("fin")
+			if (this.finishCallback) {
+				this.finishCallback(!this.hasError, this.records);
+			}
 		}
 	};
 
