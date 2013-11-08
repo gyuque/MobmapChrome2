@@ -86,8 +86,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tbl = $H('table', 'mm-csv-preview-table');
 			var fieldsCount = this.countMaxColumns();
 			
+			// HEADING ROW =====
 			var headingRow = this.generateHeadingRow(fieldsCount);
 			tbl.appendChild(headingRow);
+			
+			// DATA ROWS =======
+			this.addDataRows(tbl, fieldsCount);
 			
 			return tbl;
 		},
@@ -106,6 +110,33 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			return tr;
+		},
+		
+		addDataRows: function(targetTable, fieldsCount) {
+			var ls = this.sourceRecords;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var fields = ls[i];
+				var tr = $H('tr');
+				
+				this.addDataRowColumns(tr, fieldsCount, fields, i+1);
+				targetTable.appendChild(tr);
+			}
+		},
+		
+		addDataRowColumns: function(rowElement, columnsCount, fields, lineno) {
+			var headCol = $H('td', 'mm-heading-column');
+			headCol.appendChild($T(lineno));
+			rowElement.appendChild(headCol);
+			
+			for (var i = 0;i < columnsCount;++i) {
+				var td = $H('td');
+				if (fields[i]) {
+					td.appendChild($T(fields[i]));
+				}
+
+				rowElement.appendChild(td);
+			}
 		},
 		
 		countMaxColumns: function() {
