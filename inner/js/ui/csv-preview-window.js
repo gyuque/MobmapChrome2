@@ -93,6 +93,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			// DATA ROWS =======
 			this.addDataRows(tbl, fieldsCount);
 			
+			// SETTING =========
+			this.addSettingHeader(tbl, fieldsCount + 1);
+			
 			return tbl;
 		},
 		
@@ -137,6 +140,18 @@ if (!window.mobmap) { window.mobmap={}; }
 
 				rowElement.appendChild(td);
 			}
+		},
+		
+		addSettingHeader: function(targetTable, colspan) {
+			var tr = $H('tr');
+			var td = $H('td', 'csv-preview-setting-h');
+			td.setAttribute('colspan', colspan);
+			
+			td.appendChild($T('Column setting'));
+			tr.appendChild(td);
+			targetTable.appendChild(tr);
+			
+			return td;
 		},
 		
 		countMaxColumns: function() {
