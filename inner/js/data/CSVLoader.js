@@ -4,12 +4,43 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function GeoCSVLoader(inFile) {
+		this.previewSink = new PreviewSink(this);
 		this.baseLoader = new HugeCSVLoader(inFile);
 	}
 
 	GeoCSVLoader.prototype = {
 		preload: function(listenerObject) { this.baseLoader.preload(listenerObject); },
-		countLines: function() { return this.baseLoader.countLines(); }
+		countLines: function() { return this.baseLoader.countLines(); },
+		
+		startPreviewLoad: function(callback) {
+			this.baseLoader.startPreviewLoad(this.previewSink);
+		}
+	};
+
+	// Data sink for preview phase ----------------------
+	function PreviewSink(owner) {
+		this.records = [];
+		this.hasError = false;
+		this.owner = owner;
+	}
+	
+	PreviewSink.prototype = {
+		init: function() {
+			this.records.length = 0;
+			this.hasError = false;
+		},
+		
+		csvloaderReadLine: function(fields, lineno) {
+			this.records.push(
+				// fields is a temporary object.
+				// WE MUST COPY IT
+				fields.slice()
+			);
+		},
+		
+		csvloaderLoadFinish: function() {
+			console.log("fin")
+		}
 	};
 
 	// Base ---------------------------------------------------
@@ -20,7 +51,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			currentPos: 0,
 			step: 5000,
 			lineno: 0,
-			callbacks: null
+			listenerObject: null
 		};
 		
 		this.advanceClosure = this.advance.bind(this);
@@ -71,8 +102,96 @@ if (!window.mobmap) { window.mobmap={}; }
 			var i;
 			var limit = this.loadJob.step;
 			if (limit > 10 && !fullMode) {limit=10;}
+			
+			for (i = 0;i < limit;i++) {
+				var hasMore = this.readLine();
+				if (!hasMore || hasMore === LINE_ERR) {break;}
+			}
+			
+			if (hasMore === LINE_ERR) { return;}
+			
+			if (this.loadJob.listenerObject.csvloaderReportProgress) {
+				this.loadJob.listenerObject.csvloaderReportProgress(this.loadJob.lineno);
+			}
+
+			if (hasMore && fullMode) {
+				setTimeout(this.advanceClosure, 1, full);
+			} else {
+				this.loadJob.listenerObject.csvloaderLoadFinish(this);
+			}
+		},
+
+		readLine: function() {
+			var buf = this.inputBytes;
+			var eofPos = buf.length - 1;
+			var pos = this.loadJob.currentPos;
+			var k;
+
+			temp_fields.length = 0;
+			temp_chars.length = 0;
+			for (;pos <= eofPos;++pos) {
+				k = buf[pos];
+
+				if (k === DELM || k === 0x0a || k === 0x0d || pos === eofPos) {
+					if (pos === eofPos) {
+						temp_chars.push(k);
+					}
+
+					temp_fields.push(this.bytesToString(temp_chars));
+					temp_chars.length = 0;
+				} else {
+					temp_chars.push(k);
+				}
+
+
+				if (k === 0x0a || k === 0x0d || pos === eofPos) {
+					++this.loadJob.lineno;
+					break;
+				}
+			}
+
+			// CRLF
+			k = buf[pos+1];
+			if (k === 0x0a || k === 0x0d) { ++pos; }
+			this.loadJob.currentPos = ++pos;
+//			console.log(pos);
+			try {
+				this.loadJob.listenerObject.csvloaderReadLine(temp_fields, this.loadJob.lineno-1);
+			} catch(e) {
+				if (this.loadJob.listenerObject.csvloaderLineError) {
+					this.loadJob.listenerObject.csvloaderLineError(e);
+				}
+				return LINE_ERR;
+			}
+
+			return (pos <= eofPos);
+		},
+
+		startPreviewLoad: function(listenerObject) {
+			this.loadJob.listenerObject = listenerObject;
+			this.rewind();
+			this.advance();
+		},
+		
+		rewind: function() {
+			this.loadJob.currentPos = 0;
+			this.loadJob.lineno = 0;
+		},
+		
+		bytesToString: function(buf) {
+			var len = buf.length;
+			for (var i = 0;i < len;i++) {
+				buf[i] = String.fromCharCode(buf[i]);
+			}
+			
+			return buf.join('');
 		}
 	};
+
+	var LINE_ERR = -1;
+	var DELM = 0x2c;
+	var temp_chars = [];
+	var temp_fields = [];
 
 	// +++ Export +++
 	aGlobal.mobmap.GeoCSVLoader = GeoCSVLoader;

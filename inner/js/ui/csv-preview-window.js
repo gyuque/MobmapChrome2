@@ -46,9 +46,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		csvloaderAfterPreloadFinish: function() {
 			var lineCount = this.csvLoader.countLines();
 			console.log(lineCount);
+			
+			this.csvLoader.startPreviewLoad( this.onPreviewLoadFinish );
 		},
 		
 		csvloaderPreloadError: function() {
+			
+		},
+		
+		onPreviewLoadFinish: function(success) {
 			
 		}
 	};
