@@ -2,7 +2,14 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
-	
+
+	aGlobal.createCleanHash = function() {
+		var o = {__proto__:null};
+		delete o.__proto__;
+
+		return o;
+	}
+
 	aGlobal.$px = function(px) {
 		return Math.floor(px) + 'px';
 	};

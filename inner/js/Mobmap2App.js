@@ -39,8 +39,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.localfilePicker.open();
 		},
 		
-		afterLocalCSVPick: function() {
-			this.csvPreview.open();
+		afterLocalCSVPick: function(pickedFile) {
+			if (pickedFile) {
+				this.csvPreview.open();
+				this.csvPreview.generatePreview(pickedFile);
+			}
 		},
 		
 		// -----------------------------------------------------

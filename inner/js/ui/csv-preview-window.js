@@ -5,6 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function CSVPreviewWindow() {
 		this.element = this.jElement = null;
+		this.csvLoader = null;
 		// ----------------------------------
 		this.buildElements();
 	}
@@ -33,10 +34,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jElement.data("kendoWindow").wrapper.attr('id', 'mm-csv-preview-window');
 		},
 		
-		open: function(pickedFile) {
-			if (pickedFile) {
-				this.jElement.data("kendoWindow").open();
-			}
+		open: function() {
+			this.jElement.data("kendoWindow").open();
+		},
+		
+		generatePreview: function(sourceFile) {
+			this.csvLoader = new mobmap.GeoCSVLoader(sourceFile);
+			this.csvLoader.preload(this);
+		},
+		
+		csvloaderAfterPreloadFinish: function() {
+			var lineCount = this.csvLoader.countLines();
+			console.log(lineCount);
+		},
+		
+		csvloaderPreloadError: function() {
+			
 		}
 	};
 
