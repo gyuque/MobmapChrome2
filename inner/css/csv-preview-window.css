@@ -2,3 +2,28 @@
 	border-radius: 0;
 	border: none;
 }
+
+
+
+
+table.mm-csv-preview-table {
+	border-collapse: collapse;
+}
+
+table.mm-csv-preview-table td,
+table.mm-csv-preview-table th {
+	padding: 2px;
+	border: 1px solid #777;
+}
+
+tr.ignored td {
+	color: #aaa;
+	background-color: #eee;
+	text-decoration: line-through;
+}
+
+table.mm-csv-preview-table th {
+	background: -webkit-gradient(linear, left top, left bottom, to(#ccc), from(#eee));
+	color: #444;
+	text-shadow: 0 1px 0 #eee;
+}

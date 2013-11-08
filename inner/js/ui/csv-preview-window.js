@@ -53,7 +53,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var lineCount = this.csvLoader.countLines();
 			console.log(lineCount);
 			
-			this.csvLoader.startPreviewLoad( this.onPreviewLoadFinish );
+			this.csvLoader.startPreviewLoad( this.onPreviewLoadFinish.bind(this) );
 		},
 		
 		csvloaderPreloadError: function() {
@@ -62,18 +62,63 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onPreviewLoadFinish: function(success, previewRecords) {
 			if (success) {
+				this.clearPreviewArea();
+				
 				this.previewTable = new CSVPreviewTable(previewRecords);
+				var table = this.previewTable.generateTable();
+				this.previewContainer.appendChild(table);
 			}
+		},
+		
+		clearPreviewArea: function() {
+			this.previewContainer.innerHTML = '';
 		}
 	};
 
 
+	// ------------------------------------------------------------
 	function CSVPreviewTable(sourceRecords) {
-		
+		this.sourceRecords = sourceRecords;
 	}
 	
 	CSVPreviewTable.prototype = {
+		generateTable: function() {
+			var tbl = $H('table', 'mm-csv-preview-table');
+			var fieldsCount = this.countMaxColumns();
+			
+			var headingRow = this.generateHeadingRow(fieldsCount);
+			tbl.appendChild(headingRow);
+			
+			return tbl;
+		},
 		
+		generateHeadingRow: function(fieldsCount) {
+			var tr = $H('tr', 'mm-csv-preview-heading-row');
+			var nCols = fieldsCount + 1;
+			
+			for (var i = 0;i < nCols;++i) {
+				var th = $H('th');
+				if (i > 0) {
+					th.appendChild($T(i));
+				}
+				
+				tr.appendChild(th);
+			}
+
+			return tr;
+		},
+		
+		countMaxColumns: function() {
+			var max = 0;
+			var ls = this.sourceRecords;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var c = ls[i].length;
+				if (c > max) {max = c;}
+			}
+			
+			return max;
+		}
 	};
 
 	// +++ Export +++
