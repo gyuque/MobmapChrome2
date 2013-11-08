@@ -79,7 +79,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		var h = jResizeParent.height();
 		this.jOuterElement.height(h);
 		
-		this.eventDispatcher().trigger(Mobmap3PanesScreen.RESIZE_EVENT);
+		var j = this.eventDispatcher();
+		setTimeout(j.trigger.bind(j, Mobmap3PanesScreen.RESIZE_EVENT), 1);
 	};
 	
 	// +++ Export +++

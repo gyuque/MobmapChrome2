@@ -6,7 +6,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	function Mobmap2App(appScreen) {
 		this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
 		this.jEventDispatcherElement = $(document.body);
-		this.localfilePicker = new mobmap.LocalFilePicker();
+		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
+		this.csvPreview = new mobmap.CSVPreviewWindow();
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
@@ -36,6 +37,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Operations
 		loadLocalCSVMovingData: function() {
 			this.localfilePicker.open();
+		},
+		
+		afterLocalCSVPick: function() {
+			this.csvPreview.open();
 		},
 		
 		// -----------------------------------------------------
