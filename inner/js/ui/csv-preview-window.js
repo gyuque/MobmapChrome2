@@ -8,6 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.csvLoader = null;
 		this.previewTable = null;
 		this.autoDetector = null;
+		this.attrMap = null;
 		// ----------------------------------
 		this.buildElements();
 	}
@@ -65,6 +66,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (success) {
 				this.clearPreviewArea();
 
+				this.attrMap = new mobmap.AttributeMapping();
+				this.addDefaultAttributes(this.attrMap);
+				
 				this.autoDetector = new ColumnsAutoDetector();
 				this.autoDetector.detect(previewRecords);
 
@@ -76,6 +80,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		clearPreviewArea: function() {
 			this.previewContainer.innerHTML = '';
+		},
+		
+		addDefaultAttributes: function(attrMap) {
+			var src = kRequiredAttributes;
+			var len = src.length;
+			for (var i = 0;i < len;++i) {
+				var a = attrMap.addAttribute(src[i]);
+				a.csvColumnIndex = i;
+			}
 		}
 	};
 
