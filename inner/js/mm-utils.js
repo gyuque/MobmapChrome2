@@ -9,6 +9,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		return o;
 	}
+	
+	aGlobal.$BRAC = function(s) {
+		return '(' +s+ ')';
+	};
 
 	aGlobal.$px = function(px) {
 		return Math.floor(px) + 'px';

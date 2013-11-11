@@ -95,6 +95,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			// SETTING =========
 			this.addSettingHeader(tbl, fieldsCount + 1);
+			this.createSettingRows(tbl, fieldsCount);
 			
 			return tbl;
 		},
@@ -164,6 +165,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return max;
+		},
+
+		// ==== Column picker ====
+
+		createSettingRows: function(targetTable, columnsCount) {
+			var attrs = kRequiredAttributes;
+			var len = attrs.length;
+			
+			for (var i = 0;i < len;++i) {
+				var attrName = attrs[i];
+				var tr = $H('tr');
+				
+				var hcol = this.generateSettingRowHeadCol(attrName);
+				tr.appendChild(hcol);
+
+				this.generateSettingRowColumns(tr, attrName, columnsCount);
+				
+				targetTable.appendChild(tr);
+			}
+		},
+		
+		generateSettingRowHeadCol: function(attrName) {
+			var td = $H('td', 'mm-csv-setting-headcol');
+			td.appendChild($T(attrName));
+			return td;
+		},
+		
+		generateSettingRowColumns: function(targetRow, attrName, columnsCount) {
+			for (var i = 0;i < columnsCount;++i) {
+				var td = $H('td', 'mm-csv-picker-col');
+				targetRow.appendChild(td);
+			}
 		}
 	};
 
