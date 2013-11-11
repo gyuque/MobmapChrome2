@@ -75,7 +75,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.autoDetector = new ColumnsAutoDetector();
 				this.autoDetector.detect(previewRecords);
 
-				this.previewTable = new CSVPreviewTable(previewRecords);
+				this.previewTable = new CSVPreviewTable(previewRecords, this);
 				var table = this.previewTable.generateTable();
 				this.previewContainer.appendChild(table);
 			}
@@ -92,13 +92,18 @@ if (!window.mobmap) { window.mobmap={}; }
 				var a = attrMap.addAttribute(src[i]);
 				a.csvColumnIndex = i;
 			}
+		},
+		
+		onPickerCellClick: function(attrName, colIndex) {
+			console.log('  ', attrName, colIndex);
 		}
 	};
 
 
 	// ------------------------------------------------------------
-	function CSVPreviewTable(sourceRecords) {
+	function CSVPreviewTable(sourceRecords, listener) {
 		this.sourceRecords = sourceRecords;
+		this.listener = listener || null;
 	}
 	
 	CSVPreviewTable.prototype = {
@@ -124,8 +129,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeTable: function(tableElement) {
 			$(tableElement).click( (function(e){
 				var col_node = this.findPickerColumnNode(e.target);
-				console.log(col_node)
+				this.onPickerClick(col_node);
 			}).bind(this) );
+		},
+		
+		onPickerClick: function(element) {
+			var attrName = element.getAttribute(DATAATTR_ANAME);
+			var colIndex = parseInt( element.getAttribute(DATAATTR_COLI) , 10);
+			
+			if (this.listener && this.listener.onPickerCellClick) {
+				this.listener.onPickerCellClick(attrName, colIndex);
+			}
 		},
 		
 		findPickerColumnNode: function(el) {
