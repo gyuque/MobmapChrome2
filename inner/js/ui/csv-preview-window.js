@@ -3,6 +3,9 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 
+	var DATAATTR_ANAME = 'data-aname';
+	var DATAATTR_COLI = 'data-colindex';
+
 	function CSVPreviewWindow() {
 		this.element = this.jElement = this.previewContainer = null;
 		this.csvLoader = null;
@@ -114,7 +117,28 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.addSettingHeader(tbl, fieldsCount + 1);
 			this.createSettingRows(tbl, fieldsCount);
 			
+			this.observeTable(tbl);
 			return tbl;
+		},
+		
+		observeTable: function(tableElement) {
+			$(tableElement).click( (function(e){
+				var col_node = this.findPickerColumnNode(e.target);
+				console.log(col_node)
+			}).bind(this) );
+		},
+		
+		findPickerColumnNode: function(el) {
+			for (var i = 0;i < 3;++i) {
+				if (el.getAttribute(DATAATTR_ANAME)) {
+					return el;
+				}
+				
+				el = el.parentNode;
+				if (!el) {break;}
+			}
+			
+			return null;
 		},
 		
 		generateHeadingRow: function(fieldsCount) {
@@ -144,7 +168,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				targetTable.appendChild(tr);
 			}
 		},
-		
+
 		addDataRowColumns: function(rowElement, columnsCount, fields, lineno) {
 			var headCol = $H('td', 'mm-heading-column');
 			headCol.appendChild($T(lineno));
@@ -212,6 +236,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		generateSettingRowColumns: function(targetRow, attrName, columnsCount) {
 			for (var i = 0;i < columnsCount;++i) {
 				var td = $H('td', 'mm-csv-picker-col');
+				td.setAttribute(DATAATTR_ANAME, attrName);
+				td.setAttribute(DATAATTR_COLI, i);
 				targetRow.appendChild(td);
 			}
 		}
