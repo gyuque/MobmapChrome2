@@ -7,6 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.element = this.jElement = this.previewContainer = null;
 		this.csvLoader = null;
 		this.previewTable = null;
+		this.autoDetector = null;
 		// ----------------------------------
 		this.buildElements();
 	}
@@ -63,7 +64,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		onPreviewLoadFinish: function(success, previewRecords) {
 			if (success) {
 				this.clearPreviewArea();
-				
+
+				this.autoDetector = new ColumnsAutoDetector();
+				this.autoDetector.detect(previewRecords);
+
 				this.previewTable = new CSVPreviewTable(previewRecords);
 				var table = this.previewTable.generateTable();
 				this.previewContainer.appendChild(table);
@@ -208,6 +212,17 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	ColumnsAutoDetector.RE_ID = /^[0-9 \t]+$/
 	ColumnsAutoDetector.RE_COORD = /^[-+.0-9 \t]+$/
+
+	ColumnsAutoDetector.RE_TIME1 = /[0-9]+:[0-9]+/
+
+	ColumnsAutoDetector.CheckCoordVal = function(fieldRaw, min, max) {
+		if (!ColumnsAutoDetector.RE_COORD.test(fieldRaw)) {
+			return false;
+		}
+		
+		var val = parseFloat(fieldRaw);
+		return (val >= min && val <= max);
+	};
 	
 	ColumnsAutoDetector.prototype = {
 		detect: function(records) {
@@ -216,7 +231,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				return;
 			}
 			
+			this.detectTime1(targetRow);
 			this.detectId(targetRow);
+			this.detectX(targetRow);
+			this.detectY(targetRow);
+			
+			//console.log(this.colmap)
 			this.success = true;
 		},
 		
@@ -226,6 +246,36 @@ if (!window.mobmap) { window.mobmap={}; }
 				'id',
 				function(field) {
 					return ColumnsAutoDetector.RE_ID.test(field);
+				}
+			);
+		},
+
+		detectX: function(targetRow) {
+			this.findColumnByCondition(
+				targetRow,
+				'x',
+				function(field) {
+					return ColumnsAutoDetector.CheckCoordVal(field, 100, 180);
+				}
+			);
+		},
+
+		detectY: function(targetRow) {
+			this.findColumnByCondition(
+				targetRow,
+				'y',
+				function(field) {
+					return ColumnsAutoDetector.CheckCoordVal(field, 10, 80);
+				}
+			);
+		},
+		
+		detectTime1: function(targetRow) {
+			this.findColumnByCondition(
+				targetRow,
+				'time',
+				function(field) {
+					return ColumnsAutoDetector.RE_TIME1.test(field);
 				}
 			);
 		},
@@ -262,11 +312,11 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// / / test data
 	var TestRecords = [
-	 ["01972939","2013-02-24 00:03:43","35.658048","139.641874"],["00690961","2013-02-24 00:10:26","35.677768","139.665263"],
-	 ["00529402","2013-02-24 00:24:10","35.685932","139.701483"],["01733612","2013-02-24 00:28:02","35.583333","139.674425"],
-	 ["00529402","2013-02-24 00:29:02","35.67971","139.721653"],["00919054","2013-02-24 00:32:42","35.642588","139.620824"],
-	 ["00529402","2013-02-24 00:33:58","35.701779","139.744828"],["00529402","2013-02-24 00:39:00","35.699944","139.764869"],
-	 ["00529402","2013-02-24 00:44:02","35.698603","139.772487"],["01142511","2013-02-24 00:45:07","35.64718","139.838362"]];
+	 ["01972939","2013-02-24 00:03:43","35.65","139.64"],["00690961","2013-02-24 00:10:26","35.67","139.66"],
+	 ["00529402","2013-02-24 00:24:10","35.68","139.70"],["01733612","2013-02-24 00:28:02","35.58","139.67"],
+	 ["00529402","2013-02-24 00:29:02","35.67","139.72"],["00919054","2013-02-24 00:32:42","35.64","139.62"],
+	 ["00529402","2013-02-24 00:33:58","35.70","139.74"],["00529402","2013-02-24 00:39:00","35.69","139.76"],
+	 ["00529402","2013-02-24 00:44:02","35.69","139.77"],["01142511","2013-02-24 00:45:07","35.64","139.83"]];
 
 	function testColumnsAutoDetector() {
 		var detector = new ColumnsAutoDetector();
@@ -286,13 +336,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			throw "y column must be 2";
 		}
 
+		var xcol = detector.getXColumnIndex();
+		if (xcol !== 3) {
+			throw "x column must be 3";
+		}
+
 		var tcol = detector.getTimeColumnIndex();
 		if (tcol !== 1) {
 			throw "time column must be 1";
 		}
 	}
 
-	testColumnsAutoDetector();
 	// +++ Export +++
 	aGlobal.mobmap.CSVPreviewWindow = CSVPreviewWindow;
 })(window);
