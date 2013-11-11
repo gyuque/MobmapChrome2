@@ -13,6 +13,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.nameMap[name] = a;
 			
 			return a;
+		},
+		
+		setColumnIndex: function(name, index) {
+			var a = this.nameMap[name];
+			if (a) {
+				a.csvColumnIndex = index;
+			}
 		}
 	};
 

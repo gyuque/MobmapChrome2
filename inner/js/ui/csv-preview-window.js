@@ -95,7 +95,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onPickerCellClick: function(attrName, colIndex) {
-			console.log('  ', attrName, colIndex);
+			setAttrColumnIndex(attrName, colIndex);
+		},
+		
+		setAttrColumnIndex: function(attrName, colIndex) {
+			if (this.attrMap) {
+				this.attrMap.setColumnIndex(attrName, colIndex);
+			}
 		}
 	};
 
