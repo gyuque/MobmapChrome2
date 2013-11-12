@@ -28,6 +28,10 @@ table.mm-csv-preview-table th {
 	text-shadow: 0 1px 0 #eee;
 }
 
+table.mm-csv-preview-table td {
+	color: #000;
+}
+
 .csv-preview-setting-h {
 	padding: 4px 0;
 	font-size: 90%;
@@ -38,6 +42,33 @@ table.mm-csv-preview-table th {
 	background: -webkit-gradient(linear, left top, left center, to(#eee), from(#ddd));
 }
 
-.mm-csv-picker-col {
+.mm-csv-preview-table .mm-csv-picker-col {
 	cursor: pointer;
+	background: none top center;
+	color: rgba(255, 255, 255, 0);
+	text-align: right;
+	font-weight: bold;
+	font-size: 10px;
+	padding-right: 0.5em;
+	min-width: 19px;
 }
+
+.mm-csv-preview-table .mm-heading-column {
+	text-align: right;
+	background-color: #ddd;
+	color: #666;
+}
+
+.mm-csv-preview-table .mm-csv-setting-headcol {
+	color: #fff;
+	padding: 2px;
+	text-shadow: 0 -1px 0 rgba(0,0,0,0.6);
+	text-align: center;
+	box-shadow: 0 3px 1px -2px rgba(255,255,255,0.4) inset;
+}
+
+/* Picker hover states */
+tr[data-attr-row-name="id"]   td:hover { background-color: #fcd; }
+tr[data-attr-row-name="time"] td:hover { background-color: #edb; }
+tr[data-attr-row-name="x"]    td:hover { background-color: #cfc; }
+tr[data-attr-row-name="y"]    td:hover { background-color: #ddf; }

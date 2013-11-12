@@ -15,6 +15,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return a;
 		},
 		
+		getAttributeMetadata: function(name) {
+			return this.nameMap[name] || null;
+		},
+		
 		setColumnIndex: function(name, index) {
 			var a = this.nameMap[name];
 			if (a) {

@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	var DATAATTR_ANAME = 'data-aname';
+	var DATAATTR_AROWNAME = 'data-attr-row-name';
 	var DATAATTR_COLI = 'data-colindex';
 
 	function CSVPreviewWindow() {
@@ -95,12 +96,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onPickerCellClick: function(attrName, colIndex) {
-			setAttrColumnIndex(attrName, colIndex);
+			this.setAttrColumnIndex(attrName, colIndex);
 		},
 		
 		setAttrColumnIndex: function(attrName, colIndex) {
 			if (this.attrMap) {
 				this.attrMap.setColumnIndex(attrName, colIndex);
+				this.previewTable.showSetting(this.attrMap);
 			}
 		}
 	};
@@ -110,6 +112,18 @@ if (!window.mobmap) { window.mobmap={}; }
 	function CSVPreviewTable(sourceRecords, listener) {
 		this.sourceRecords = sourceRecords;
 		this.listener = listener || null;
+		
+		this.attrRows = [];
+		this.dataRows = [];
+		this.bgLineImages = {};
+		this.bgArrowImages = {};
+	}
+	
+	CSVPreviewTable.AttrColors = {
+		id: [250,0,90],
+		time: [200,100,0],
+		x: [0,200,0],
+		y: [0,0,220]
 	}
 	
 	CSVPreviewTable.prototype = {
@@ -135,7 +149,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeTable: function(tableElement) {
 			$(tableElement).click( (function(e){
 				var col_node = this.findPickerColumnNode(e.target);
-				this.onPickerClick(col_node);
+				if (col_node) {
+					this.onPickerClick(col_node);
+				}
 			}).bind(this) );
 		},
 		
@@ -183,6 +199,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < len;++i) {
 				var fields = ls[i];
 				var tr = $H('tr');
+				this.dataRows.push(tr);
 				
 				this.addDataRowColumns(tr, fieldsCount, fields, i+1);
 				targetTable.appendChild(tr);
@@ -236,10 +253,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			for (var i = 0;i < len;++i) {
 				var attrName = attrs[i];
+				var acolor = CSVPreviewTable.AttrColors[attrName];
+				
+				// Generate background images
+				this.bgLineImages[attrName] = PickerBGGenerator.generateLineBG(acolor[0], acolor[1], acolor[2]);
+				this.bgArrowImages[attrName] = PickerBGGenerator.generateArrowBG(acolor[0], acolor[1], acolor[2]);
+
+				// Generate row
 				var tr = $H('tr');
+				this.attrRows.push(tr);
 				
 				var hcol = this.generateSettingRowHeadCol(attrName);
+				tr.setAttribute(DATAATTR_AROWNAME, attrName);
 				tr.appendChild(hcol);
+				hcol.style.background = makeHeadColGradient(acolor);
 
 				this.generateSettingRowColumns(tr, attrName, columnsCount);
 				
@@ -259,10 +286,88 @@ if (!window.mobmap) { window.mobmap={}; }
 				td.setAttribute(DATAATTR_ANAME, attrName);
 				td.setAttribute(DATAATTR_COLI, i);
 				targetRow.appendChild(td);
+				
+				td.appendChild($T(attrName));
+			}
+		},
+		
+		showSetting: function(attrMap) {
+			var ls = this.attrRows;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var row = ls[i];
+				var attrName = row.getAttribute(DATAATTR_AROWNAME);
+				var ameta = attrMap.getAttributeMetadata(attrName);
+				if (attrName) {
+					this.updatePickerCursorOnRow(attrName, row, ameta.csvColumnIndex);
+				}
+			}
+		},
+		
+		updatePickerCursorOnRow: function(attrName, targetRow, attrColIndex) {
+			var ls = targetRow.childNodes;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var col = ls[i];
+				if (!col.getAttribute(DATAATTR_ANAME)) {continue;}
+				
+				var style = col.style;
+				var colIndex = parseInt( col.getAttribute(DATAATTR_COLI) , 10);
+				
+				if (colIndex < attrColIndex) {
+					style.color = style.boxShadow = style.textShadow = '';
+					style.backgroundImage = 'url("' + this.bgLineImages[attrName] + '")';
+				} else if (colIndex > attrColIndex) {
+					style.color = style.boxShadow = style.textShadow = '';
+					style.backgroundImage = 'none';
+				} else {
+					var acolor = CSVPreviewTable.AttrColors[attrName];
+					style.boxShadow = '-40px 0 29px -8px ' + makeStyleSheetRGB_BlendWhite(acolor[0], acolor[1], acolor[2]) + ' inset';
+					style.textShadow = '0 1px 2px ' + makeStyleSheetRGB_BlendBlack(acolor[0], acolor[1], acolor[2]);
+					style.backgroundImage = 'url("' + this.bgArrowImages[attrName] + '")';
+					style.color = "#fff";
+				}
 			}
 		}
 	};
 	
+	var PickerBGGenerator = {
+		generateCanvas: function() {
+			var cv = document.createElement('canvas');
+			cv.width = 800;
+			cv.height = 24;
+			var g = cv.getContext('2d');
+			return {canvas:cv, g:g};
+		},
+		
+		generateLineBG: function(red, green, blue) {
+			var canvasSet = this.generateCanvas();
+			canvasSet.g.fillStyle = makeStyleSheetRGB(red, green, blue);
+			canvasSet.g.fillRect(0, 9, 800, 3);
+			
+			return canvasSet.canvas.toDataURL();
+		},
+		
+		generateArrowBG: function(red, green, blue) {
+			var canvasSet = this.generateCanvas();
+			canvasSet.g.fillStyle = makeStyleSheetRGB(red, green, blue);
+			canvasSet.g.fillRect(0, 9, 390, 3);
+			canvasSet.g.fillRect(390, 0, 1, 11);
+			canvasSet.g.fillRect(389, 1, 3, 11);
+			canvasSet.g.fillRect(388, 2, 5, 1);
+			canvasSet.g.fillRect(387, 3, 7, 1);
+			
+			return canvasSet.canvas.toDataURL();
+		}
+	};
+	
+	function makeHeadColGradient(baseColor) {
+		return 'linear-gradient(to bottom, '+
+		makeStyleSheetRGB(baseColor[0], baseColor[1], baseColor[2])+
+		','+
+		makeStyleSheetRGB_BlendBlack(baseColor[0], baseColor[1], baseColor[2])+
+		')';
+	}
 	
 	function ColumnsAutoDetector() {
 		this.success = false;
