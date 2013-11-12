@@ -8,8 +8,11 @@ if (!window.mobmap) { window.mobmap={}; }
 	var DATAATTR_COLI = 'data-colindex';
 	var DATAATTR_ISSAMPLE = 'data-sample-col';
 
-	function CSVPreviewWindow() {
+	function CSVPreviewWindow(ownerApp) {
+		this.ownerApp = ownerApp;
+		
 		this.element = this.jElement = this.previewContainer = null;
+		this.jIgnoreFirstLineCheck = null;
 		this.csvLoader = null;
 		this.previewTable = null;
 		this.autoDetector = null;
@@ -36,8 +39,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				modal:true,
 				pinned: true,
 				position: { top: '0px',left: '0px' },
-				width: "100%",
-				height: "100%",
+				width: "95%",
+				height: "80%",
 				visible: false,
 				animation: {
 				    close: { duration: 200 }
@@ -50,11 +53,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		open: function() {
+			this.jElement.data("kendoWindow").center();
 			this.jElement.data("kendoWindow").open();
 		},
 
 		// Tools
 		buildPreviewControlTools: function(containerElement) {
+			var buttonContainer = $H('div', 'mm-trigger-box', 'mm-csv-full-load-container');
+			
+			var loadButton = $H('button');
+			var jBtn = $(loadButton).text('Start loading').click(
+				this.onFullLoadClick.bind(this)
+			);
+			loadButton.id = "mm-csvpreview-fullload-button";
+			
+			var chkIgnore = createCheckbox();
+			var lbIgnore = createWrapperLabel(chkIgnore, "Ignore first line"); 
+			this.jIgnoreFirstLineCheck = $(chkIgnore);
+			
+			containerElement.appendChild(lbIgnore);
+			buttonContainer.appendChild(loadButton);
+			containerElement.appendChild(buttonContainer);
+		},
+		
+		onFullLoadClick: function() {
 			
 		},
 

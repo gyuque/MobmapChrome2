@@ -10,6 +10,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		return o;
 	};
 
+	aGlobal.createCheckbox = function(cls, id) {
+		var check = $H('input', cls, id);
+		check.type = 'checkbox';
+		return check;
+	};
+
+	aGlobal.createWrapperLabel = function(input, labelText, cls, id) {
+		var lb = $H('label', cls, id);
+		lb.appendChild(input);
+		lb.appendChild($T(labelText));
+		return lb;
+	};
+	
 	aGlobal.makeStyleSheetRGB_BlendWhite = function(r, g, b) {
 		return aGlobal.makeStyleSheetRGB(
 			(r >> 1) + 127,

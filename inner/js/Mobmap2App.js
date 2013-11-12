@@ -7,7 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
 		this.jEventDispatcherElement = $(document.body);
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
-		this.csvPreview = new mobmap.CSVPreviewWindow();
+		this.csvPreview = new mobmap.CSVPreviewWindow(this);
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
