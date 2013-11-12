@@ -18,6 +18,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		);
 	};
 
+	aGlobal.makeStyleSheetRGB_BlendWhite2 = function(r, g, b) {
+		return aGlobal.makeStyleSheetRGB(
+			(r >> 2) + 192,
+			(g >> 2) + 192,
+			(b >> 2) + 192
+		);
+	};
+
 	aGlobal.makeStyleSheetRGB_BlendBlack = function(r, g, b) {
 		return aGlobal.makeStyleSheetRGB(r >> 1, g >> 1, b >> 1);
 	};

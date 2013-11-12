@@ -24,6 +24,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (a) {
 				a.csvColumnIndex = index;
 			}
+		},
+		
+		forEachAttribute: function(proc) {
+			for (var i in this.nameMap) if (this.nameMap.hasOwnProperty(i)) {
+				proc(i, this.nameMap[i]);
+			}
 		}
 	};
 

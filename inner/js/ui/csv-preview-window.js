@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var DATAATTR_ANAME = 'data-aname';
 	var DATAATTR_AROWNAME = 'data-attr-row-name';
 	var DATAATTR_COLI = 'data-colindex';
+	var DATAATTR_ISSAMPLE = 'data-sample-col';
 
 	function CSVPreviewWindow() {
 		this.element = this.jElement = this.previewContainer = null;
@@ -117,6 +118,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataRows = [];
 		this.bgLineImages = {};
 		this.bgArrowImages = {};
+		
+		this.jTable = null;
 	}
 	
 	CSVPreviewTable.AttrColors = {
@@ -143,6 +146,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.createSettingRows(tbl, fieldsCount);
 			
 			this.observeTable(tbl);
+			this.jTable = $(tbl);
 			return tbl;
 		},
 		
@@ -213,6 +217,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			for (var i = 0;i < columnsCount;++i) {
 				var td = $H('td');
+				td.setAttribute(DATAATTR_COLI, i);
+				td.setAttribute(DATAATTR_ISSAMPLE, 1);
+
 				if (fields[i]) {
 					td.appendChild($T(fields[i]));
 				}
@@ -220,7 +227,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				rowElement.appendChild(td);
 			}
 		},
-		
+
 		addSettingHeader: function(targetTable, colspan) {
 			var tr = $H('tr');
 			var td = $H('td', 'csv-preview-setting-h');
@@ -300,6 +307,35 @@ if (!window.mobmap) { window.mobmap={}; }
 				var ameta = attrMap.getAttributeMetadata(attrName);
 				if (attrName) {
 					this.updatePickerCursorOnRow(attrName, row, ameta.csvColumnIndex);
+				}
+			}
+			
+			this.showDataColCursor(attrMap);
+		},
+		
+		showDataColCursor: function(attrMap) {
+			this.jTable.find('td[' +DATAATTR_ISSAMPLE+ ']').css('background-color', '');
+			
+			var ls = this.dataRows;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var dataRow = ls[i];
+				attrMap.forEachAttribute(this.showDataColCursorOfAttribute.bind(this, dataRow));
+			}
+		},
+		
+		showDataColCursorOfAttribute: function(row, attrName, attrMeta) {
+			var acolor = CSVPreviewTable.AttrColors[attrName];
+			
+			var ls = row.childNodes;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var col = ls[i];
+				if (col.getAttribute(DATAATTR_ISSAMPLE)) {
+					var colIndex = parseInt( col.getAttribute(DATAATTR_COLI) , 10);
+					if (attrMeta.csvColumnIndex === colIndex) {
+						col.style.backgroundColor = makeStyleSheetRGB_BlendWhite2(acolor[0], acolor[1], acolor[2]);
+					}
 				}
 			}
 		},
