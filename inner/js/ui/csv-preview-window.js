@@ -28,6 +28,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.previewContainer = $H('div', 'mm-csv-preview-table-container');
 			this.element.appendChild(this.previewContainer);
 
+			this.controlArea = $H('div', 'mm-csv-preview-control-container');
+			this.element.appendChild(this.controlArea);
+			this.buildPreviewControlTools(this.controlArea);
+
 			this.jElement.show().kendoWindow({
 				modal:true,
 				pinned: true,
@@ -49,6 +53,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jElement.data("kendoWindow").open();
 		},
 
+		// Tools
+		buildPreviewControlTools: function(containerElement) {
+			
+		},
 
 		// Preload and preview ===================
 		generatePreview: function(sourceFile) {
@@ -76,10 +84,14 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				this.autoDetector = new ColumnsAutoDetector();
 				this.autoDetector.detect(previewRecords);
+				this.autoDetector.applyToAttrMap(this.attrMap);
 
 				this.previewTable = new CSVPreviewTable(previewRecords, this);
 				var table = this.previewTable.generateTable();
 				this.previewContainer.appendChild(table);
+				
+				// Show initial status
+				this.previewTable.showSetting(this.attrMap);
 			}
 		},
 		
@@ -425,6 +437,16 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	ColumnsAutoDetector.prototype = {
+		applyToAttrMap: function(attrMap) {
+			for (var i in this.colmap) if (this.colmap.hasOwnProperty(i)) {
+				var attrName = this.colmap[i];
+				var meta = attrMap.getAttributeMetadata(attrName);
+				if (meta) {
+					meta.csvColumnIndex = i - 0;
+				}
+			}
+		},
+		
 		detect: function(records) {
 			var targetRow = records[1] || records[0];
 			if (!targetRow) {
