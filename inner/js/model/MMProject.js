@@ -34,6 +34,14 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	LayerList.prototype = {
+		getCount: function() {
+			return this.array.length;
+		},
+		
+		getLayerAt: function(i) {
+			return this.array[i] || null;
+		},
+		
 		appendOnTop: function(newLayer) {
 			if (this.alreadyExists(newLayer)) {
 				return;

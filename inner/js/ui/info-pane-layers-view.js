@@ -38,7 +38,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerListChange: function() {
-			console.log("chg")
+			this.updateLayerViews();
 		},
 
 		generateWelcomeBox: function() {
@@ -67,6 +67,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		requestAddLocalCSVLayer: function() {
 			this.ownerApp.loadLocalCSVMovingData();
+		},
+		
+		// ------------------------------
+		updateLayerViews: function() {
+			var prj = this.ownerApp.getCurrentPeoject();
+			var ls = prj.layerList;
+			var len = ls.getCount();
+			for (var i = 0;i < len;++i) {
+				var layer = ls.getLayerAt(i);
+				if (!layer.hasPrimaryView()) {
+					console.log("Needs view"); // This layer needs new view.
+				}
+			}
 		}
 	};
 	

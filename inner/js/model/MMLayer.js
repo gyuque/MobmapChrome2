@@ -8,7 +8,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MovingObjectLayer.prototype = {
-		
+		hasPrimaryView: function() {
+			return !!this.primaryView;
+		}
 	};
 	
 	aGlobal.mobmap.MovingObjectLayer = MovingObjectLayer;
