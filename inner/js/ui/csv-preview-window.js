@@ -52,9 +52,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jElement.data("kendoWindow").wrapper.attr('id', 'mm-csv-preview-window');
 		},
 		
+		// shortcut to kendo window object
+		wnd: function() { return this.jElement.data("kendoWindow"); },
+		
 		open: function() {
-			this.jElement.data("kendoWindow").center();
-			this.jElement.data("kendoWindow").open();
+			this.wnd().center();
+			this.wnd().open();
+		},
+		
+		close: function() {
+			this.wnd().close();
 		},
 
 		// Tools
@@ -77,7 +84,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onFullLoadClick: function() {
-			
+			this.ownerApp.loadCSVWithLoader(this.csvLoader);
 		},
 
 		// Preload and preview ===================

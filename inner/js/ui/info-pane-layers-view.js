@@ -17,6 +17,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		setApp: function(a) {
 			this.ownerApp = a;
 		},
+		
+		observePeoject: function() {
+			this.ownerApp.getCurrentPeoject();
+		},
 
 		generateWelcomeBox: function() {
 			var box = $H('div');

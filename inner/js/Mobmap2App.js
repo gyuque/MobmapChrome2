@@ -25,12 +25,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		newProject: function() {
 			var prj = new mobmap.MMProject();
-			this.setProject();
+			this.setProject(prj);
 		},
 		
 		setProject: function(prj) {
 			this.currentProject = prj;
 			this.eventDispatcher().trigger(Mobmap2App.PROJECT_SET_EVENT, prj);
+		},
+		
+		getCurrentPeoject: function() {
+			return this.currentProject;
 		},
 		
 		// -----------------------------------------------------
@@ -44,6 +48,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.csvPreview.open();
 				this.csvPreview.generatePreview(pickedFile);
 			}
+		},
+		
+		loadCSVWithLoader: function(csvLoader) {
+			this.csvPreview.close();
+			var newLayer = this.currentProject.addMovingObjectLayer();
 		},
 		
 		// -----------------------------------------------------
