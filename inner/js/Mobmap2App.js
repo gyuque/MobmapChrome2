@@ -27,16 +27,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			var prj = new mobmap.MMProject();
 			this.setProject(prj);
 		},
-		
+
 		setProject: function(prj) {
 			this.currentProject = prj;
 			this.eventDispatcher().trigger(Mobmap2App.PROJECT_SET_EVENT, prj);
 		},
-		
+
 		getCurrentPeoject: function() {
 			return this.currentProject;
 		},
-		
+
 		// -----------------------------------------------------
 		// Operations
 		loadLocalCSVMovingData: function() {

@@ -16,10 +16,29 @@ if (!window.mobmap) { window.mobmap={}; }
 	LayersView.prototype = {
 		setApp: function(a) {
 			this.ownerApp = a;
+			this.observeApp();
+			this.observePeoject();
+		},
+		
+		observeApp: function() {
+			var ed = this.ownerApp.eventDispatcher();
+			ed.bind(mobmap.Mobmap2App.PROJECT_SET_EVENT, this.onAppProjectSet.bind(this));
 		},
 		
 		observePeoject: function() {
-			this.ownerApp.getCurrentPeoject();
+			var prj = this.ownerApp.getCurrentPeoject();
+			if (prj) {
+				var ed = prj.eventDispatcher();
+				ed.bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this));
+			}
+		},
+
+		onAppProjectSet: function() {
+			this.observePeoject();
+		},
+		
+		onLayerListChange: function() {
+			console.log("chg")
 		},
 
 		generateWelcomeBox: function() {
