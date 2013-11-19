@@ -52,6 +52,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		loadCSVWithLoader: function(csvLoader) {
 			this.csvPreview.close();
+			this.layersView.hideWelcomeBox();
 			var newLayer = this.currentProject.addMovingObjectLayer();
 		},
 		
@@ -82,10 +83,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		connectWithViews: function() {
 			this.infoPane.setApp(this);
 			this.layersView.setApp(this);
-		},
-		
-		getCurrentProject: function() {
-			console.log('IMPLEMENT HERE');
 		}
 	};
 

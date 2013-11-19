@@ -49,6 +49,11 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		getBoxByName: function(name) {
 			return this.tabList.getBoxByName(name);
+		},
+		
+		// shortcut
+		getLayerListBox: function() {
+			return this.getBoxByName("layers");
 		}
 	};
 

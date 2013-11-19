@@ -11,6 +11,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jContainerElement = $(containerElement);
 		
 		this.jWelcomeBox = this.generateWelcomeBox();
+		this.itemsContainerElement = this.generateItemsContainer();
 	}
 
 	LayersView.prototype = {
@@ -40,6 +41,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerListChange: function() {
 			this.updateLayerViews();
 		},
+		
+		generateItemsContainer: function() {
+			var el = $H('div', 'mm-layer-list-items-container');
+			this.containerElement.appendChild(el);
+			return el;
+		},
 
 		generateWelcomeBox: function() {
 			var box = $H('div');
@@ -61,6 +68,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return $(box);
 		},
 		
+		hideWelcomeBox: function() {
+			this.jWelcomeBox.hide();
+		},
+		
 		onWelcomeLocalCSVClick: function() {
 			this.requestAddLocalCSVLayer();
 		},
@@ -71,15 +82,45 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// ------------------------------
 		updateLayerViews: function() {
+			var nextInView = null;
+			
 			var prj = this.ownerApp.getCurrentPeoject();
 			var ls = prj.layerList;
 			var len = ls.getCount();
 			for (var i = 0;i < len;++i) {
+				if (i > 0) {
+					nextInView = ls.getLayerAt(i - 1);
+				}
+				
 				var layer = ls.getLayerAt(i);
 				if (!layer.hasPrimaryView()) {
+					
+					var lv = new LayerItemView();
+					layer.primaryView = lv;
+					this.appendLayerItemView(lv.primaryView, nextInView ? nextInView.primaryView: null);
 					console.log("Needs view"); // This layer needs new view.
 				}
 			}
+		},
+		
+		appendLayerItemView: function(newView, nextView) {
+//			this.itemsContainerElement.insertBefore(newView.element);
+		}
+	};
+	
+	// Layer item view
+	function LayerItemView() {
+		this.element = $H('div', 'mm-layer-view-item-box');
+		this.jElement = $(this.element);
+		this.build();
+	}
+	
+	LayerItemView.prototype = {
+		build: function() {
+			var caption = $H('h3');
+			caption.appendChild($T('MOV'));
+			
+			this.element.appendChild(caption);
 		}
 	};
 	
