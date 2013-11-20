@@ -97,19 +97,29 @@ if (!window.mobmap) { window.mobmap={}; }
 					
 					var lv = new LayerItemView();
 					layer.primaryView = lv;
-					this.appendLayerItemView(lv.primaryView, nextInView ? nextInView.primaryView: null);
+					this.appendLayerItemView(layer.primaryView,
+						nextInView ? nextInView.primaryView : null);
+					
+					
 					console.log("Needs view"); // This layer needs new view.
 				}
 			}
 		},
 		
 		appendLayerItemView: function(newView, nextView) {
-//			this.itemsContainerElement.insertBefore(newView.element);
+			console.log(newView, nextView)
+			
+			this.itemsContainerElement.insertBefore(
+				newView.element,
+				nextView ? nextView.element : null);
 		}
 	};
 	
 	// Layer item view
 	function LayerItemView() {
+		this.progressBar = null;
+		this.progressLabel = null;
+		
 		this.element = $H('div', 'mm-layer-view-item-box');
 		this.jElement = $(this.element);
 		this.build();
@@ -117,10 +127,21 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	LayerItemView.prototype = {
 		build: function() {
+			// Caption ---------------------
 			var caption = $H('h3');
-			caption.appendChild($T('MOV'));
+			caption.appendChild($T('Moving objects'));
 			
 			this.element.appendChild(caption);
+
+			// Progress bar ---------------------
+			this.progressLabel = $H('div', 'mm-layer-loading-label');
+			this.progressLabel.appendChild( $T('Loading...') );
+
+			this.progressBar = new mobmap.MiniProgressBar(100);
+			this.progressBar.setRatio(0.2);
+
+			this.element.appendChild(this.progressLabel);
+			this.element.appendChild(this.progressBar.element);
 		}
 	};
 	
