@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function GeoCSVLoader(inFile) {
+		this.attrMap = null;
 		this.fileName = inFile.name;
 		this.previewSink = new PreviewSink(this);
 		this.baseLoader = new HugeCSVLoader(inFile);
@@ -27,6 +28,14 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		startFullLoad: function(listenerObject) {
 			this.baseLoader.startFullLoad(listenerObject);
+		},
+		
+		setAttributeMap: function(attrMap) {
+			this.attrMap = attrMap;
+		},
+		
+		applyAttributeMapToFieldList: function(fieldList) {
+			
 		}
 	};
 

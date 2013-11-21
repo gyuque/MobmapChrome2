@@ -48,6 +48,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if ((lineno % 100) === 0 || rat > 0.99999) {
 				this.eventDispatcher().trigger(LayerEvent.LoadProgressChange, rat);
 			}
+			
+			this.sourceLoader.applyAttributeMapToFieldList(fields);
 		},
 		
 		csvloaderLineError: function(e) {

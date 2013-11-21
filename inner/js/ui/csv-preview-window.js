@@ -362,23 +362,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		
 		writeSetting: function(targetAttrMap) {
-			this.writeStandardAttributes(targetAttrMap);
+			this.writeExtraAttributes(targetAttrMap);
 		},
 		
-		writeStandardAttributes: function(targetAttrMap) {
-			var ls = this.attrRows;
-			var len = ls.length;
-			for (var i = 0;i < len;++i) {
-				var row = ls[i];
-				var attrName = row.getAttribute(DATAATTR_AROWNAME);
-				console.log('<<>> ',attrName)
-			}
+		writeExtraAttributes: function(targetAttrMap) {
 		},
-/*
-		pickCursorPosition: function() {
-			
+
+		pickCursorPosition: function(targetRow) {
+			return parseInt(targetRow.getAttribute(DATAATTR_CURPOS), 10);
 		},
-*/		
+		
 		
 		showDataColCursor: function(attrMap) {
 			this.jTable.find('td[' +DATAATTR_ISSAMPLE+ ']').css('background-color', '');
@@ -408,6 +401,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		updatePickerCursorOnRow: function(attrName, targetRow, attrColIndex) {
+			// Put index on data attr
+			targetRow.setAttribute(DATAATTR_CURPOS, attrColIndex);
+			
 			var ls = targetRow.childNodes;
 			var len = ls.length;
 			for (var i = 0;i < len;++i) {
