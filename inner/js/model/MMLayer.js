@@ -14,6 +14,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.primaryView = null;
 		this._lvObserved = false;
 		this.jElement = $(document.createElement('span'));
+		
+//		this.movingData = 
 	}
 	
 	MovingObjectLayer.prototype = {

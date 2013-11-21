@@ -109,7 +109,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					
 					layer.eventDispatcher().
 					 bind(mobmap.LayerEvent.LoadWillStart, this.willStartLayerLoad.bind(this)).
-					 bind(mobmap.LayerEvent.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer));
+					 bind(mobmap.LayerEvent.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
+					 bind(mobmap.LayerEvent.LoadFinish, this.onLayerLoadFinish.bind(this));
 				}
 			}
 		},
@@ -131,6 +132,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerLoadProgressChange: function(layer, e, progressRatio) {
 			if (layer.hasPrimaryView()) {
 				layer.primaryView.showProgress(progressRatio);
+			}
+		},
+		
+		onLayerLoadFinish: function(e, layer) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.hideProgress();
 			}
 		}
 	};
@@ -175,6 +182,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		showProgress: function(ratio) {
 			this.progressBar.setRatio(ratio);
+		},
+		
+		hideProgress: function() {
+			this.progressBar.hide();
+			this.progressLabel.style.display = 'none';
 		}
 	};
 	

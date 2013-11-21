@@ -3,6 +3,7 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 
+	var DATAATTR_CURPOS = 'data-cursor-pos';
 	var DATAATTR_ANAME = 'data-aname';
 	var DATAATTR_AROWNAME = 'data-attr-row-name';
 	var DATAATTR_COLI = 'data-colindex';
@@ -62,6 +63,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		close: function() {
 			this.wnd().close();
+		},
+		
+		syncAttributeMap: function() {
+			this.previewTable.writeSetting(this.attrMap);
+			return this.attrMap;
 		},
 
 		// Tools
@@ -353,6 +359,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.showDataColCursor(attrMap);
 		},
+		
+		
+		writeSetting: function(targetAttrMap) {
+			this.writeStandardAttributes(targetAttrMap);
+		},
+		
+		writeStandardAttributes: function(targetAttrMap) {
+			var ls = this.attrRows;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var row = ls[i];
+				var attrName = row.getAttribute(DATAATTR_AROWNAME);
+				console.log('<<>> ',attrName)
+			}
+		},
+/*
+		pickCursorPosition: function() {
+			
+		},
+*/		
 		
 		showDataColCursor: function(attrMap) {
 			this.jTable.find('td[' +DATAATTR_ISSAMPLE+ ']').css('background-color', '');

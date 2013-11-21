@@ -20,6 +20,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var s = this.element.style;
 			s.width = restW + "px";
 			s.borderLeftWidth = barW + "px";
+		},
+		
+		hide: function() {
+			this.element.style.display = 'none';
 		}
 	};
 	
