@@ -4,12 +4,15 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	var LayerEvent = {
-		LoadProgressChange: 'mm-layer-model-event-load-progress-change'
+		LoadWillStart: 'mm-layer-model-event-load-will-start',
+		LoadProgressChange: 'mm-layer-model-event-load-progress-change',
+		LoadFinish: 'mm-layer-model-event-load-progress-finish'
 	};
 
 	function MovingObjectLayer() {
 		this.sourceLoader = null;
 		this.primaryView = null;
+		this._lvObserved = false;
 		this.jElement = $(document.createElement('span'));
 	}
 	
@@ -21,10 +24,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		hasPrimaryView: function() {
 			return !!this.primaryView;
 		},
-		
+
 		loadFromLoader: function(loader) {
 			this.sourceLoader = loader;
+
+			this.eventDispatcher().trigger(LayerEvent.LoadWillStart, this);
 			loader.startFullLoad(this);
+		},
+
+		getSourceFileName: function() {
+			return this.sourceLoader.fileName;
 		},
 		
 		// CSV Loader Listener functions <<<<<<<<<<<<<<<<<
@@ -44,6 +53,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		csvloaderLoadFinish: function() {
+			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
 		}
 	};
 	

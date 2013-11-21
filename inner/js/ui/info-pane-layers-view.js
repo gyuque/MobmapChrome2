@@ -103,6 +103,14 @@ if (!window.mobmap) { window.mobmap={}; }
 					
 					console.log("Needs view"); // This layer needs new view.
 				}
+				
+				if (!layer._lvObserved) {
+					layer._lvObserved = true;
+					
+					layer.eventDispatcher().
+					 bind(mobmap.LayerEvent.LoadWillStart, this.willStartLayerLoad.bind(this)).
+					 bind(mobmap.LayerEvent.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer));
+				}
 			}
 		},
 		
@@ -112,6 +120,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.itemsContainerElement.insertBefore(
 				newView.element,
 				nextView ? nextView.element : null);
+		},
+		
+		willStartLayerLoad: function(e, layer) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.setSubCaption(layer.getSourceFileName());
+			}
+		},
+		
+		onLayerLoadProgressChange: function(layer, e, progressRatio) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.showProgress(progressRatio);
+			}
 		}
 	};
 	
@@ -119,6 +139,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function LayerItemView() {
 		this.progressBar = null;
 		this.progressLabel = null;
+		this.subCaptionElement = null;
 		
 		this.element = $H('div', 'mm-layer-view-item-box');
 		this.jElement = $(this.element);
@@ -130,18 +151,30 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Caption ---------------------
 			var caption = $H('h3');
 			caption.appendChild($T('Moving objects'));
-			
 			this.element.appendChild(caption);
+
+			var sub_caption = $H('h4');
+			sub_caption.appendChild($T('CSV File'));
+			this.element.appendChild(sub_caption);
+			this.subCaptionElement = sub_caption;
 
 			// Progress bar ---------------------
 			this.progressLabel = $H('div', 'mm-layer-loading-label');
 			this.progressLabel.appendChild( $T('Loading...') );
 
 			this.progressBar = new mobmap.MiniProgressBar(100);
-			this.progressBar.setRatio(0.2);
+			this.progressBar.setRatio(0);
 
 			this.element.appendChild(this.progressLabel);
 			this.element.appendChild(this.progressBar.element);
+		},
+		
+		setSubCaption: function(label) {
+			$(this.subCaptionElement).text(label);
+		},
+		
+		showProgress: function(ratio) {
+			this.progressBar.setRatio(ratio);
 		}
 	};
 	

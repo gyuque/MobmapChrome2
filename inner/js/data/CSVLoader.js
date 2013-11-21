@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function GeoCSVLoader(inFile) {
+		this.fileName = inFile.name;
 		this.previewSink = new PreviewSink(this);
 		this.baseLoader = new HugeCSVLoader(inFile);
 		
