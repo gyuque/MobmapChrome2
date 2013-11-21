@@ -54,6 +54,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.csvPreview.close();
 			this.layersView.hideWelcomeBox();
 			var newLayer = this.currentProject.addMovingObjectLayer();
+			newLayer.loadFromLoader(csvLoader);
 		},
 		
 		// -----------------------------------------------------

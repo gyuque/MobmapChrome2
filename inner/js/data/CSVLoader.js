@@ -6,15 +6,26 @@ if (!window.mobmap) { window.mobmap={}; }
 	function GeoCSVLoader(inFile) {
 		this.previewSink = new PreviewSink(this);
 		this.baseLoader = new HugeCSVLoader(inFile);
+		
+		this.lineCountCache = -1;
 	}
 
 	GeoCSVLoader.prototype = {
 		preload: function(listenerObject) { this.baseLoader.preload(listenerObject); },
-		countLines: function() { return this.baseLoader.countLines(); },
+		countLines: function() {
+			if (this.lineCountCache >= 0) { return this.lineCountCache; }
+
+			this.lineCountCache = this.baseLoader.countLines();
+			return this.lineCountCache;
+		},
 		
 		startPreviewLoad: function(callback) {
 			this.previewSink.finishCallback = callback;
 			this.baseLoader.startPreviewLoad(this.previewSink);
+		},
+
+		startFullLoad: function(listenerObject) {
+			this.baseLoader.startFullLoad(listenerObject);
 		}
 	};
 
@@ -126,7 +137,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			if (hasMore && fullMode) {
-				setTimeout(this.advanceClosure, 1, full);
+				setTimeout(this.advanceClosure, 1, fullMode);
 			} else {
 				this.loadJob.listenerObject.csvloaderLoadFinish(this);
 			}
@@ -182,6 +193,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.loadJob.listenerObject = listenerObject;
 			this.rewind();
 			this.advance();
+		},
+		
+		startFullLoad: function(listenerObject) {
+			this.loadJob.listenerObject = listenerObject;
+			this.rewind();
+			this.advance(true);
 		},
 		
 		rewind: function() {
