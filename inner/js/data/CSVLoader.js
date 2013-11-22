@@ -32,12 +32,39 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		setAttributeMap: function(attrMap) {
 			this.attrMap = attrMap;
+			attrMap.generateColIndexMap();
 		},
 		
 		applyAttributeMapToFieldList: function(fieldList) {
+			var attrMap = this.attrMap;
+			var int_id, f_lng, f_lat;
+			
+			var nCols = fieldList.length;
+			for (var i = 0;i < nCols;++i) {
+				var val = fieldList[i];
+				
+				// Parse field value
+				if (attrMap.isIDColumn(i)) {
+					// : : :  Read ID  : : :
+					int_id = parseInt(val, 10);
+				} else if (attrMap.isXColumn(i)) {
+					// : : :  Read X(Lng)  : : :
+					f_lng = parseFloat(val);
+				} else if (attrMap.isYColumn(i)) {
+					// : : :  Read Y(Lat)  : : :
+					f_lat = parseFloat(val);
+				} else if (attrMap.isTimeColumn(i)) {
+					// : : :  Read Time  : : :
+					parseFieldTime(val);
+				}
+			}
 			
 		}
 	};
+	
+	function parseFieldTime(rawVal) {
+		
+	}
 
 	// Data sink for preview phase ----------------------
 	function PreviewSink(owner) {

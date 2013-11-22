@@ -5,6 +5,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function AttributeMapping() {
 		this.nameMap = {};
+		
+		this.colIndexMap = {};
 	}
 	
 	AttributeMapping.prototype = {
@@ -30,7 +32,37 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i in this.nameMap) if (this.nameMap.hasOwnProperty(i)) {
 				proc(i, this.nameMap[i]);
 			}
-		}
+		},
+		
+		generateColIndexMap: function() {
+			this.clearColIndexMap();
+			
+			for (var name in this.nameMap) {
+				var meta = this.nameMap[name];
+				this.colIndexMap[ meta.csvColumnIndex ] = meta;
+			}
+		},
+		
+		clearColIndexMap: function() {
+			for (var i in this.colIndexMap) {
+				delete this.colIndexMap[i];
+			}
+		},
+		
+		isColumnHasName: function(idx, name) {
+			if ( !this.colIndexMap.hasOwnProperty(idx) ) {
+				return false;
+			}
+			
+			var meta = this.colIndexMap[idx];
+			return meta.name === name;
+		},
+		
+		// short-hand methods
+		isIDColumn:   function(idx) { return this.isColumnHasName(idx, 'id');   },
+		isTimeColumn: function(idx) { return this.isColumnHasName(idx, 'time'); },
+		isXColumn:    function(idx) { return this.isColumnHasName(idx, 'x');    },
+		isYColumn:    function(idx) { return this.isColumnHasName(idx, 'y');    }
 	};
 
 

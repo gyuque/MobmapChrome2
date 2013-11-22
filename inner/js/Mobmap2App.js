@@ -52,7 +52,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		loadCSVWithLoader: function(csvLoader) {
 			var attrMap = this.csvPreview.syncAttributeMap();
-			console.log(attrMap);
 			
 			this.csvPreview.close();
 			this.layersView.hideWelcomeBox();

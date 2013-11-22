@@ -124,7 +124,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.previewTable = new CSVPreviewTable(previewRecords, this);
 				var table = this.previewTable.generateTable();
 				this.previewContainer.appendChild(table);
-				
+
 				// Show initial status
 				this.previewTable.showSetting(this.attrMap);
 			}
