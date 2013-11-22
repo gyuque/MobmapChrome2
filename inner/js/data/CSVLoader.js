@@ -63,8 +63,49 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	function parseFieldTime(rawVal) {
+		var absTime = 0;
+		
+		if (rawVal.indexOf(':') >= 0) {
+			var dateIndex    = readFieldDate(rawVal);
+			var secondsInDay = readFieldHMSTime(rawVal);
+			
+			absTime = dateIndex + secondsInDay;
+		} else {
+			throw " * NOT IMPL * ";
+		}
+		
+		return absTime;
+	}
+	
+	function readFieldDate(rawVal) {
+		if (kDateRegExp.exec(rawVal)) {
+			var yr = parseInt( RegExp['$1'] , 10);
+			var mn = parseInt( RegExp['$2'] , 10);
+			var dy = parseInt( RegExp['$3'] , 10);
+			
+		} else {
+			return 0;
+		}
+	}
+	
+	function readFieldHMSTime(rawVal) {
 		
 	}
+
+	setTimeout(function(){
+		// Test for time parser
+		var TEST_LIST = [
+			"01:12:31",
+			"2011-02-27 09:02:11"
+		];
+		
+		for (var i in TEST_LIST) {
+			var instr = TEST_LIST[i];
+			var t = parseFieldTime(instr);
+			
+			console.log(instr , ' => ', t);
+		}
+	}, 400);
 
 	// Data sink for preview phase ----------------------
 	function PreviewSink(owner) {
