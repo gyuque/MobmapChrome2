@@ -35,15 +35,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			attrMap.generateColIndexMap();
 		},
 		
-		applyAttributeMapToFieldList: function(fieldList) {
+		applyAttributeMapToFieldList: function(fieldList, outRecord) {
 			var attrMap = this.attrMap;
-			var int_id, f_lng, f_lat;
+			var int_id, f_lng, f_lat, absTime;
 			
 			var nCols = fieldList.length;
 			for (var i = 0;i < nCols;++i) {
 				var val = fieldList[i];
 				
 				// Parse field value
+				//    Standard attributes
 				if (attrMap.isIDColumn(i)) {
 					// : : :  Read ID  : : :
 					int_id = parseInt(val, 10);
@@ -55,10 +56,17 @@ if (!window.mobmap) { window.mobmap={}; }
 					f_lat = parseFloat(val);
 				} else if (attrMap.isTimeColumn(i)) {
 					// : : :  Read Time  : : :
-					parseFieldTime(val);
+					absTime = parseFieldTime(val);
+				} else {
+					// Extra attributes
+					
 				}
 			}
 			
+			outRecord.id   = int_id;
+			outRecord.time = absTime;
+			outRecord.x    = f_lng;
+			outRecord.y    = f_lat;
 		}
 	};
 	
@@ -71,7 +79,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			absTime = dateIndex + secondsInDay;
 		} else {
-			throw " * NOT IMPL * ";
+			absTime = parseInt(rawVal, 10);
 		}
 		
 		return absTime;
@@ -79,6 +87,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function readFieldDate(rawVal) {
 		if (kDateRegExp.exec(rawVal)) {
+			// Has date ------------------------
 			var yr = parseInt( RegExp['$1'] , 10);
 			var mn = parseInt( RegExp['$2'] , 10);
 			var dy = parseInt( RegExp['$3'] , 10);
@@ -87,6 +96,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var dt = new Date(yr,   mn - 1  , dy);
 			return Math.floor(dt.getTime() / 1000);
 		} else {
+			// No date -------------------------
 			return 0;
 		}
 	}
@@ -99,13 +109,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			hh = parseInt(RegExp['$1'], 10);
 			mm = parseInt(RegExp['$2'], 10);
 			
+			// Second(:SS) is optional
 			var s_raw = RegExp['$4'];
 			ss = s_raw ? parseInt(s_raw, 10) : 0;
 		}
 		
 		return hh*3600 + mm*60 + ss;
 	}
-
+/*
 	setTimeout(function(){
 		// Test for time parser
 		var TEST_LIST = [
@@ -121,7 +132,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			console.log(instr , ' => ', t , ' | ', absoluteTimeToPrettyString(t));
 		}
 	}, 400);
-
+*/
 	// Data sink for preview phase ----------------------
 	function PreviewSink(owner) {
 		this.records = [];

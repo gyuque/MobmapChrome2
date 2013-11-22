@@ -9,13 +9,19 @@ if (!window.mobmap) window.mobmap={};
 	}
 	
 	MovingData.createEmptyRecord = createCleanHash;
+	MovingData.isInvalidProp = function(obj, prop) {
+		return !obj[prop] && obj[prop] !== 0;
+	};
 	
 	MovingData.prototype = {
 		// Register API ---------------------------------
-		register: function(objId, t, record) {
-			record._time = t;
-			record._id   = objId;
+		register: function(record) {
+			if (MovingData.isInvalidProp(record, '_time') ||
+			    MovingData.isInvalidProp(record, '_id')) {
+				throw "Record must have _time and _id";
+			}
 		
+			var objId = record._id;
 			var timeList = this.ensureId(objId);
 			timeList.addRecord(record);
 		},

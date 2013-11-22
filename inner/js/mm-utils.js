@@ -40,15 +40,17 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	aGlobal.absoluteTimeToPrettyString = function(t) {
+		var _2 = aGlobal.padding_02;
 		if (t < 315360000) {
 			var hr  = Math.floor(t / 3600);
 			var min = Math.floor(t / 60) % 60;
 			var sec = t % 60;
 			
-			var _2 = aGlobal.padding_02;
 			return _2(hr) +':'+ _2(min) +':'+ _2(sec);
 		} else {
 			var dt = new Date(t * 1000);
+			return dt.getFullYear() +'-'+ _2(dt.getMonth()+1) +'-'+ _2(dt.getDate()) +' '+
+			       _2(dt.getHours()) +':'+ _2(dt.getMinutes()) +':'+ _2(dt.getSeconds());
 		}
 	};
 	

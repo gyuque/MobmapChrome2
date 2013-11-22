@@ -15,6 +15,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this._lvObserved = false;
 		this.jElement = $(document.createElement('span'));
 		
+		this.tempRecord = createCleanHash();
+		
 //		this.movingData = 
 	}
 	
@@ -49,7 +51,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.eventDispatcher().trigger(LayerEvent.LoadProgressChange, rat);
 			}
 			
-			this.sourceLoader.applyAttributeMapToFieldList(fields);
+			this.sourceLoader.applyAttributeMapToFieldList(fields, this.tempRecord);
 		},
 		
 		csvloaderLineError: function(e) {
