@@ -39,6 +39,24 @@ if (!window.mobmap) { window.mobmap={}; }
 		);
 	};
 
+	aGlobal.absoluteTimeToPrettyString = function(t) {
+		if (t < 315360000) {
+			var hr  = Math.floor(t / 3600);
+			var min = Math.floor(t / 60) % 60;
+			var sec = t % 60;
+			
+			var _2 = aGlobal.padding_02;
+			return _2(hr) +':'+ _2(min) +':'+ _2(sec);
+		} else {
+			var dt = new Date(t * 1000);
+		}
+	};
+	
+	aGlobal.padding_02 = function(v) {
+		if (v < 10) {  return '0' + v; }
+		return v.toString();
+	};
+
 	aGlobal.makeStyleSheetRGB_BlendBlack = function(r, g, b) {
 		return aGlobal.makeStyleSheetRGB(r >> 1, g >> 1, b >> 1);
 	};

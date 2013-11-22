@@ -83,6 +83,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			var mn = parseInt( RegExp['$2'] , 10);
 			var dy = parseInt( RegExp['$3'] , 10);
 			
+			//                    v zero-base
+			var dt = new Date(yr,   mn - 1  , dy);
+			return Math.floor(dt.getTime() / 1000);
 		} else {
 			return 0;
 		}
@@ -115,7 +118,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var instr = TEST_LIST[i];
 			var t = parseFieldTime(instr);
 			
-			console.log(instr , ' => ', t);
+			console.log(instr , ' => ', t , ' | ', absoluteTimeToPrettyString(t));
 		}
 	}, 400);
 
