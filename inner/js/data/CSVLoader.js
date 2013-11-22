@@ -89,12 +89,24 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	function readFieldHMSTime(rawVal) {
+		var hh, mm, ss;
+		ss = 0;
 		
+		if (kTimeRegExp.exec(rawVal)) {
+			hh = parseInt(RegExp['$1'], 10);
+			mm = parseInt(RegExp['$2'], 10);
+			
+			var s_raw = RegExp['$4'];
+			ss = s_raw ? parseInt(s_raw, 10) : 0;
+		}
+		
+		return hh*3600 + mm*60 + ss;
 	}
 
 	setTimeout(function(){
 		// Test for time parser
 		var TEST_LIST = [
+			"18:32",
 			"01:12:31",
 			"2011-02-27 09:02:11"
 		];

@@ -8,3 +8,4 @@ var kDarkMapStyle = [
 var kRequiredAttributes = ['id', 'time', 'x', 'y'];
 
 var kDateRegExp = /([0-9]+)[-\/]([0-9]+)[-\/]([0-9]+)/ ;
+var kTimeRegExp = /([0-9]+):([0-9]+)(:([0-9]+))?/ ;
