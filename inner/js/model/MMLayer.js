@@ -15,9 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this._lvObserved = false;
 		this.jElement = $(document.createElement('span'));
 		
-		this.tempRecord = createCleanHash();
-		
-//		this.movingData = 
+		this.movingData = null;
 	}
 	
 	MovingObjectLayer.prototype = {
@@ -31,6 +29,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		loadFromLoader: function(loader) {
 			this.sourceLoader = loader;
+			this.movingData = new mobmap.MovingData();
 
 			this.eventDispatcher().trigger(LayerEvent.LoadWillStart, this);
 			loader.startFullLoad(this);
@@ -51,7 +50,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.eventDispatcher().trigger(LayerEvent.LoadProgressChange, rat);
 			}
 			
-			this.sourceLoader.applyAttributeMapToFieldList(fields, this.tempRecord);
+			var record = mobmap.MovingData.createEmptyRecord();
+			this.sourceLoader.applyAttributeMapToFieldList(fields, record);
+			this.movingData.register(record);
 		},
 		
 		csvloaderLineError: function(e) {
@@ -60,6 +61,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		csvloaderLoadFinish: function() {
 			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
+			this.movingData.close();
+			//console.log(this.movingData)
 		}
 	};
 	

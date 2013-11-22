@@ -63,10 +63,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
-			outRecord.id   = int_id;
-			outRecord.time = absTime;
-			outRecord.x    = f_lng;
-			outRecord.y    = f_lat;
+			outRecord._id   = int_id;
+			outRecord._time = absTime;
+			outRecord.x     = f_lng;
+			outRecord.y     = f_lat;
 		}
 	};
 	
