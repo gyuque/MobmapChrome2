@@ -7,6 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function GLMobLayer() {
 		// Initiazlize
 		this.canvas = null;
+		this.gl = null;
 		this.targetPane = 'overlayShadow';
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
@@ -24,7 +25,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	GLMobLayer.prototype.draw = function() {
 		if (!this.canvas) {
 			this.canvas = $H('canvas');
-			this.canvas.style.backgroundColor = "rgba(0,255,255,0.2)";
+			this.canvas.style.backgroundColor = "rgba(0,0,0,0.2)";
+
+			this.gl = this.canvas.getContext("webkit-3d");
+			if (!this.gl) {
+				console.log("WARNING: cannot get 3d context");
+			}
+			this.initializeGLObjects(this.gl);
 
 			var panes = this.getPanes();
 			panes[this.targetPane].appendChild( this.canvas );
@@ -35,6 +42,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.locateCanvas();
 	};
 
+	GLMobLayer.prototype.initializeGLObjects = function(gl) {
+		// Vertex shader
+		var vs_source = FillTestVertexShader;
+		
+	    var vs = gl.createShader(gl.VERTEX_SHADER);
+	    gl.shaderSource(vs, vs_source);
+	    gl.compileShader(vs);
+	};
+	
 	GLMobLayer.prototype.locateCanvas = function() {
 		var d = this.getJQDiv();
 		var cv = this.canvas;
@@ -43,6 +59,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		if (should_resize) {
 			this.changeCanvasSize(this.canvasSize.w , this.canvasSize.h);
 		}
+		
+		GLMobLayer.adjustOverlayCanvasPosition(this, this.canvasOffset);
 	};
 	
 	GLMobLayer.prototype.changeCanvasSize = function(w, h) {
@@ -73,7 +91,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.locateCanvas();
 	};
 
-
+	GLMobLayer.prototype.onMapCenterChanged = function() {
+		this.locateCanvas();
+	};
 
 
 	// Utilities
@@ -99,6 +119,29 @@ if (!window.mobmap) { window.mobmap={}; }
 		return (oldw != canvasSize.w) || (oldh != canvasSize.h);
 	};
 
+	GLMobLayer.adjustOverlayCanvasPosition = function(lyr, canvasOffset) {
+		var pj = lyr.getProjection();
+		var ll = pj.fromDivPixelToLatLng(kZeroPt);
+		var pt = pj.fromLatLngToContainerPixel(ll);
+
+		canvasOffset.x = (-pt.x >> 0);
+		canvasOffset.y = (-pt.y >> 0);
+
+		var st = lyr.canvas.style;
+		st.position = "absolute";
+		st.left = canvasOffset.x + "px";
+		st.top  = canvasOffset.y + "px";
+		st.webkitUserSelect = "none";
+	};
+
+
+	// Shaders ---------------------------------------------
+	var FillTestVertexShader = [
+		"attribute highp vec3 aVertexPosition;",
+		"void main(void) {",
+		" gl_Position = vec4(aVertexPosition, 1.0);",
+		"}"
+	].join("\n");
 	
 	pkg.GLMobLayer = GLMobLayer;
 })(window.mobmap);
