@@ -46,10 +46,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (all === 0) { all = 1; }
 			
 			var rat = lineno / all;
-			if ((lineno % 100) === 0 || rat > 0.99999) {
+			if ((lineno % 100) === 0 || rat > 0.999999) {
 				this.eventDispatcher().trigger(LayerEvent.LoadProgressChange, rat);
 			}
 			
+			// Generate and register record
 			var record = mobmap.MovingData.createEmptyRecord();
 			this.sourceLoader.applyAttributeMapToFieldList(fields, record);
 			this.movingData.register(record);
