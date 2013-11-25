@@ -8,6 +8,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Initiazlize
 		this.canvas = null;
 		this.gl = null;
+		this.vertexShader = null;
+		this.fragmentShader = null;
+		
 		this.targetPane = 'overlayShadow';
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
@@ -43,12 +46,23 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	GLMobLayer.prototype.initializeGLObjects = function(gl) {
-		// Vertex shader
 		var vs_source = FillTestVertexShader;
+		var fs_source = FillTestFragmentShader;
+
+		// Vertex shader
+		var vs = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vs, vs_source);
+		gl.compileShader(vs);
+		var vs_ok = checkWGLShaderError(gl, vs); // << error check
 		
-	    var vs = gl.createShader(gl.VERTEX_SHADER);
-	    gl.shaderSource(vs, vs_source);
-	    gl.compileShader(vs);
+		// Fragment shader
+		var fs = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fs, fs_source);
+		gl.compileShader(fs);
+		var fs_ok = checkWGLShaderError(gl, fs); // << error check
+		
+		this.vertexShader = vs;
+		this.fragmentShader = fs;
 	};
 	
 	GLMobLayer.prototype.locateCanvas = function() {
@@ -134,12 +148,28 @@ if (!window.mobmap) { window.mobmap={}; }
 		st.webkitUserSelect = "none";
 	};
 
+	function checkWGLShaderError(gl, shader) {
+		if(!gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
+			console.log(gl.getShaderInfoLog(shader));
+			return false;
+		}
+		
+		return true;
+	}
 
 	// Shaders ---------------------------------------------
 	var FillTestVertexShader = [
 		"attribute highp vec3 aVertexPosition;",
 		"void main(void) {",
 		" gl_Position = vec4(aVertexPosition, 1.0);",
+		"}"
+	].join("\n");
+
+	var FillTestFragmentShader = [
+		"precision mediump float;",
+		"varying vec4 vColor;",
+		"void main(void) {",
+		" gl_FragColor  = vColor;",
 		"}"
 	].join("\n");
 	
