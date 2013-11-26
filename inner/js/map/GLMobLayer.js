@@ -12,6 +12,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.cachedDiv = null;
 		this.jCachedDiv = null;
 		this.markerPool = new MarkerPool();
+		this.bufferCapacityInVertices = 1200;
+		this.vertexDimension = 3;
 		
 		// WebGL objects ------------------------------
 		this.gl = null;
@@ -89,13 +91,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Refer shader parameters
 		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
-		console.log(a_pos)
+		var a_tc  = gl.getAttribLocation(prg, 'aTextureCoord');
+		console.log(a_tc)
 		this.shaderParams.vertexPosition = a_pos;
 	};
 	
 	GLMobLayer.prototype.setupGLBuffers = function(gl) {
-		this.glBuffers.arrPositions = new Float32Array(64);
+		var posBufferSize = this.bufferCapacityInVertices * this.vertexDimension;
+		var uvBufferSize  = this.bufferCapacityInVertices * 2;
+		
+		this.glBuffers.arrPositions = new Float32Array(posBufferSize);
 		this.glBuffers.vbPositions  = generateDynamicVBO(gl, this.glBuffers.arrPositions);
+
+		this.glBuffers.arrTexcoords = new Float32Array(uvBufferSize);
+		this.glBuffers.vbTexcoords  = generateDynamicVBO(gl, this.glBuffers.arrTexcoords);
 	};
 	
 	GLMobLayer.prototype.locateCanvas = function() {
@@ -131,6 +140,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {
 		var gl = this.gl;
+		if (!gl) {
+			return;
+		}
 		
 		gl.clearColor(0.0, 1.0, 0.0, 0.5);
 		gl.clearDepth(1.0);
@@ -142,6 +154,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		gl.flush();
 	};
+
 	var testcount = 0;
 	GLMobLayer.prototype.prepareRendering = function() {
 		var gl = this.gl;
@@ -154,6 +167,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		vlist[7] -= Math.sin(++testcount * 0.1) * 0.1;
 		
+		var txlist = this.glBuffers.arrTexcoords;
+		this.setMarkerTextureCoords(txlist, 0, 0.0, 0.0, 0.5, 0.5);
+		
 		this.updateBufferContent();
 		gl.useProgram(this.shaderProgram);
 		
@@ -162,8 +178,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.enableVertexAttribArray(this.shaderParams.vertexPosition);
 		gl.vertexAttribPointer(
 			this.shaderParams.vertexPosition,
-			3, // 3 components per vertex
+			this.vertexDimension, // components per vertex
 			gl.FLOAT, false, 0, 0);
+	};
+	
+	GLMobLayer.prototype.setMarkerTextureCoords = function(array, basePos, u1, v1, us, vs) {
+		array[basePos    ] = u1;
+		array[basePos + 1] = v1;
+
+		array[basePos + 2] = u1 + us;
+		array[basePos + 3] = v1;
+
+		array[basePos + 4] = u1;
+		array[basePos + 5] = v1 + vs;
+		
+		return 6;
 	};
 	
 	GLMobLayer.prototype.updateBufferContent = function() {
@@ -171,6 +200,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
 		gl.bufferData(gl.ARRAY_BUFFER, this.glBuffers.arrPositions, gl.DYNAMIC_DRAW);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	};
+	
+	GLMobLayer.prototype.setMarkerImage = function(img) {
+		this.renderGL();
 	};
 
 	// Map event handlers --------------------------------------
@@ -258,7 +291,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	// Shaders ---------------------------------------------
 	var FillTestVertexShader = [
 		"attribute vec3 aVertexPosition;",
+		"attribute vec2 aTextureCoord;",
+		"varying vec2 vTextureCoord;",
 		"void main(void) {",
+		" vTextureCoord = aTextureCoord;",
 		" gl_Position = vec4(aVertexPosition, 1.0);",
 		"}"
 	].join("\n");

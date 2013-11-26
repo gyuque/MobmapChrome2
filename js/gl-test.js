@@ -1,12 +1,17 @@
 (function(aGlobal) {
 	'use strict';
 
+	var testTextureImage = null;
 	var gmap = null;
 	var gllayer = null;
 	var mapContainerElement = null;
 	
+	
 	function doGLMapTest() {
-		setupScreen();
+		testTextureImage = new Image();
+		testTextureImage.onload = setupScreen;
+		
+		testTextureImage.src = "images/test-marker.png";
 	}
 	
 	function setupScreen() {
@@ -29,6 +34,7 @@
 		
 		gllayer = new mobmap.GLMobLayer();
 		gllayer.setMap(gmap);
+		gllayer.setMarkerImage(testTextureImage);
 	}
 
 	aGlobal.doGLMapTest = doGLMapTest;
