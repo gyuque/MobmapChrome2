@@ -8,8 +8,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Initiazlize
 		this.canvas = null;
 		this.gl = null;
-		this.vertexShader = null;
+		this.vertexShader   = null;
 		this.fragmentShader = null;
+		this.shaderProgram  = null;
+		this.shaderParams = {};
+		this.markerPool = new MarkerPool();
 		
 		this.targetPane = 'overlayShadow';
 		this.canvasOffset = {x: 0, y:0};
@@ -63,6 +66,26 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.vertexShader = vs;
 		this.fragmentShader = fs;
+		
+		this.setupShaderProgram(gl, vs, fs);
+	};
+	
+	GLMobLayer.prototype.setupShaderProgram = function(gl, vs, fs) {
+		var prg = gl.createProgram();
+		this.shaderProgram = prg;
+		
+		gl.attachShader(prg, vs);
+		gl.attachShader(prg, fs);
+		gl.linkProgram(prg);
+
+		if (!gl.getProgramParameter(prg, gl.LINK_STATUS)) {
+			console.log("!!Link failed!!");
+			alert(gl.getProgramInfoLog(prg));
+		}
+		
+		// Refer shader parameters
+		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
+		this.shaderParams.vertexPosition = a_pos;
 	};
 	
 	GLMobLayer.prototype.locateCanvas = function() {
@@ -75,6 +98,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 		
 		GLMobLayer.adjustOverlayCanvasPosition(this, this.canvasOffset);
+		this.renderGL();
 	};
 	
 	GLMobLayer.prototype.changeCanvasSize = function(w, h) {
@@ -91,6 +115,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jCachedDiv = $(mapDiv);
 			return this.jCachedDiv;
 		}
+	};
+
+	// Rendering
+	GLMobLayer.prototype.renderGL = function() {
+		
+	};
+	
+	GLMobLayer.prototype.prepareRendering = function() {
+		
 	};
 
 	// Map event handlers --------------------------------------
@@ -156,10 +189,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return true;
 	}
+	
+	// -----------
+	function MarkerPool() {
+		
+	}
+	
+	MarkerPool.prototype = {
+		
+	};
 
 	// Shaders ---------------------------------------------
 	var FillTestVertexShader = [
-		"attribute highp vec3 aVertexPosition;",
+		"attribute vec3 aVertexPosition;",
 		"void main(void) {",
 		" gl_Position = vec4(aVertexPosition, 1.0);",
 		"}"
@@ -167,9 +209,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	var FillTestFragmentShader = [
 		"precision mediump float;",
-		"varying vec4 vColor;",
 		"void main(void) {",
-		" gl_FragColor  = vColor;",
+		" gl_FragColor  = vec4(1,0,0,1);",
 		"}"
 	].join("\n");
 	
