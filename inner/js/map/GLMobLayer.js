@@ -169,6 +169,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	GLMobLayer.prototype.prepareRendering = function() {
 		var gl = this.gl;
 		gl.disable(gl.DEPTH_TEST);
+
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
 		
 		var vlist = this.glBuffers.arrPositions;
 		vlist[0] = 0;   vlist[1] =  0.2; vlist[2] = 0;
@@ -182,6 +185,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.updateBufferContent();
 		gl.useProgram(this.shaderProgram);
+		gl.uniform1i(this.shaderParams.texture, 0);
 		
 		// Use position buffer
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
@@ -189,6 +193,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.vertexAttribPointer(
 			this.shaderParams.vertexPosition,
 			this.vertexDimension, // components per vertex
+			gl.FLOAT, false, 0, 0);
+			
+		// Use texture coords buffer
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexcoords);
+		gl.enableVertexAttribArray(this.shaderParams.textureCoord);
+		gl.vertexAttribPointer(
+			this.shaderParams.textureCoord,
+			2, // components per vertex
 			gl.FLOAT, false, 0, 0);
 	};
 	
@@ -210,6 +222,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
 		gl.bufferData(gl.ARRAY_BUFFER, this.glBuffers.arrPositions, gl.DYNAMIC_DRAW);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexcoords);
+		gl.bufferData(gl.ARRAY_BUFFER, this.glBuffers.arrTexcoords, gl.DYNAMIC_DRAW);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	};
 	
 	GLMobLayer.prototype.setMarkerImage = function(img) {
@@ -217,8 +233,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		var tex = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, tex);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		this.markerTexture = tex;
 		
-		console.log(tex);
 		this.renderGL();
 	};
 
@@ -321,7 +338,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		"varying vec2 vTextureCoord;",
 		"void main(void) {",
 		" vec4 texel = texture2D(texture, vTextureCoord);",
-		" gl_FragColor  = vec4(1,0,0,1);",
+		" gl_FragColor  = texel;",
 		"}"
 	].join("\n");
 	
