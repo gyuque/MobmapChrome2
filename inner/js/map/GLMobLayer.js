@@ -6,24 +6,26 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function GLMobLayer() {
 		// Initiazlize
+
+		if (!kZeroPt) { kZeroPt = new google.maps.Point(0, 0); }
 		this.canvas = null;
+		this.cachedDiv = null;
+		this.jCachedDiv = null;
+		this.markerPool = new MarkerPool();
+		
+		// WebGL objects ------------------------------
 		this.gl = null;
 		this.vertexShader   = null;
 		this.fragmentShader = null;
 		this.shaderProgram  = null;
 		this.shaderParams = {};
 		this.glBuffers = {};
+		// WebGL objects ------------------------------
 		
-		this.markerPool = new MarkerPool();
-		
+		// Default values
 		this.targetPane = 'overlayShadow';
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
-
-		if (!kZeroPt) { kZeroPt = new google.maps.Point(0, 0); }
-
-		this.cachedDiv = null;
-		this.jCachedDiv = null;
 	}
 	
 	// Inherit
@@ -34,7 +36,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		if (!this.canvas) {
 			this.canvas = $H('canvas');
 
-			this.gl = this.canvas.getContext("webkit-3d");
+			this.gl = this.canvas.getContext("webgl");
 			if (!this.gl) {
 				console.log("WARNING: cannot get 3d context");
 			}
@@ -87,6 +89,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Refer shader parameters
 		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
+		console.log(a_pos)
 		this.shaderParams.vertexPosition = a_pos;
 	};
 	
@@ -105,6 +108,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 		
 		GLMobLayer.adjustOverlayCanvasPosition(this, this.canvasOffset);
+		//this.canvas.style.backgroundColor = "rgba(0,0,0,0.8)";
 		this.renderGL();
 	};
 	
@@ -126,17 +130,47 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {
-		this.prepareRendering();
-		
 		var gl = this.gl;
 		
 		gl.clearColor(0.0, 1.0, 0.0, 0.5);
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		
+		//gl.vertexPointer(3, GL_FLOAT, 0, points);
+		this.prepareRendering();
+		gl.drawArrays(gl.TRIANGLES, 0, 3);
+		
+		gl.flush();
+	};
+	var testcount = 0;
+	GLMobLayer.prototype.prepareRendering = function() {
+		var gl = this.gl;
+		gl.disable(gl.DEPTH_TEST);
+		
+		var vlist = this.glBuffers.arrPositions;
+		vlist[0] = 0;   vlist[1] =  0.2; vlist[2] = 0;
+		vlist[3] = 0.5; vlist[4] =  0.3; vlist[5] = 0;
+		vlist[6] = 0.2; vlist[7] = -0.4; vlist[8] = 0;
+		
+		vlist[7] -= Math.sin(++testcount * 0.1) * 0.1;
+		
+		this.updateBufferContent();
+		gl.useProgram(this.shaderProgram);
+		
+		// Use position buffer
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
+		gl.enableVertexAttribArray(this.shaderParams.vertexPosition);
+		gl.vertexAttribPointer(
+			this.shaderParams.vertexPosition,
+			3, // 3 components per vertex
+			gl.FLOAT, false, 0, 0);
 	};
 	
-	GLMobLayer.prototype.prepareRendering = function() {
-		
+	GLMobLayer.prototype.updateBufferContent = function() {
+		var gl = this.gl;
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
+		gl.bufferData(gl.ARRAY_BUFFER, this.glBuffers.arrPositions, gl.DYNAMIC_DRAW);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	};
 
 	// Map event handlers --------------------------------------
@@ -184,8 +218,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		var ll = pj.fromDivPixelToLatLng(kZeroPt);
 		var pt = pj.fromLatLngToContainerPixel(ll);
 
-		canvasOffset.x = (-pt.x >> 0);
-		canvasOffset.y = (-pt.y >> 0);
+		canvasOffset.x = Math.floor(-pt.x + 0.00001);
+		canvasOffset.y = Math.floor(-pt.y + 0.00001);
 
 		var st = lyr.canvas.style;
 		st.position = "absolute";
