@@ -12,6 +12,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.fragmentShader = null;
 		this.shaderProgram  = null;
 		this.shaderParams = {};
+		this.glBuffers = {};
+		
 		this.markerPool = new MarkerPool();
 		
 		this.targetPane = 'overlayShadow';
@@ -31,7 +33,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	GLMobLayer.prototype.draw = function() {
 		if (!this.canvas) {
 			this.canvas = $H('canvas');
-			this.canvas.style.backgroundColor = "rgba(0,0,0,0.2)";
 
 			this.gl = this.canvas.getContext("webkit-3d");
 			if (!this.gl) {
@@ -68,6 +69,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.fragmentShader = fs;
 		
 		this.setupShaderProgram(gl, vs, fs);
+		this.setupGLBuffers(gl);
 	};
 	
 	GLMobLayer.prototype.setupShaderProgram = function(gl, vs, fs) {
@@ -86,6 +88,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Refer shader parameters
 		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
 		this.shaderParams.vertexPosition = a_pos;
+	};
+	
+	GLMobLayer.prototype.setupGLBuffers = function(gl) {
+		this.glBuffers.arrPositions = new Float32Array(64);
+		this.glBuffers.vbPositions  = generateDynamicVBO(gl, this.glBuffers.arrPositions);
 	};
 	
 	GLMobLayer.prototype.locateCanvas = function() {
@@ -119,7 +126,13 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {
+		this.prepareRendering();
 		
+		var gl = this.gl;
+		
+		gl.clearColor(0.0, 1.0, 0.0, 0.5);
+		gl.clearDepth(1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	};
 	
 	GLMobLayer.prototype.prepareRendering = function() {
@@ -189,7 +202,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return true;
 	}
-	
+
+	function generateDynamicVBO(gl, sourceArray) {
+		var vbo = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+		gl.bufferData(gl.ARRAY_BUFFER, sourceArray, gl.DYNAMIC_DRAW);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+		return vbo;
+	}
+
 	// -----------
 	function MarkerPool() {
 		
