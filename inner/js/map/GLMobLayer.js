@@ -22,12 +22,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.shaderProgram  = null;
 		this.shaderParams = {};
 		this.glBuffers = {};
+		this.markerTexture = 0;
 		// WebGL objects ------------------------------
 		
 		// Default values
 		this.targetPane = 'overlayShadow';
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
+		
+		this.canvasReadyCallback = null;
 	}
 	
 	// Inherit
@@ -48,6 +51,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			panes[this.targetPane].appendChild( this.canvas );
 			
 			GLMobLayer.setupOverlayMapEvents(this);
+			
+			if (this.canvasReadyCallback) {
+				this.canvasReadyCallback();
+			}
 		}
 		
 		this.locateCanvas();
@@ -92,8 +99,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Refer shader parameters
 		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
 		var a_tc  = gl.getAttribLocation(prg, 'aTextureCoord');
-		console.log(a_tc)
+		var u_tex = gl.getUniformLocation(prg, 'texture');
+		console.log(a_tc, u_tex)
 		this.shaderParams.vertexPosition = a_pos;
+		this.shaderParams.textureCoord = a_tc;
+		this.shaderParams.texture = u_tex;
 	};
 	
 	GLMobLayer.prototype.setupGLBuffers = function(gl) {
@@ -203,6 +213,12 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	GLMobLayer.prototype.setMarkerImage = function(img) {
+		var gl = this.gl;
+		var tex = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, tex);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+		
+		console.log(tex);
 		this.renderGL();
 	};
 
@@ -301,7 +317,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	var FillTestFragmentShader = [
 		"precision mediump float;",
+		"uniform sampler2D texture;",
+		"varying vec2 vTextureCoord;",
 		"void main(void) {",
+		" vec4 texel = texture2D(texture, vTextureCoord);",
 		" gl_FragColor  = vec4(1,0,0,1);",
 		"}"
 	].join("\n");
