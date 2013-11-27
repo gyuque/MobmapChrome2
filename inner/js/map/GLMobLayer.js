@@ -31,6 +31,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.canvasSize = {w: 0, h:0};
 		
 		this.canvasReadyCallback = null;
+		this.projectionGrid = new mobmap.FastProjectionGrid(9);
 	}
 	
 	// Inherit
@@ -150,9 +151,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {
 		var gl = this.gl;
-		if (!gl) {
-			return;
-		}
+		if (!gl) {return;}
+		
+		this.updateProjectionGrid();
 		
 		gl.clearColor(0.0, 1.0, 0.0, 0.5);
 		gl.clearDepth(1.0);
@@ -202,6 +203,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.shaderParams.textureCoord,
 			2, // components per vertex
 			gl.FLOAT, false, 0, 0);
+	};
+	
+	GLMobLayer.prototype.updateProjectionGrid = function() {
+		var gr = this.projectionGrid;
+		
+		// Fetch map status
+		var map = this.getMap();
+		var pj = this.getProjection();
+		var mapNE = map.getBounds().getNorthEast();
+		var mapSW = map.getBounds().getSouthWest();
+
+		gr.setOffset(-this.canvasOffset.x, -this.canvasOffset.y);
+		gr.update(pj, mapSW.lat(), mapSW.lng(), mapNE.lat(), mapNE.lng());
 	};
 	
 	GLMobLayer.prototype.setMarkerTextureCoords = function(array, basePos, u1, v1, us, vs) {
