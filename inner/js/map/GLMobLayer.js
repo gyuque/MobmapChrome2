@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.shaderParams = {};
 		this.glBuffers = {};
 		this.markerTexture = 0;
+		this.markerTransformMatrix = mat4.create();  
 		// WebGL objects ------------------------------
 		
 		// Default values
@@ -101,10 +102,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
 		var a_tc  = gl.getAttribLocation(prg, 'aTextureCoord');
 		var u_tex = gl.getUniformLocation(prg, 'texture');
-		console.log(a_tc, u_tex)
+		var u_trans = gl.getUniformLocation(prg, 'transform');
+
 		this.shaderParams.vertexPosition = a_pos;
-		this.shaderParams.textureCoord = a_tc;
-		this.shaderParams.texture = u_tex;
+		this.shaderParams.textureCoord   = a_tc;
+		this.shaderParams.texture        = u_tex;
+		this.shaderParams.transform      = u_trans;
 	};
 	
 	GLMobLayer.prototype.setupGLBuffers = function(gl) {
@@ -174,10 +177,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
 		
+if(!this.testMK){ this.testMK = new MarkerDisplayData(); }
+		
+		this.testMK.lat = 35.9;
+		this.testMK.lng = 139.7;
+		this.projectionGrid.calc(this.testMK);
+		console.log(this.testMK.screenX, this.testMK.screenY);
+		
+		this.setupPixelToPixelScale(this.markerTransformMatrix);
+		
 		var vlist = this.glBuffers.arrPositions;
-		vlist[0] = 0;   vlist[1] =  0.2; vlist[2] = 0;
-		vlist[3] = 0.5; vlist[4] =  0.3; vlist[5] = 0;
-		vlist[6] = 0.2; vlist[7] = -0.4; vlist[8] = 0;
+		vlist[0] = 0;   vlist[1] =  0.0; vlist[2] = 0;
+		vlist[3] = 2; vlist[4]   =  0.0; vlist[5] = 0;
+		vlist[6] = 1; vlist[7]   = -1; vlist[8] = 0;
 		
 		vlist[7] -= Math.sin(++testcount * 0.1) * 0.1;
 		
@@ -187,6 +199,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.updateBufferContent();
 		gl.useProgram(this.shaderProgram);
 		gl.uniform1i(this.shaderParams.texture, 0);
+		gl.uniformMatrix4fv(this.shaderParams.transform, false, this.markerTransformMatrix);
 		
 		// Use position buffer
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
@@ -203,6 +216,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.shaderParams.textureCoord,
 			2, // components per vertex
 			gl.FLOAT, false, 0, 0);
+	};
+	
+	GLMobLayer.prototype.setupPixelToPixelScale = function(m) {
+		var w = this.canvasSize.width || 1;
+		var h = this.canvasSize.height || 1;
+		
+		var wScale =  2.0 / w;
+		var hScale = -2.0 / h;
+		
+		mat4.identity(m);
+		//mat4.
 	};
 	
 	GLMobLayer.prototype.updateProjectionGrid = function() {
@@ -335,14 +359,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 	};
 
+	// -----------
+	function MarkerDisplayData() {
+		this.screenX = this.screenY = this.lat = this.lng = 0;
+		
+	}
+	
+
 	// Shaders ---------------------------------------------
 	var FillTestVertexShader = [
 		"attribute vec3 aVertexPosition;",
 		"attribute vec2 aTextureCoord;",
 		"varying vec2 vTextureCoord;",
+		"uniform mat4 transform;",
 		"void main(void) {",
 		" vTextureCoord = aTextureCoord;",
-		" gl_Position = vec4(aVertexPosition, 1.0);",
+		" gl_Position = transform * vec4(aVertexPosition, 1.0);",
 		"}"
 	].join("\n");
 
