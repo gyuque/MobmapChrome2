@@ -23,7 +23,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.shaderParams = {};
 		this.glBuffers = {};
 		this.markerTexture = 0;
-		this.markerTransformMatrix = mat4.create();  
+		this.markerTransformMatrix = mat4.create();
+		this.nTrianglesBuffered = 0;
 		// WebGL objects ------------------------------
 		
 		// Default values
@@ -153,6 +154,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {
+		this.markerPool.begin(1);
+//-----TESTMARKER
 		var gl = this.gl;
 		if (!gl) {return;}
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
@@ -164,8 +167,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		
 		//gl.vertexPointer(3, GL_FLOAT, 0, points);
+		this.nTrianglesBuffered = 0;
 		this.prepareRendering();
-		gl.drawArrays(gl.TRIANGLES, 0, 3);
+		gl.drawArrays(gl.TRIANGLES, 0, this.nTrianglesBuffered * 3);
 		
 		gl.flush();
 	};
@@ -178,23 +182,26 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
 		
-if(!this.testMK){ this.testMK = new MarkerDisplayData(); }
-		
-		this.testMK.lat = 35.9;
-		this.testMK.lng = 139.7;
-		this.projectionGrid.calc(this.testMK);
+		var pooledMarkerArray = this.markerPool.getArray();
+		var testMK = pooledMarkerArray[0];
+		testMK.lat = 35.9;
+		testMK.lng = 139.7;
+		this.projectionGrid.calc(testMK);
 		
 		this.setupPixelToPixelScale(this.markerTransformMatrix);
 		
-		var sx = this.testMK.screenX;
-		var sy = this.testMK.screenY;
+		var sx = testMK.screenX;
+		var sy = testMK.screenY;
 		var vlist = this.glBuffers.arrPositions;
 		vlist[0] = sx     ;   vlist[1] = sy;      vlist[2] = 0;
-		vlist[3] = sx + 16;   vlist[4] = sy;      vlist[5] = 0;
-		vlist[6] = sx;        vlist[7] = sy + 16; vlist[8] = 0;
+		vlist[3] = sx + 32;   vlist[4] = sy;      vlist[5] = 0;
+		vlist[6] = sx;        vlist[7] = sy + 32; vlist[8] = 0;
+
+		this.renderPooledMarkers();
 
 		var txlist = this.glBuffers.arrTexcoords;
 		this.setMarkerTextureCoords(txlist, 0, 0.0, 0.0, 0.5, 0.5);
+		this.nTrianglesBuffered = 1;
 		
 		this.updateBufferContent();
 		gl.useProgram(this.shaderProgram);
@@ -216,6 +223,17 @@ if(!this.testMK){ this.testMK = new MarkerDisplayData(); }
 			this.shaderParams.textureCoord,
 			2, // components per vertex
 			gl.FLOAT, false, 0, 0);
+	};
+	
+	GLMobLayer.prototype.renderPooledMarkers = function() {
+		var pl = this.markerPool;
+		var m_arr = pl.getArray();
+		var len = pl.requestedCount;
+		var triCount = 0;
+		for (var i = 0;i < len;++i) {
+			var mk = m_arr[i];
+			
+		}
 	};
 	
 	GLMobLayer.prototype.setupPixelToPixelScale = function(m) {
@@ -356,17 +374,41 @@ if(!this.testMK){ this.testMK = new MarkerDisplayData(); }
 
 	// -----------
 	function MarkerPool() {
-		
+		this.array = [];
+		this.currentCapacity = 0;
+		this.requestedCount = 0;
 	}
 	
 	MarkerPool.prototype = {
+		begin: function(reqCount) {
+			this.requestedCount = reqCount;
+			this.expand(reqCount);
+		},
 		
+		expand: function(newSize) {
+			if (this.array.length >= newSize) {
+				return;
+			}
+			
+			this.array.length = newSize;
+			for (var i = 0;i < newSize;++i) {
+				if (!this.array[i]) {
+					this.array[i] = new MarkerDisplayData();
+				}
+			}
+
+			this.currentCapacity = newSize;
+		},
+		
+		getArray: function() {
+			return this.array;
+		}
 	};
 
 	// -----------
 	function MarkerDisplayData() {
+		this.used = false;
 		this.screenX = this.screenY = this.lat = this.lng = 0;
-		
 	}
 	
 
