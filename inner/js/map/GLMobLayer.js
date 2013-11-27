@@ -155,6 +155,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	GLMobLayer.prototype.renderGL = function() {
 		var gl = this.gl;
 		if (!gl) {return;}
+		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
 		
 		this.updateProjectionGrid();
 		
@@ -182,17 +183,16 @@ if(!this.testMK){ this.testMK = new MarkerDisplayData(); }
 		this.testMK.lat = 35.9;
 		this.testMK.lng = 139.7;
 		this.projectionGrid.calc(this.testMK);
-		console.log(this.testMK.screenX, this.testMK.screenY);
 		
 		this.setupPixelToPixelScale(this.markerTransformMatrix);
 		
+		var sx = this.testMK.screenX;
+		var sy = this.testMK.screenY;
 		var vlist = this.glBuffers.arrPositions;
-		vlist[0] = 0;   vlist[1] =  0.0; vlist[2] = 0;
-		vlist[3] = 2; vlist[4]   =  0.0; vlist[5] = 0;
-		vlist[6] = 1; vlist[7]   = -1; vlist[8] = 0;
-		
-		vlist[7] -= Math.sin(++testcount * 0.1) * 0.1;
-		
+		vlist[0] = sx     ;   vlist[1] = sy;      vlist[2] = 0;
+		vlist[3] = sx + 16;   vlist[4] = sy;      vlist[5] = 0;
+		vlist[6] = sx;        vlist[7] = sy + 16; vlist[8] = 0;
+
 		var txlist = this.glBuffers.arrTexcoords;
 		this.setMarkerTextureCoords(txlist, 0, 0.0, 0.0, 0.5, 0.5);
 		
@@ -219,13 +219,17 @@ if(!this.testMK){ this.testMK = new MarkerDisplayData(); }
 	};
 	
 	GLMobLayer.prototype.setupPixelToPixelScale = function(m) {
-		var w = this.canvasSize.width || 1;
-		var h = this.canvasSize.height || 1;
+		var w = this.canvasSize.w || 1;
+		var h = this.canvasSize.h || 1;
 		
 		var wScale =  2.0 / w;
 		var hScale = -2.0 / h;
 		
+		var tmp1 = _tempM4;
+		
 		mat4.identity(m);
+		mat4.translate(tmp1, m, [-1, 1, 0]);
+		mat4.scale(m, tmp1, [wScale, hScale, 1]);
 		//mat4.
 	};
 	
@@ -388,5 +392,6 @@ if(!this.testMK){ this.testMK = new MarkerDisplayData(); }
 		"}"
 	].join("\n");
 	
+	var _tempM4 = mat4.create();
 	pkg.GLMobLayer = GLMobLayer;
 })(window.mobmap);
