@@ -154,15 +154,16 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {
-		this.markerPool.begin(1);
+		putTestMarkers(this.markerPool);
 //-----TESTMARKER
 		var gl = this.gl;
 		if (!gl) {return;}
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
 		
 		this.updateProjectionGrid();
+		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
 		
-		gl.clearColor(0.0, 1.0, 0.0, 0.5);
+		gl.clearColor(0.0, 0.0, 0.0, 0.0);
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		
@@ -173,6 +174,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		gl.flush();
 	};
+	
+	function putTestMarkers(pl) {
+		pl.begin(10);
+		var pooledMarkerArray = pl.getArray();
+		
+		for (var i = 0;i < 10;++i) {
+			var mk = pooledMarkerArray[i];
+			mk.lat = 35.9;
+			mk.lng = 139.7;
+		}
+	}
 
 	var testcount = 0;
 	GLMobLayer.prototype.prepareRendering = function() {
@@ -181,21 +193,20 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
+		this.setupPixelToPixelScale(this.markerTransformMatrix);
 		
 		var pooledMarkerArray = this.markerPool.getArray();
 		var testMK = pooledMarkerArray[0];
-		testMK.lat = 35.9;
-		testMK.lng = 139.7;
 		this.projectionGrid.calc(testMK);
-		
-		this.setupPixelToPixelScale(this.markerTransformMatrix);
-		
+
 		var sx = testMK.screenX;
 		var sy = testMK.screenY;
+		var cx = 7;
+		var cy = 7;
 		var vlist = this.glBuffers.arrPositions;
-		vlist[0] = sx     ;   vlist[1] = sy;      vlist[2] = 0;
-		vlist[3] = sx + 32;   vlist[4] = sy;      vlist[5] = 0;
-		vlist[6] = sx;        vlist[7] = sy + 32; vlist[8] = 0;
+		vlist[0] = sx - cx      ;  vlist[1] = sy - cy      ;  vlist[2] = 0;
+		vlist[3] = vlist[0] + 32;  vlist[4] = vlist[1]     ;  vlist[5] = 0;
+		vlist[6] = vlist[0]     ;  vlist[7] = vlist[1] + 32;  vlist[8] = 0;
 
 		this.renderPooledMarkers();
 
@@ -232,7 +243,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		var triCount = 0;
 		for (var i = 0;i < len;++i) {
 			var mk = m_arr[i];
-			
+			this.projectionGrid.calc(mk);
 		}
 	};
 	
