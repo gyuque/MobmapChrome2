@@ -326,5 +326,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	var temp_fields = [];
 
 	// +++ Export +++
+	GeoCSVLoader.parseFieldTime = parseFieldTime;
 	aGlobal.mobmap.GeoCSVLoader = GeoCSVLoader;
 })(window);

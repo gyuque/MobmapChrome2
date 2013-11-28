@@ -154,8 +154,6 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {
-		putTestMarkers(this.markerPool);
-//-----TESTMARKER
 		var gl = this.gl;
 		if (!gl) {return;}
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
@@ -166,8 +164,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.clearColor(0.0, 0.0, 0.0, 0.0);
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		
-		//gl.vertexPointer(3, GL_FLOAT, 0, points);
+
 		this.nTrianglesBuffered = 0;
 		this.prepareRendering();
 		gl.drawArrays(gl.TRIANGLES, 0, this.nTrianglesBuffered * 3);

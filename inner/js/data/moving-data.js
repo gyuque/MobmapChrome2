@@ -1,6 +1,7 @@
 if (!window.mobmap) window.mobmap={};
 
 (function(pkg) {
+	'use strict';
 	var PROP_INTERPOLATE = 0x1;
 
 	function MovingData() {
@@ -189,6 +190,10 @@ if (!window.mobmap) window.mobmap={};
 					this.pool.push( createCleanHash() );
 				}
 			}
+		},
+		
+		getArray: function() {
+			return this.pool;
 		}
 	};
 	
