@@ -5,6 +5,7 @@
 	var gmap = null;
 	var gllayer = null;
 	var testMovingData = null;
+	var mdPickPool = null;
 	var mapContainerElement = null;
 	
 	
@@ -17,11 +18,31 @@
 	
 	function setupScreen() {
 		testMovingData = generateTestData();
-		
+		mdPickPool = testMovingData.createPickPool();
+
 		var box = document.getElementById("map-box");
 		mapContainerElement = box;
 		
 		setupGoogleMaps(box);
+	}
+	
+	function fillMarkerData(mobLayer) {
+		testMovingData.pickAt(mdPickPool, 0);
+		var len = mdPickPool.pickedCount;
+		
+		var pl = mobLayer.markerPool;
+		pl.begin(len);
+
+		var srcArray = mdPickPool.getArray();
+		var destArray = pl.getArray();
+		
+		for (var i = 0;i < len;++i) {
+			var pickedRec = srcArray[i];
+			var renderMk  = destArray[i];
+			
+			renderMk.lng = pickedRec.x;
+			renderMk.lat = pickedRec.y;
+		}
 	}
 	
 	function generateTestData() {
@@ -57,6 +78,8 @@
 		// ----------------------------------------------
 		
 		gllayer = new mobmap.GLMobLayer();
+		fillMarkerData(gllayer);
+		
 		gllayer.canvasReadyCallback = function() {
 			gllayer.setMarkerImage(testTextureImage);
 		};

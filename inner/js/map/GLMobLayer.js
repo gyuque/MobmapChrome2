@@ -165,9 +165,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-		this.nTrianglesBuffered = 0;
 		this.prepareRendering();
-		gl.drawArrays(gl.TRIANGLES, 0, this.nTrianglesBuffered * 3);
+		this.renderPooledMarkers();
 		
 		gl.flush();
 	};
@@ -187,50 +186,15 @@ if (!window.mobmap) { window.mobmap={}; }
 	GLMobLayer.prototype.prepareRendering = function() {
 		var gl = this.gl;
 		gl.disable(gl.DEPTH_TEST);
+		this.nTrianglesBuffered = 0;
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
 		this.setupPixelToPixelScale(this.markerTransformMatrix);
 		
-		var pooledMarkerArray = this.markerPool.getArray();
-		var testMK = pooledMarkerArray[0];
-		this.projectionGrid.calc(testMK);
-
-		var sx = testMK.screenX;
-		var sy = testMK.screenY;
-		var cx = 7;
-		var cy = 7;
-		var vlist = this.glBuffers.arrPositions;
-		vlist[0] = sx - cx      ;  vlist[1] = sy - cy      ;  vlist[2] = 0;
-		vlist[3] = vlist[0] + 32;  vlist[4] = vlist[1]     ;  vlist[5] = 0;
-		vlist[6] = vlist[0]     ;  vlist[7] = vlist[1] + 32;  vlist[8] = 0;
-
-		this.renderPooledMarkers();
-
-		var txlist = this.glBuffers.arrTexcoords;
-		this.setMarkerTextureCoords(txlist, 0, 0.0, 0.0, 0.5, 0.5);
-		this.nTrianglesBuffered = 1;
-		
-		this.updateBufferContent();
 		gl.useProgram(this.shaderProgram);
 		gl.uniform1i(this.shaderParams.texture, 0);
 		gl.uniformMatrix4fv(this.shaderParams.transform, false, this.markerTransformMatrix);
-		
-		// Use position buffer
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
-		gl.enableVertexAttribArray(this.shaderParams.vertexPosition);
-		gl.vertexAttribPointer(
-			this.shaderParams.vertexPosition,
-			this.vertexDimension, // components per vertex
-			gl.FLOAT, false, 0, 0);
-			
-		// Use texture coords buffer
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexcoords);
-		gl.enableVertexAttribArray(this.shaderParams.textureCoord);
-		gl.vertexAttribPointer(
-			this.shaderParams.textureCoord,
-			2, // components per vertex
-			gl.FLOAT, false, 0, 0);
 	};
 	
 	GLMobLayer.prototype.renderPooledMarkers = function() {
@@ -238,10 +202,76 @@ if (!window.mobmap) { window.mobmap={}; }
 		var m_arr = pl.getArray();
 		var len = pl.requestedCount;
 		var triCount = 0;
+		var lastIndex = len - 1;
+
+		var vlist = this.glBuffers.arrPositions;
+		var txlist = this.glBuffers.arrTexcoords;
+
+		var vi = 0;
+		var txi = 0;
+
+		var trisLimit = Math.floor(this.bufferCapacityInVertices / 3);
+
 		for (var i = 0;i < len;++i) {
 			var mk = m_arr[i];
 			this.projectionGrid.calc(mk);
+
+			var sx = mk.screenX;
+			var sy = mk.screenY;
+			var cx = 7;
+			var cy = 7;
+
+			// Append positions
+			vlist[vi  ] = sx - cx       ;  vlist[vi+1] = sy - cy         ;  vlist[vi+2] = 0;
+			vlist[vi+3] = vlist[vi] + 32;  vlist[vi+4] = vlist[vi+1]     ;  vlist[vi+5] = 0;
+			vlist[vi+6] = vlist[vi]     ;  vlist[vi+7] = vlist[vi+1] + 32;  vlist[vi+8] = 0;
+			vi += 9;
+			
+			// Append texture coordinates
+			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
+
+			++triCount;
+			if (
+				triCount >= trisLimit || // buffer is full
+				i === lastIndex // flush at last loop
+				) {
+				
+				this.nTrianglesBuffered = triCount;
+				this.drawBufferedPrimitives(this.gl);
+				
+				vi = txi = triCount = 0;
+			}
 		}
+	};
+	
+	GLMobLayer.prototype.drawBufferedPrimitives = function(gl) {
+		if (this.nTrianglesBuffered < 1) {
+			return;
+		}
+
+
+		// Write to buffer
+		this.updateBufferContent();
+		
+		// Setup buffer objects -----------------------
+		//  position buffer
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
+		gl.enableVertexAttribArray(this.shaderParams.vertexPosition);
+		gl.vertexAttribPointer(
+			this.shaderParams.vertexPosition,
+			this.vertexDimension, // components per vertex
+			gl.FLOAT, false, 0, 0);
+			
+		//  texture coords buffer
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexcoords);
+		gl.enableVertexAttribArray(this.shaderParams.textureCoord);
+		gl.vertexAttribPointer(
+			this.shaderParams.textureCoord,
+			2, // components per vertex
+			gl.FLOAT, false, 0, 0);
+			
+		// Run -----------------------
+		gl.drawArrays(gl.TRIANGLES, 0, this.nTrianglesBuffered * 3);
 	};
 	
 	GLMobLayer.prototype.setupPixelToPixelScale = function(m) {
@@ -259,6 +289,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		//mat4.
 	};
 	
+	GLMobLayer.prototype.resetTransform = function() {
+		mat4.identity(_tempM4);
+		
+		var gl = this.gl;
+		gl.uniformMatrix4fv(this.shaderParams.transform, false, _tempM4);
+	};
+
 	GLMobLayer.prototype.updateProjectionGrid = function() {
 		var gr = this.projectionGrid;
 		
