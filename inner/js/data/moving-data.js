@@ -22,6 +22,8 @@ if (!window.mobmap) window.mobmap={};
 				throw "Record must have _time and _id";
 			}
 		
+			record._time = record._time | 0;
+		
 			var objId = record._id;
 			var timeList = this.ensureId(objId);
 			timeList.addRecord(record);

@@ -6,6 +6,7 @@
 	var gllayer = null;
 	var testMovingData = null;
 	var mdPickPool = null;
+	var dataMinSec = 99999999999;
 	var mapContainerElement = null;
 	
 	
@@ -26,8 +27,21 @@
 		setupGoogleMaps(box);
 	}
 	
-	function fillMarkerData(mobLayer) {
-		testMovingData.pickAt(mdPickPool, 0);
+	function observeRange() {
+		$('#time-range').change(function(){
+			showCurrentTime(this);
+		});
+	}
+	
+	function showCurrentTime(rangeElement) {
+		var t = dataMinSec + (rangeElement.value - 0) * 30;
+		fillMarkerData(gllayer, t);
+		gllayer.renderGL();
+	}
+	
+	function fillMarkerData(mobLayer, pickTime) {
+		mdPickPool.clear();
+		testMovingData.pickAt(mdPickPool, pickTime);
 		var len = mdPickPool.pickedCount;
 		
 		var pl = mobLayer.markerPool;
@@ -36,9 +50,10 @@
 		var srcArray = mdPickPool.getArray();
 		var destArray = pl.getArray();
 		
+		var pickedRec, renderMk;
 		for (var i = 0;i < len;++i) {
-			var pickedRec = srcArray[i];
-			var renderMk  = destArray[i];
+			pickedRec = srcArray[i];
+			renderMk  = destArray[i];
 			
 			renderMk.lng = pickedRec.x;
 			renderMk.lat = pickedRec.y;
@@ -59,9 +74,13 @@
 			md_record.x = record.x;
 			md_record.y = record.y;
 
+			if (md_record._time < dataMinSec) {
+				dataMinSec = md_record._time;
+			}
+
 			mdat.register(md_record);
 		}
-		
+
 		mdat.close();
 		return mdat;
 	}
@@ -78,10 +97,10 @@
 		// ----------------------------------------------
 		
 		gllayer = new mobmap.GLMobLayer();
-		fillMarkerData(gllayer);
 		
 		gllayer.canvasReadyCallback = function() {
 			gllayer.setMarkerImage(testTextureImage);
+			observeRange();
 		};
 		
 		gllayer.setMap(gmap);

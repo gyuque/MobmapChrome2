@@ -12,8 +12,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.cachedDiv = null;
 		this.jCachedDiv = null;
 		this.markerPool = new MarkerPool();
-		this.bufferCapacityInVertices = 1200;
-		this.vertexDimension = 3;
+		this.bufferCapacityInVertices = 48000;
+		this.vertexDimension = 2;
 		
 		// WebGL objects ------------------------------
 		this.gl = null;
@@ -120,6 +120,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.glBuffers.arrTexcoords = new Float32Array(uvBufferSize);
 		this.glBuffers.vbTexcoords  = generateDynamicVBO(gl, this.glBuffers.arrTexcoords);
+		
+		this.bindBufferArrays();
 	};
 	
 	GLMobLayer.prototype.locateCanvas = function() {
@@ -159,7 +161,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
 		
 		this.updateProjectionGrid();
-		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
+//		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
+		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		gl.enable(gl.BLEND);
+		gl.disable(gl.DEPTH_TEST);
 		
 		gl.clearColor(0.0, 0.0, 0.0, 0.0);
 		gl.clearDepth(1.0);
@@ -167,7 +172,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.prepareRendering();
 		this.renderPooledMarkers();
-		
+
 		gl.flush();
 	};
 	
@@ -222,10 +227,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var cy = 7;
 
 			// Append positions
-			vlist[vi  ] = sx - cx       ;  vlist[vi+1] = sy - cy         ;  vlist[vi+2] = 0;
-			vlist[vi+3] = vlist[vi] + 32;  vlist[vi+4] = vlist[vi+1]     ;  vlist[vi+5] = 0;
-			vlist[vi+6] = vlist[vi]     ;  vlist[vi+7] = vlist[vi+1] + 32;  vlist[vi+8] = 0;
-			vi += 9;
+			vlist[vi  ] = sx - cx       ;  vlist[vi+1] = sy - cy         ;
+			vlist[vi+2] = vlist[vi] + 32;  vlist[vi+3] = vlist[vi+1]     ;
+			vlist[vi+4] = vlist[vi]     ;  vlist[vi+5] = vlist[vi+1] + 32;
+			vi += 6;
 			
 			// Append texture coordinates
 			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
@@ -286,7 +291,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		mat4.identity(m);
 		mat4.translate(tmp1, m, [-1, 1, 0]);
 		mat4.scale(m, tmp1, [wScale, hScale, 1]);
-		//mat4.
 	};
 	
 	GLMobLayer.prototype.resetTransform = function() {
@@ -323,6 +327,16 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	GLMobLayer.prototype.updateBufferContent = function() {
+		var gl = this.gl;
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.glBuffers.arrPositions);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexcoords);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.glBuffers.arrTexcoords);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	};
+	
+	GLMobLayer.prototype.bindBufferArrays = function() {
 		var gl = this.gl;
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
 		gl.bufferData(gl.ARRAY_BUFFER, this.glBuffers.arrPositions, gl.DYNAMIC_DRAW);
@@ -459,13 +473,13 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Shaders ---------------------------------------------
 	var FillTestVertexShader = [
-		"attribute vec3 aVertexPosition;",
+		"attribute vec2 aVertexPosition;",
 		"attribute vec2 aTextureCoord;",
 		"varying vec2 vTextureCoord;",
 		"uniform mat4 transform;",
 		"void main(void) {",
 		" vTextureCoord = aTextureCoord;",
-		" gl_Position = transform * vec4(aVertexPosition, 1.0);",
+		" gl_Position = transform * vec4(aVertexPosition, 0.0, 1.0);",
 		"}"
 	].join("\n");
 
@@ -474,7 +488,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		"uniform sampler2D texture;",
 		"varying vec2 vTextureCoord;",
 		"void main(void) {",
+		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.06 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.19) {discard;}",
 		" vec4 texel = texture2D(texture, vTextureCoord);",
+//		" if (texel.z < 0.001) {discard;} ",
 		" gl_FragColor  = texel;",
 		"}"
 	].join("\n");
