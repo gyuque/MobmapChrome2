@@ -4,6 +4,7 @@
 	var testTextureImage = null;
 	var gmap = null;
 	var gllayer = null;
+	var testMovingData = null;
 	var mapContainerElement = null;
 	
 	
@@ -15,10 +16,33 @@
 	}
 	
 	function setupScreen() {
+		testMovingData = generateTestData();
+		
 		var box = document.getElementById("map-box");
 		mapContainerElement = box;
 		
 		setupGoogleMaps(box);
+	}
+	
+	function generateTestData() {
+		var src = TestRecordListTokyo;
+		var src_len = src.length;
+		var mdat = new mobmap.MovingData();
+
+		for (var i = 0;i < src_len;++i) {
+			var record = src[i];
+			
+			var md_record = new mobmap.MovingData.createEmptyRecord();
+			md_record._id = record.id;
+			md_record._time = mobmap.GeoCSVLoader.parseFieldTime(record.t);
+			md_record.x = record.x;
+			md_record.y = record.y;
+
+			mdat.register(md_record);
+		}
+		
+		mdat.close();
+		return mdat;
 	}
 	
 	function setupGoogleMaps(containerElement) {
