@@ -102,11 +102,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Refer shader parameters
 		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
 		var a_tc  = gl.getAttribLocation(prg, 'aTextureCoord');
+		var a_tb  = gl.getAttribLocation(prg, 'aTextureBase');
 		var u_tex = gl.getUniformLocation(prg, 'texture');
 		var u_trans = gl.getUniformLocation(prg, 'transform');
 
 		this.shaderParams.vertexPosition = a_pos;
 		this.shaderParams.textureCoord   = a_tc;
+		this.shaderParams.textureBase    = a_tb;
 		this.shaderParams.texture        = u_tex;
 		this.shaderParams.transform      = u_trans;
 	};
@@ -120,6 +122,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.glBuffers.arrTexcoords = new Float32Array(uvBufferSize);
 		this.glBuffers.vbTexcoords  = generateDynamicVBO(gl, this.glBuffers.arrTexcoords);
+
+		this.glBuffers.arrTexbase = new Float32Array(uvBufferSize);
+		this.glBuffers.vbTexbase  = generateDynamicVBO(gl, this.glBuffers.arrTexbase);
 		
 		this.bindBufferArrays();
 	};
@@ -211,8 +216,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		var vlist = this.glBuffers.arrPositions;
 		var txlist = this.glBuffers.arrTexcoords;
+		var tblist = this.glBuffers.arrTexbase;
 
 		var vi = 0;
+		var bi = 0;
 		var txi = 0;
 
 		var trisLimit = Math.floor(this.bufferCapacityInVertices / 3);
@@ -235,6 +242,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Append texture coordinates
 			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
 
+			bi += this.setMarkerTextureCoords(tblist, bi, 0.25, 0.0, 0.0, 0.0);
+
 			++triCount;
 			if (
 				triCount >= trisLimit || // buffer is full
@@ -244,7 +253,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.nTrianglesBuffered = triCount;
 				this.drawBufferedPrimitives(this.gl);
 				
-				vi = txi = triCount = 0;
+				vi = txi = bi = triCount = 0;
 			}
 		}
 	};
@@ -272,6 +281,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.enableVertexAttribArray(this.shaderParams.textureCoord);
 		gl.vertexAttribPointer(
 			this.shaderParams.textureCoord,
+			2, // components per vertex
+			gl.FLOAT, false, 0, 0);
+
+		//  texture coords buffer
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexbase);
+		gl.enableVertexAttribArray(this.shaderParams.textureBase);
+		gl.vertexAttribPointer(
+			this.shaderParams.textureBase,
 			2, // components per vertex
 			gl.FLOAT, false, 0, 0);
 			
@@ -333,6 +350,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexcoords);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.glBuffers.arrTexcoords);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexbase);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.glBuffers.arrTexbase);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	};
 	
@@ -344,6 +364,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexcoords);
 		gl.bufferData(gl.ARRAY_BUFFER, this.glBuffers.arrTexcoords, gl.DYNAMIC_DRAW);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbTexbase);
+		gl.bufferData(gl.ARRAY_BUFFER, this.glBuffers.arrTexbase, gl.DYNAMIC_DRAW);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	};
 	
@@ -475,10 +499,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	var FillTestVertexShader = [
 		"attribute vec2 aVertexPosition;",
 		"attribute vec2 aTextureCoord;",
+		"attribute vec2 aTextureBase;",
 		"varying vec2 vTextureCoord;",
+		"varying vec2 vTextureBase;",
 		"uniform mat4 transform;",
 		"void main(void) {",
 		" vTextureCoord = aTextureCoord;",
+		" vTextureBase  = aTextureBase;",
 		" gl_Position = transform * vec4(aVertexPosition, 0.0, 1.0);",
 		"}"
 	].join("\n");
@@ -487,9 +514,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		"precision mediump float;",
 		"uniform sampler2D texture;",
 		"varying vec2 vTextureCoord;",
+		"varying vec2 vTextureBase;",
 		"void main(void) {",
 		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.06 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.19) {discard;}",
-		" vec4 texel = texture2D(texture, vTextureCoord);",
+		" vec4 texel = texture2D(texture, vTextureCoord + vTextureBase);",
 //		" if (texel.z < 0.001) {discard;} ",
 		" gl_FragColor  = texel;",
 		"}"
