@@ -6,6 +6,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function MapPane(containerElement) {
 		this.gmap = null;
+		this.mobLayer = null;
+		
 		this.initialLocation = {
 			zoom: 8,
 			lat: 36.7,
@@ -19,6 +21,17 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MapPane.prototype = {
+		observeContainerEvents: function(app3PanesView) {
+			app3PanesView.eventDispatcher().bind(mobmap.Mobmap3PanesScreen.RESIZE_EVENT,
+				this.onContainerResize.bind(this));
+		},
+		
+		onContainerResize: function() {
+			if (this.gmap) {
+				google.maps.event.trigger(this.gmap, 'resize');
+			}
+		},
+
 		setupGoogleMaps: function(overrideInitialCenter) {
 			if (overrideInitialCenter) {
 				this.initialLocation.lat = overrideInitialCenter.lat;
@@ -36,6 +49,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			};
 
 			this.gmap = new google.maps.Map(this.containerElement, mapOptions);
+			this.mobLayer = new mobmap.GLMobLayer();
+			this.mobLayer.setMap(this.gmap);
 		},
 		
 		generateDefaultMapTypeList: function() {

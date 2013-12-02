@@ -1,3 +1,6 @@
+window.ENABLE_MOBMAP_LAZY_LOAD = true;
+
+
 var kDarkMapStyle = [
 	{
 		featureType: "all", elementType: "all",

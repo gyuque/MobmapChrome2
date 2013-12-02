@@ -1,6 +1,7 @@
 if (!window.mobmap) { window.mobmap={}; }
 
-(function(pkg){
+(function() {
+function installMobLayer(pkg) {
 	'use strict';
 	var kZeroPt = null;
 
@@ -198,9 +199,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		gl.disable(gl.DEPTH_TEST);
 		this.nTrianglesBuffered = 0;
 
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
-		this.setupPixelToPixelScale(this.markerTransformMatrix);
+		if (this.markerTexture) {
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
+			this.setupPixelToPixelScale(this.markerTransformMatrix);
+		}
 		
 		gl.useProgram(this.shaderProgram);
 		gl.uniform1i(this.shaderParams.texture, 0);
@@ -525,4 +528,12 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	var _tempM4 = mat4.create();
 	pkg.GLMobLayer = GLMobLayer;
-})(window.mobmap);
+}
+
+if (window.ENABLE_MOBMAP_LAZY_LOAD) {
+	window.mobmap.installMobLayer = function() { installMobLayer(window.mobmap); };
+} else {
+	installMobLayer(window.mobmap);
+}
+
+})();

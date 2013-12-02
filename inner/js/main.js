@@ -20,6 +20,7 @@ var theApp = null;
 	}
 	
 	function startApp() {
+		mobmap.installMobLayer();
 		$('#content-pane').empty();
 		
 		var appScreen = new mobmap.Mobmap3PanesScreen(

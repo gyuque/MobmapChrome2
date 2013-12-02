@@ -64,15 +64,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		// -----------------------------------------------------
 		// Screen builder
 		setupScreen: function() {
+			this.setupToolPane();
 			this.setupMapPane();
 			this.setupInfoPane();
 			
 			this.infoPane.selectFirstTab();
 		},
 		
+		setupToolPane: function() {
+			var targetPaneElement = this.appScreen.getToolsPaneElement();
+			
+		},
+		
 		setupMapPane: function() {
 			var targetPaneElement = this.appScreen.getContentPaneElement();
 			this.mapPane = new mobmap.MapPane(targetPaneElement);
+			this.mapPane.observeContainerEvents(this.appScreen);
 		},
 		
 		setupInfoPane: function() {

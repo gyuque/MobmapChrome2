@@ -21,8 +21,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	var proto = Mobmap3PanesScreen.prototype;
 	Mobmap3PanesScreen.RESIZE_EVENT = "mmscreen-resize";
 	proto.getToolsPaneElement = function() { return this.toolsPaneElement; };
-	proto.getContentPaneElement = function() { return this.contentElement; };
 	proto.getInfoPaneElement = function() { return this.infoPaneElement; };
+	proto.getContentPaneElement = function() { return this.contentElement; };
 
 	// Initialize ------------------------------------------
 	proto.fetchElements = function(paneOuterId, bodyPaneId, toolsPaneId) {
