@@ -4,7 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function Mobmap2App(appScreen) {
-		this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
+		this.toolPane = this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
 		this.jEventDispatcherElement = $(document.body);
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
@@ -73,7 +73,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		setupToolPane: function() {
 			var targetPaneElement = this.appScreen.getToolsPaneElement();
-			
+			this.toolPane = new mobmap.ToolPane(targetPaneElement);
 		},
 		
 		setupMapPane: function() {
@@ -93,6 +93,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		connectWithViews: function() {
+			this.toolPane.setApp(this);
 			this.infoPane.setApp(this);
 			this.layersView.setApp(this);
 		}
