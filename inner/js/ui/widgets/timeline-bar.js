@@ -49,6 +49,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			w = Math.floor(w);
 			this.width = w;
 			this.barCanvas.width = w;
+			this.longSpanBar.setWidth(w);
 			
 			this.redrawBar();
 		},
@@ -154,6 +155,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.cacheInvalid = true;
 		this.cachedCanvas = document.createElement('canvas');
+		this.g = this.cachedCanvas.getContext('2d');
 	}
 	
 	LongSpanBar.prototype = {
@@ -163,8 +165,27 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		setWidth: function(w) {
+			if (w !== this.width) {
+				this.width = w;
+				this.cacheInvalid = true;
+			}
+		},
+		
+		setTimeRange: function(st, ed) {
+			if (this.startTime !== st || this.endTime !== ed) {
+				this.startTime = st;
+				this.endTime = ed;
+				this.cacheInvalid = true;
+			}
+		},
+		
 		updateCache: function() {
 			
+		},
+		
+		drawBackground: function() {
+			var g = this.g;
 		}
 	};
 	
