@@ -160,6 +160,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.width = -1;
 		this.startTime = 0;
 		this.endTime = 0;
+		this.widthPerDay = 100;
 		
 		this.viewportStartTime = 0;
 		this.viewportEndTime = 0;
@@ -214,9 +215,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		updateCache: function() {
+			this.widthPerDay = this.calcWidthPerDay();
+			
 			this.drawBackground();
 			this.drawDateLabels(this.g);
 			this.cacheInvalid = false;
+		},
+		
+		calcWidthPerDay: function() {
+			var tlen = this.viewportEndTime - this.viewportStartTime;
+			var hours = tlen / 3600.0;
+			if (hours < 1) { hours = 1; }
+			
+			var w = this.width * 24 / hours;
+			return w;
 		},
 		
 		drawBackground: function() {
@@ -249,7 +261,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					
 					this.drawDateLabelBar(g, x);
 					this.drawDateLabelText(g, x, tDate);
-					console.log(tDate)
+					//console.log(tDate)
 				}
 			}
 		},
@@ -264,9 +276,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		drawDateLabelText: function(g, x, date) {
+			g.save();
+
+			var mday = date.getDate();
+			var wday = date.getDay();
+
 			for (var i = 0;i < 2;++i) {
+				if (i === 0) {
+					g.fillStyle = 'rgba(255,255,255,0.4)';
+				} else {
+					g.fillStyle = 'rgba(' +makeWdayColor(wday)+ ',0.6)';
+				}
 				
+				g.font = 'normal bold 12px sans-serif';
+				g.fillText(mday, x+4, 13 +1-i);
+				var textMet = g.measureText(mday);
+				
+				var wdname = kDefaultDayNames[wday];
+				if (this.widthPerDay > 48) {
+					g.font = 'normal bold 8px sans-serif';
+					g.fillText(wdname, x+6+textMet.width, 13 +1-i);
+				}
 			}
+			
+			g.restore();
 		},
 		
 		makeBackgroundGradient: function(g) {
@@ -278,6 +311,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			return grad;
 		}
 	};
+	
+	function makeWdayColor(wd) {
+		if (wd === 0) {
+			return '180,30,20';
+		} else if (wd === 6) {
+			return '20,30,160';
+		}
+		
+		return '0,0,0';
+	}
 	
 	pkg.TimelineBar = TimelineBar;
 })(window.mobmap);

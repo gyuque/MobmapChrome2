@@ -9,8 +9,8 @@
 		var container = document.getElementById('tl-container-1');
 		container.appendChild(gTL1.element);
 
-		var startTimeObj = new Date(2013, 7, 10,  0, 0);
-		var endTimeObj = new Date(2013, 7, 16,  10, 0);
+		var startTimeObj = new Date(2013, 7, 12,  0, 0);
+		var endTimeObj = new Date(2013, 7, 20,  10, 0);
 		console.log("Test Range\n", startTimeObj, "\n", endTimeObj);
 		
 		var t1 = Math.floor( startTimeObj.getTime() / 1000.0 );
