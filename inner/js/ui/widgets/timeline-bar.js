@@ -21,10 +21,16 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	TimelineBar.prototype = {
+		// APIs
 		eventDispatcher: function() {
 			return this.jElement;
 		},
 		
+		setTimeRange: function(startTime, endTime) {
+			this.longSpanBar.setTimeRange(startTime, endTime);
+		},
+		
+		// -----------------------------------
 		buildElements: function() {
 			this.element = $H('div', 'mm-timeline-bar-outer-box');
 			this.barCanvas = $H('canvas', 'mm-timeline-bar-drag-area');
