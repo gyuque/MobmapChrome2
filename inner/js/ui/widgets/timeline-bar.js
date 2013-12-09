@@ -215,6 +215,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		updateCache: function() {
 			this.drawBackground();
+			this.drawDateLabels(this.g);
+			this.cacheInvalid = false;
 		},
 		
 		drawBackground: function() {
@@ -223,6 +225,48 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(0, 0, this.width, this.height);
 			g.fillStyle = this.backgroundGradient;
 			g.fillRect(1, 1, this.width-2, this.height-2);
+		},
+		
+		drawDateLabels: function(g) {
+			var w = this.width;
+			if (w < 1) {return;}
+			
+			var old_y = -1, old_mon = -1, old_day = -1;
+			
+			for (var x = 0;x < w;++x) {
+				var ratio = x/w;
+				var t = this.viewportStartTime*(1 - ratio) + this.viewportEndTime*ratio;
+				
+				var tDate = new Date(t * 1000.0);
+				var year = tDate.getFullYear();
+				var mon  = tDate.getMonth();
+				var mday = tDate.getDate();
+				
+				if (old_y != year || old_mon != mon || old_day != mday) {
+					old_y = year;
+					old_mon = mon;
+					old_day = mday;
+					
+					this.drawDateLabelBar(g, x);
+					this.drawDateLabelText(g, x, tDate);
+					console.log(tDate)
+				}
+			}
+		},
+		
+		drawDateLabelBar: function(g, x) {
+			g.save();
+			g.fillStyle = 'rgba(0,0,0,0.4)';
+			g.fillRect(x-1, 1, 1, this.height - 2);
+			g.fillStyle = 'rgba(255,255,255,0.4)';
+			g.fillRect(x, 1, 1, this.height - 1);
+			g.restore();
+		},
+		
+		drawDateLabelText: function(g, x, date) {
+			for (var i = 0;i < 2;++i) {
+				
+			}
 		},
 		
 		makeBackgroundGradient: function(g) {
