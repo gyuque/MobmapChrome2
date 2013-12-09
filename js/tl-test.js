@@ -17,6 +17,12 @@
 		var t2 = Math.floor( endTimeObj.getTime() / 1000.0 );
 		console.log(t1, t2);
 		gTL1.setTimeRange(t1, t2);
+		if (gTL1.longSpanBar.fullViewport()) {
+			console.log("redraw again");
+			gTL1.redrawBar();
+		}
+		
+		gTL1.setWidth(480);
 	}
 	
 	aGlobal.doWidgetTest = doWidgetTest;

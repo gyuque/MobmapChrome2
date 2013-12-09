@@ -28,6 +28,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		setTimeRange: function(startTime, endTime) {
 			this.longSpanBar.setTimeRange(startTime, endTime);
+			this.redrawBar();
 		},
 		
 		// -----------------------------------
@@ -109,6 +110,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		redrawBar: function() {
+			this.longSpanBar.render(this.g, 0);
 			this.renderDetailView(15);
 			this.drawDetailCursor(15);
 		},
@@ -158,24 +160,36 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.width = -1;
 		this.startTime = 0;
 		this.endTime = 0;
+		
+		this.viewportStartTime = 0;
+		this.viewportEndTime = 0;
 
 		this.cacheInvalid = true;
 		this.cachedCanvas = document.createElement('canvas');
 		this.g = this.cachedCanvas.getContext('2d');
+		
+		this.backgroundGradient = this.makeBackgroundGradient(this.g);
 	}
 	
 	LongSpanBar.prototype = {
-		render: function(targetContext) {
+		render: function(targetContext, destY) {
 			if (this.cacheInvalid) {
 				this.updateCache();
 			}
+			
+			targetContext.drawImage(this.cachedCanvas, 0, destY);
 		},
 		
 		setWidth: function(w) {
 			if (w !== this.width) {
 				this.width = w;
+				this.adjustCacheCanvasSize();
 				this.cacheInvalid = true;
 			}
+		},
+		
+		adjustCacheCanvasSize: function() {
+			this.cachedCanvas.width = Math.floor(this.width);
 		},
 		
 		setTimeRange: function(st, ed) {
@@ -186,12 +200,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
-		updateCache: function() {
+		fullViewport: function() {
+			if (this.startTime !== this.viewportStartTime || 
+				this.endTime !== this.viewportEndTime) {
+					this.viewportStartTime = this.startTime;
+					this.viewportEndTime = this.endTime;
+					
+					this.cacheInvalid = true;
+				return true;
+			}
 			
+			return false;
+		},
+		
+		updateCache: function() {
+			this.drawBackground();
 		},
 		
 		drawBackground: function() {
 			var g = this.g;
+			g.fillStyle = "#aaa";
+			g.fillRect(0, 0, this.width, this.height);
+			g.fillStyle = this.backgroundGradient;
+			g.fillRect(1, 1, this.width-2, this.height-2);
+		},
+		
+		makeBackgroundGradient: function(g) {
+			var grad  = g.createLinearGradient(0,0, 0,this.height);
+			grad.addColorStop(0  ,'#eee');
+			grad.addColorStop(0.1,'#ddd');
+			grad.addColorStop(0.7,'#bbb');
+			grad.addColorStop(1  ,'#999');
+			return grad;
 		}
 	};
 	
