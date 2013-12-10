@@ -11,6 +11,10 @@
 
 		var startTimeObj = new Date(2013, 7, 12,  0, 0);
 		var endTimeObj = new Date(2013, 7, 20,  10, 0);
+		
+		var dateTimeModel = new mobmap.DateTime();
+		var initialCurrentTime = new Date(2013, 7, 15,  12, 0);
+		
 		console.log("Test Range\n", startTimeObj, "\n", endTimeObj);
 		
 		var t1 = Math.floor( startTimeObj.getTime() / 1000.0 );

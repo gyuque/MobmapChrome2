@@ -18,6 +18,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.observeEvents();
 		this.adjustStyle();
 		this.setWidth(200);
+		
+		this.boundData = null;
 	}
 	
 	TimelineBar.prototype = {
@@ -29,6 +31,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		setTimeRange: function(startTime, endTime) {
 			this.longSpanBar.setTimeRange(startTime, endTime);
 			this.redrawBar();
+		},
+		
+		bindDateTime: function(d) {
+			this.boundData = d;
+			this.syncFromData();
 		},
 		
 		// -----------------------------------
@@ -70,6 +77,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(document.body).
 			 mouseup( this.onGlobalMouseUp.bind(this) ).
 			 mouseout( this.onGlobalMouseOut.bind(this) );
+		},
+		
+		// Fetch date/time from model and update self
+		syncFromData: function() {
+			
 		},
 		
 		onBarMouseDown: function(e) {
