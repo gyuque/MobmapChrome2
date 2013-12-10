@@ -14,6 +14,9 @@
 		
 		var dateTimeModel = new mobmap.DateTime();
 		var initialCurrentTime = new Date(2013, 7, 15,  12, 0);
+		dateTimeModel.setCurrentTime( Math.floor( initialCurrentTime.getTime() / 1000.0 ) );
+		
+		gTL1.bindDateTime(dateTimeModel);
 		
 		console.log("Test Range\n", startTimeObj, "\n", endTimeObj);
 		

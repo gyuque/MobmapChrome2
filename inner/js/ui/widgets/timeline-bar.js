@@ -13,7 +13,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			detailCursor: 0
 		};
 
-		this.longSpanBar = new LongSpanBar(15);
+		this.longSpanBar = new LongSpanBar(15, this);
 		this.buildElements();
 		this.observeEvents();
 		this.adjustStyle();
@@ -65,6 +65,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.barCanvas.width = w;
 			this.longSpanBar.setWidth(w);
 			
+			this.syncFromData(true);
 			this.redrawBar();
 		},
 		
@@ -80,8 +81,28 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		// Fetch date/time from model and update self
-		syncFromData: function() {
+		syncFromData: function(suppressRedraw) {
+			if (!this.boundData) {
+				return;
+			}
 			
+			var vStart = this.longSpanBar.viewportStartTime;
+			var vEnd = this.longSpanBar.viewportEndTime;
+			
+			var t = this.boundData.currentTime;
+			var vplen = vEnd - vStart;
+			if (vplen === 0) {
+				return;
+			}
+			
+			var t_in_vp = (t - vStart) / vplen;
+			
+			var x = this.width * t_in_vp;
+			console.log(x, t_in_vp, vplen)
+			this.position.detailCursor = Math.floor(x);
+			if (!suppressRedraw) {
+				this.redrawBar();
+			}
 		},
 		
 		onBarMouseDown: function(e) {
@@ -164,10 +185,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(0,y+2, w,h-4);
 			
 			g.restore();
+		},
+		
+		longtimeAfterViewportChange: function() {
+			this.syncFromData();
 		}
 	};
 	
-	function LongSpanBar(height) {
+	function LongSpanBar(height, owner) {
+		this.owner = owner;
 		this.height = height;
 		this.width = -1;
 		this.startTime = 0;
@@ -220,6 +246,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.viewportEndTime = this.endTime;
 					
 					this.cacheInvalid = true;
+					this.owner.longtimeAfterViewportChange();
 				return true;
 			}
 			
