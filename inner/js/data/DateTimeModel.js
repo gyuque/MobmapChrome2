@@ -25,6 +25,16 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.currentTime = t;
 				this.eventDispatcher().trigger(DateTime.CURRENT_TIME_CHANGE_EVENT, this);
 			}
+		},
+		
+		makeCurrentPrettyDate: function() {
+			var d = new Date(this.currentTime * 1000.0);
+			return d.getFullYear() + '-' + padding_02(d.getMonth()+1) + '-' + padding_02(d.getDate());
+		},
+		
+		makeCurrentPrettyTime: function() {
+			var d = new Date(this.currentTime * 1000.0);
+			return padding_02(d.getHours()) +':' + padding_02(d.getMinutes()) +':' + padding_02(d.getSeconds());
 		}
 	};
 	

@@ -16,6 +16,8 @@
 		var initialCurrentTime = new Date(2013, 7, 15,  12, 0);
 		dateTimeModel.setCurrentTime( Math.floor( initialCurrentTime.getTime() / 1000.0 ) );
 		
+		gTL1.setDateDisplayElement( document.getElementById('date-disp') );
+		gTL1.setTimeDisplayElement( document.getElementById('time-disp') );
 		gTL1.bindDateTime(dateTimeModel);
 		
 		console.log("Test Range\n", startTimeObj, "\n", endTimeObj);

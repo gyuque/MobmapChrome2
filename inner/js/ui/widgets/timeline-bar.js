@@ -20,6 +20,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.adjustStyle();
 		this.setWidth(200);
 		
+		this.jDateDisplayElement = null;
+		this.jTimeDisplayElement = null;
 		this.boundData = null;
 	}
 	
@@ -36,6 +38,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		bindDateTime: function(d) {
 			this.boundData = d;
+			this.syncFromData();
+		},
+		
+		setDateDisplayElement: function(el) {
+			this.jDateDisplayElement = $(el);
+			this.syncFromData();
+		},
+		
+		setTimeDisplayElement: function(el) {
+			this.jTimeDisplayElement = $(el);
 			this.syncFromData();
 		},
 		
@@ -104,6 +116,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!suppressRedraw) {
 				this.redrawBar();
 			}
+			
+			this.updateDisplayTexts();
+		},
+		
+		updateDisplayTexts: function() {
+			if (this.jDateDisplayElement && this.boundData) {
+				var tx = this.boundData.makeCurrentPrettyDate();
+				this.jDateDisplayElement.text(tx);
+			}
+
+			if (this.jTimeDisplayElement && this.boundData) {
+				var time_tx = this.boundData.makeCurrentPrettyTime();
+				this.jTimeDisplayElement.text(time_tx);
+			}
 		},
 		
 		onBarMouseDown: function(e) {
@@ -126,7 +152,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		onGlobalMouseOut: function(e) {
 			if (RE_HTML_TAG.test(e.target.tagName)) {
 				this.dragging = false;
-				console.log("OUT");
 			}
 		},
 		
