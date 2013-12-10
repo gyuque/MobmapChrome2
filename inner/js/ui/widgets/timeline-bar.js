@@ -23,6 +23,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jDateDisplayElement = null;
 		this.jTimeDisplayElement = null;
 		this.boundData = null;
+		
+		this.zoomAnimationParams = {
+			oldStart: 0,
+			oldEnd: 0,
+			newStart: 0,
+			newEnd: 0
+		};
 	}
 	
 	TimelineBar.prototype = {
@@ -86,7 +93,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jCanvas.
 			 mousedown( this.onBarMouseDown.bind(this) ).
 			 mousemove( this.onBarMouseMove.bind(this) ).
-			 mouseup( this.onBarMouseUp.bind(this) );
+			 mouseup( this.onBarMouseUp.bind(this) ).
+			 dblclick( this.onBarDoubleClick.bind(this) );
 			
 			$(document.body.parentNode).
 			 mouseup( this.onGlobalMouseUp.bind(this) ).
@@ -137,6 +145,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var localX = this.calcLocalMouseX(e);
 			this.changeByCursorX(localX);
 		},
+		
+		onBarDoubleClick: function(e) {
+			var localX = this.calcLocalMouseX(e);
+			this.zoomViewport(localX);
+		},
 
 		onBarMouseMove: function(e) {
 		},
@@ -181,11 +194,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			var vStart = this.longSpanBar.viewportStartTime;
 			var vEnd = this.longSpanBar.viewportEndTime;
 			var vplen = vEnd - vStart;
-			if (vplen === 0) { return; }
+			if (vplen === 0) { return 0; }
 			
 			var normalizedX = x / this.width;
 			var t = vplen * normalizedX + vStart;
 			return Math.floor(t);
+		},
+		
+		zoomViewport: function(centerX) {
+			var centerT = this.calcDateTimeFromX(centerX);
+			console.log(centerT);
+
+			var vStart = this.longSpanBar.viewportStartTime;
+			var vEnd = this.longSpanBar.viewportEndTime;
+			var vplen = vEnd - vStart;
+			var exLen = vplen * 0.5;
+
+			var newStart = vStart - exLen;
+			var newEnd   = vEnd   + exLen;
+			
 		},
 		
 		redrawBar: function() {

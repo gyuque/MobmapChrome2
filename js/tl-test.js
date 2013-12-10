@@ -31,7 +31,7 @@
 			gTL1.redrawBar();
 		}
 		
-		gTL1.setWidth(480);
+		gTL1.setWidth(380);
 	}
 	
 	aGlobal.doWidgetTest = doWidgetTest;
