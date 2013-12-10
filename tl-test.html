@@ -12,8 +12,20 @@
 		<script src="./inner/js/ui/widgets/timeline-bar.js" type="text/javascript"></script>
 
 		<script src="./js/tl-test.js" type="text/javascript"></script>
+		
+		<style type="text/css">
+#tl-container-1 {
+	-webkit-user-select: none;
+	cursor: default;
+}
+		</style>
 	</head>
 	<body onload="void doWidgetTest()">
-		<div id="tl-container-1"></div>
+		<table><tr>
+			<td>
+				Current:
+				<div id="date-disp"></div>
+			</td><td><div id="tl-container-1"></div></td>
+		</tr></table>
 	</body>
 </html>

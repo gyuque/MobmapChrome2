@@ -3,6 +3,7 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(pkg) {
 	'use strict';
 	var TL_DEFAULT_HEIGHT = 40;
+	var RE_HTML_TAG = /html/i ;
 	
 	function TimelineBar() {
 		this.dragging = false;
@@ -75,8 +76,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			 mousemove( this.onBarMouseMove.bind(this) ).
 			 mouseup( this.onBarMouseUp.bind(this) );
 			
-			$(document.body).
+			$(document.body.parentNode).
 			 mouseup( this.onGlobalMouseUp.bind(this) ).
+			 mousemove( this.onGlobalMouseMove.bind(this) ).
 			 mouseout( this.onGlobalMouseOut.bind(this) );
 		},
 		
@@ -98,7 +100,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			var t_in_vp = (t - vStart) / vplen;
 			
 			var x = this.width * t_in_vp;
-			console.log(x, t_in_vp, vplen)
 			this.position.detailCursor = Math.floor(x);
 			if (!suppressRedraw) {
 				this.redrawBar();
@@ -112,10 +113,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onBarMouseMove: function(e) {
-			if (this.dragging) {
-				var localX = this.calcLocalMouseX(e); 
-				this.changeByCursorX(localX);
-			}
 		},
 
 		onBarMouseUp: function(e) {
@@ -127,7 +124,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onGlobalMouseOut: function(e) {
-			this.dragging = false;
+			if (RE_HTML_TAG.test(e.target.tagName)) {
+				this.dragging = false;
+				console.log("OUT");
+			}
+		},
+		
+		onGlobalMouseMove: function(e) {
+			if (this.dragging) {
+				var localX = this.calcLocalMouseX(e); 
+				this.changeByCursorX(localX);
+			}
+//			this.
 		},
 		
 		calcLocalMouseX: function(e) {
@@ -138,8 +146,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		changeByCursorX: function(cx) {
-			this.position.detailCursor = Math.floor(cx);
-			this.redrawBar();
+			if (this.boundData) {
+				this.boundData.setCurrentTime(this.calcDateTimeFromX(cx));
+				this.syncFromData();
+			}
+		},
+		
+		calcDateTimeFromX: function(x) {
+			var vStart = this.longSpanBar.viewportStartTime;
+			var vEnd = this.longSpanBar.viewportEndTime;
+			var vplen = vEnd - vStart;
+			if (vplen === 0) { return; }
+			
+			var normalizedX = x / this.width;
+			var t = vplen * normalizedX + vStart;
+			return Math.floor(t);
 		},
 		
 		redrawBar: function() {
