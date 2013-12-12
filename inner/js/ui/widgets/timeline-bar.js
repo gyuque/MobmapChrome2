@@ -16,6 +16,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 
 		this.longSpanBar = new LongSpanBar(15, this);
+		this.buttonZoomOut = null;
 		this.buildElements();
 		this.observeEvents();
 		this.adjustStyle();
@@ -67,8 +68,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jElement = $(this.element);
 			this.jCanvas = $(this.barCanvas);
 			this.g = this.barCanvas.getContext('2d');
+			this.element.style.position = "relative";
 			
+			this.buttonZoomOut = new BarButton();
+			this.buttonZoomOut.putOnRight(0);
 			this.element.appendChild(this.barCanvas);
+			this.element.appendChild(this.buttonZoomOut.element);
 		},
 		
 		adjustStyle: function() {
@@ -181,7 +186,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		calcLocalMouseX: function(e) {
 			if (!e) { return -1; }
 			
-			var x = e.pageX - this.jCanvas.position().left;
+			var x = e.pageX - this.jCanvas.position().left - this.jElement.position().left;
 			return x;
 		},
 		
@@ -539,6 +544,75 @@ if (!window.mobmap) { window.mobmap={}; }
 			grad.addColorStop(0.7,'#bbb');
 			grad.addColorStop(1  ,'#999');
 			return grad;
+		}
+	};
+	
+	// -----------------------------
+	// On-Bar Button
+	function BarButton() {
+		this.width = 17;
+		this.height = 16;
+		this.element = document.createElement('canvas');
+		this.prepareBackgroundImage();
+	}
+	
+	BarButton.prototype = {
+		prepareBackgroundImage: function() {
+			var w = this.width;
+			var h = this.height;
+			var g = this.element.getContext('2d');
+			
+			this.element.width = w;
+			this.element.height = h;
+			this.drawButtonBackground(g, 0, 0);
+			this.drawForeground(g, 0, 0);
+		},
+		
+		drawButtonBackground: function(g, x, y) {
+			var grad = g.createLinearGradient(0, 0, 0, this.height);
+			grad.addColorStop(0  , '#eee');
+			grad.addColorStop(0.1, '#aaa');
+			grad.addColorStop(  1, '#777');
+			
+			g.save();
+			g.translate(x, y);
+			
+			g.fillStyle = grad;
+			g.fillRect(0, 0, this.width, this.height);
+			g.fillStyle = "rgba(0,0,0,0.3)";
+			g.fillRect(0, 0, this.width, this.height);
+			g.fillStyle = grad;
+			g.fillRect(1, 1, this.width-2, this.height-2);
+			
+			g.restore();
+		},
+		
+		drawForeground: function(g, x, y) {
+			var offsetY;
+			for (var i = 0;i < 3;++i) {
+				g.save();
+				
+				switch(i) {
+				case 0: offsetY=-1; g.fillStyle='rgba(0,0,0,0.3)'; break;
+				case 1: offsetY= 1; g.fillStyle='rgba(255,255,255,0.3)'; break;
+				case 2: offsetY= 0; g.fillStyle='#fff'; break;
+				}
+				
+				g.translate(x, y + offsetY);
+				this.drawUpSymbol(g);
+				g.restore();
+			}
+		},
+		
+		drawUpSymbol: function(g) {
+			g.fillRect(3,3,7,2);
+		},
+		
+		putOnRight: function(x) {
+			var s = this.element.style;
+			s.position = 'absolute';
+			s.right = x + "px";
+			s.top = '0';
 		}
 	};
 	
