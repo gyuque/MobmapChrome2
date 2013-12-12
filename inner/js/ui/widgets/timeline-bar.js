@@ -209,14 +209,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			var centerT = this.calcDateTimeFromX(centerX);
+			var centerTRatio = centerX / this.width;
 
 			var vStart = this.longSpanBar.viewportStartTime;
 			var vEnd = this.longSpanBar.viewportEndTime;
 			var vplen = vEnd - vStart;
+			var newLen = vplen * 0.5;
 			var exLen = vplen * 0.25;
 
-			var newStart = centerT - exLen;
-			var newEnd   = centerT + exLen;
+			var newStart = Math.floor(centerT - newLen * centerTRatio);
+			var newEnd   = Math.floor(centerT + newLen * (1.0 - centerTRatio));
 			
 			// Set params
 			this.zoomAnimationParams.oldStart = vStart;
@@ -414,6 +416,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		drawDateLabels: function(g) {
+			var yearScaleMode = this.widthPerDay < 24;
+			
 			var w = this.width;
 			if (w < 1) {return;}
 			
@@ -430,15 +434,28 @@ if (!window.mobmap) { window.mobmap={}; }
 				var mday = tDate.getDate();
 				var hr   = tDate.getHours();
 				
-				if (old_y !== year || old_mon !== mon || old_day !== mday) {
-					old_y = year;
-					old_mon = mon;
-					old_day = mday;
-					
-					if (x >= 0) {
-						this.drawDateLabelBar(g, x);
+				if (yearScaleMode) {
+					if (old_y !== year || old_mon !== mon) {
+						old_y = year;
+						old_mon = mon;
+						old_day = mday;
+						
+						if (x >= 0) {
+							this.drawDateLabelBar(g, x);
+						}
+						this.drawMonLabelText(g, x, tDate);
 					}
-					this.drawDateLabelText(g, x, tDate);
+				} else {
+					if (old_y !== year || old_mon !== mon || old_day !== mday) {
+						old_y = year;
+						old_mon = mon;
+						old_day = mday;
+					
+						if (x >= 0) {
+							this.drawDateLabelBar(g, x);
+						}
+						this.drawDateLabelText(g, x, tDate);
+					}
 				}
 
 				if (this.widthPerDay > 96 && old_hr != hr) {
@@ -491,6 +508,25 @@ if (!window.mobmap) { window.mobmap={}; }
 					g.font = 'normal bold 8px sans-serif';
 					g.fillText(wdname, x+6+textMet.width, 13 +1-i);
 				}
+			}
+			
+			g.restore();
+		},
+		
+		drawMonLabelText: function(g, x, date) {
+			g.save();
+			var mon = date.getMonth();
+			var year = date.getFullYear();
+			var mname = kDefaultShortMonthNames[mon] +'. ';
+
+			for (var i = 0;i < 2;++i) {
+				g.font = 'normal bold 12px sans-serif';
+				g.fillStyle = (i === 0) ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.6)';
+				g.fillText(mname, x+4, 13 +1-i);
+				var textMet = g.measureText(mname);
+
+				g.font = 'normal normal 8px sans-serif';
+				g.fillText(year, x+4+textMet.width, 13 +1-i);
 			}
 			
 			g.restore();
