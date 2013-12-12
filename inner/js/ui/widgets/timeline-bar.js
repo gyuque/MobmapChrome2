@@ -417,9 +417,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var w = this.width;
 			if (w < 1) {return;}
 			
-			var old_y = -1, old_mon = -1, old_day = -1;
+			var q_w = w >> 2;
+			var old_y = -1, old_mon = -1, old_day = -1, old_hr = -1;
 			
-			for (var x = 0;x < w;++x) {
+			for (var x = -q_w;x < w;++x) {
 				var ratio = x/w;
 				var t = this.viewportStartTime*(1 - ratio) + this.viewportEndTime*ratio;
 				
@@ -427,15 +428,24 @@ if (!window.mobmap) { window.mobmap={}; }
 				var year = tDate.getFullYear();
 				var mon  = tDate.getMonth();
 				var mday = tDate.getDate();
+				var hr   = tDate.getHours();
 				
-				if (old_y != year || old_mon != mon || old_day != mday) {
+				if (old_y !== year || old_mon !== mon || old_day !== mday) {
 					old_y = year;
 					old_mon = mon;
 					old_day = mday;
 					
-					this.drawDateLabelBar(g, x);
+					if (x >= 0) {
+						this.drawDateLabelBar(g, x);
+					}
 					this.drawDateLabelText(g, x, tDate);
-					//console.log(tDate)
+				}
+
+				if (this.widthPerDay > 96 && old_hr != hr) {
+					old_hr = hr;
+					if (hr != 0 && x >= 0) {
+						this.drawHourGuage(g, x, hr);
+					}
 				}
 			}
 		},
@@ -446,6 +456,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(x-1, 1, 1, this.height - 2);
 			g.fillStyle = 'rgba(255,255,255,0.4)';
 			g.fillRect(x, 1, 1, this.height - 1);
+			g.restore();
+		},
+		
+		drawHourGuage: function(g, x, hour) {
+			var h = (hour === 12) ? 3 : 1;
+			g.save();
+			g.fillStyle = 'rgba(0,0,0,0.6)';
+			g.fillRect(x-1, this.height-h, 1, h);
+			g.fillStyle = 'rgba(255,255,255,0.4)';
+			g.fillRect(x  , this.height-h, 1, h);
 			g.restore();
 		},
 		
