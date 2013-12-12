@@ -10,7 +10,7 @@
 		container.appendChild(gTL1.element);
 
 		var startTimeObj = new Date(2013, 5, 12,  0, 0);
-		var endTimeObj = new Date(2013, 8, 30,  10, 0);
+		var endTimeObj = new Date(2013, 11, 30,  10, 0);
 		
 		var dateTimeModel = new mobmap.DateTime();
 		var initialCurrentTime = new Date(2013, 7, 15,  12, 0);

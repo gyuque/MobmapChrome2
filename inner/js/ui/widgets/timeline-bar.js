@@ -7,6 +7,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	var ZOOM_ANIMATION_DIVS = 13;
 	
 	function TimelineBar() {
+		BarButton.appendButtonStyleSheet();
+		
 		this.dragging = false;
 		this.height = TL_DEFAULT_HEIGHT;
 		this.width = 200;
@@ -107,6 +109,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			 mouseup( this.onGlobalMouseUp.bind(this) ).
 			 mousemove( this.onGlobalMouseMove.bind(this) ).
 			 mouseout( this.onGlobalMouseOut.bind(this) );
+			
+			this.buttonZoomOut.eventDispatcher().click(
+				this.onZoomOutClick.bind(this)
+			);
 		},
 		
 		// Fetch date/time from model and update self
@@ -258,6 +264,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.longSpanBar.setViewportStart(mid_start, true);
 			this.longSpanBar.setViewportEnd(mid_end);
+		},
+		
+		onZoomOutClick: function() {
+			console.log("impl here");
 		},
 		
 		redrawBar: function() {
@@ -440,15 +450,21 @@ if (!window.mobmap) { window.mobmap={}; }
 				var hr   = tDate.getHours();
 				
 				if (yearScaleMode) {
-					if (old_y !== year || old_mon !== mon) {
-						old_y = year;
-						old_mon = mon;
+					if (old_y !== year || old_mon !== mon || old_day !== mday) {
 						old_day = mday;
+						if (old_y !== year || old_mon !== mon) {
+							old_y = year;
+							old_mon = mon;
 						
-						if (x >= 0) {
-							this.drawDateLabelBar(g, x);
+							if (x >= 0) {
+								this.drawDateLabelBar(g, x);
+							}
+							this.drawMonLabelText(g, x, tDate);
 						}
-						this.drawMonLabelText(g, x, tDate);
+						
+						if (this.widthPerDay > 7 && x >= 0 && mday > 1) {
+							this.drawWeakDateLabelBar(g, x);
+						}
 					}
 				} else {
 					if (old_y !== year || old_mon !== mon || old_day !== mday) {
@@ -478,6 +494,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(x-1, 1, 1, this.height - 2);
 			g.fillStyle = 'rgba(255,255,255,0.4)';
 			g.fillRect(x, 1, 1, this.height - 1);
+			g.restore();
+		},
+
+		drawWeakDateLabelBar: function(g, x) {
+			var h = 1;
+			g.save();
+			g.fillStyle = 'rgba(0,0,0,0.4)';
+			g.fillRect(x-1, this.height-h, 1, h);
+			g.fillStyle = 'rgba(255,255,255,0.4)';
+			g.fillRect(x, this.height-h, 1, h);
 			g.restore();
 		},
 		
@@ -529,9 +555,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				g.fillStyle = (i === 0) ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.6)';
 				g.fillText(mname, x+4, 13 +1-i);
 				var textMet = g.measureText(mname);
-
-				g.font = 'normal normal 8px sans-serif';
-				g.fillText(year, x+4+textMet.width, 13 +1-i);
+				if (textMet.width < (this.widthPerDay * 14)) {
+					g.font = 'normal normal 8px sans-serif';
+					g.fillText(year, x+4+textMet.width, 13 +1-i);
+				}
 			}
 			
 			g.restore();
@@ -553,23 +580,51 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.width = 17;
 		this.height = 16;
 		this.element = document.createElement('canvas');
-		this.prepareBackgroundImage();
+		this.jElement = $(this.element);
+		this.element.setAttribute('class', 'mm-tl-onbar-button');
+		var bgImage = this.prepareBackgroundImage();
+		
+		this.element.style.backgroundImage = "url('" +bgImage+ "')";
 	}
 	
+	BarButton.appendButtonStyleSheet = function() {
+		var s = document.createElement('style');
+		s.innerHTML = '.mm-tl-onbar-button{background: top left no-repeat;}  .mm-tl-onbar-button:active{background: bottom left no-repeat;}';
+		document.body.appendChild(s);
+	};
+	
 	BarButton.prototype = {
+		eventDispatcher: function() {
+			return this.jElement;
+		},
+		
 		prepareBackgroundImage: function() {
 			var w = this.width;
 			var h = this.height;
 			var g = this.element.getContext('2d');
 			
 			this.element.width = w;
-			this.element.height = h;
+			this.element.height = h*2;
 			this.drawButtonBackground(g, 0, 0);
 			this.drawForeground(g, 0, 0);
+			this.drawButtonBackground(g, 0, h, true);
+			this.drawForeground(g, 0, h);
+			
+			var imageURL = this.element.toDataURL();
+			g.clearRect(0, 0, w, h);
+
+			this.element.height = h;
+			return imageURL;
 		},
 		
-		drawButtonBackground: function(g, x, y) {
-			var grad = g.createLinearGradient(0, 0, 0, this.height);
+		drawButtonBackground: function(g, x, y, pushed) {
+			
+			var grad;
+			if (!pushed) {
+				grad = g.createLinearGradient(0, 0, 0, this.height);
+			} else {
+				grad = g.createLinearGradient(0, this.height*2, 0, 0);
+			}
 			grad.addColorStop(0  , '#eee');
 			grad.addColorStop(0.1, '#aaa');
 			grad.addColorStop(  1, '#777');
@@ -581,8 +636,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(0, 0, this.width, this.height);
 			g.fillStyle = "rgba(0,0,0,0.3)";
 			g.fillRect(0, 0, this.width, this.height);
-			g.fillStyle = grad;
-			g.fillRect(1, 1, this.width-2, this.height-2);
+			if (!pushed) {
+				g.fillStyle = grad;
+				g.fillRect(1, 1, this.width-2, this.height-2);
+			}
 			
 			g.restore();
 		},
@@ -605,7 +662,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		drawUpSymbol: function(g) {
-			g.fillRect(3,3,7,2);
+			var cx = Math.floor(this.width / 2);
+			g.fillRect(cx  ,4, 1,1);
+			g.fillRect(cx-1,5, 3,1);
+			g.fillRect(cx-2,6, 5,1);
+			g.fillRect(cx-3,7, 7,1);
+			g.fillRect(cx-1,8, 3,4);
 		},
 		
 		putOnRight: function(x) {
