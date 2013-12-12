@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	var TL_DEFAULT_HEIGHT = 40;
 	var RE_HTML_TAG = /html/i ;
+	var ZOOM_ANIMATION_DIVS = 13;
 	
 	function TimelineBar() {
 		this.dragging = false;
@@ -28,7 +29,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			oldStart: 0,
 			oldEnd: 0,
 			newStart: 0,
-			newEnd: 0
+			newEnd: 0,
+			currentFrame: 0
 		};
 	}
 	
@@ -195,24 +197,60 @@ if (!window.mobmap) { window.mobmap={}; }
 			var vEnd = this.longSpanBar.viewportEndTime;
 			var vplen = vEnd - vStart;
 			if (vplen === 0) { return 0; }
-			
+
 			var normalizedX = x / this.width;
 			var t = vplen * normalizedX + vStart;
 			return Math.floor(t);
 		},
 		
 		zoomViewport: function(centerX) {
+			if (this.zoomAnimationParams.currentFrame) {
+				return;
+			}
+			
 			var centerT = this.calcDateTimeFromX(centerX);
-			console.log(centerT);
 
 			var vStart = this.longSpanBar.viewportStartTime;
 			var vEnd = this.longSpanBar.viewportEndTime;
 			var vplen = vEnd - vStart;
-			var exLen = vplen * 0.5;
+			var exLen = vplen * 0.25;
 
-			var newStart = vStart - exLen;
-			var newEnd   = vEnd   + exLen;
+			var newStart = centerT - exLen;
+			var newEnd   = centerT + exLen;
 			
+			// Set params
+			this.zoomAnimationParams.oldStart = vStart;
+			this.zoomAnimationParams.oldEnd = vEnd;
+			this.zoomAnimationParams.newStart = newStart;
+			this.zoomAnimationParams.newEnd = newEnd;
+			
+			this.zoomAnimationParams.currentFrame = 0;
+			this.tickZoomAnimation();
+		},
+		
+		tickZoomAnimation: function() {
+			var t = (this.zoomAnimationParams.currentFrame + 1) / ZOOM_ANIMATION_DIVS;
+//			console.log(this.zoomAnimationParams.currentFrame, t, tweenZoomT(t))
+			if (t > 0.999) {t=1;}
+			this.applyZoomAnimation( tweenZoomT(t) );
+			
+			if (++this.zoomAnimationParams.currentFrame >= ZOOM_ANIMATION_DIVS) {
+				// finish
+				this.zoomAnimationParams.currentFrame = 0;
+			} else {
+				setTimeout(this.tickZoomAnimation.bind(this), 15);
+			}
+		},
+		
+		applyZoomAnimation: function(t) {
+			var _t = 1.0 - t;
+			var mid_start = this.zoomAnimationParams.oldStart * _t +
+			                this.zoomAnimationParams.newStart * t;
+			var mid_end   = this.zoomAnimationParams.oldEnd   * _t +
+			                this.zoomAnimationParams.newEnd   * t;
+			
+			this.longSpanBar.setViewportStart(mid_start, true);
+			this.longSpanBar.setViewportEnd(mid_end);
 		},
 		
 		redrawBar: function() {
@@ -326,6 +364,30 @@ if (!window.mobmap) { window.mobmap={}; }
 			return false;
 		},
 		
+		setViewportStart: function(t, suppress_notify) {
+			if (t !== this.viewportStartTime) {
+				this.viewportStartTime = t;
+				this.cacheInvalid = true;
+				if (!suppress_notify) {
+					this.owner.longtimeAfterViewportChange();
+				}
+			}
+		},
+
+		setViewportEnd: function(t, suppress_notify) {
+			if (t !== this.viewportEndTime) {
+				this.viewportEndTime = t;
+				this.cacheInvalid = true;
+				if (!suppress_notify) {
+					this.owner.longtimeAfterViewportChange();
+				}
+				
+				if (this.viewportStartTime > this.viewportEndTime) {
+					console.log("WARNING: reversed start-end");
+				}
+			}
+		},
+		
 		updateCache: function() {
 			this.widthPerDay = this.calcWidthPerDay();
 			
@@ -432,6 +494,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 		
 		return '0,0,0';
+	}
+	
+	function tweenZoomT(t) {
+		if (t < 0) {return 0;}
+		if (t > 1) {return 1;}
+		
+		return Math.sin((t-0.5) * Math.PI) * 0.5 + 0.5;
+		//return Math.sin(t * Math.PI * 0.5);
 	}
 	
 	pkg.TimelineBar = TimelineBar;
