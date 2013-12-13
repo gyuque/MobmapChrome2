@@ -76,6 +76,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.style.position = "relative";
 			
 			this.buttonZoomOut = new BarButton();
+			this.buttonZoomOut.hide();
 			this.buttonZoomOut.putOnRight(0);
 			this.element.appendChild(this.barCanvas);
 			this.element.appendChild(this.buttonZoomOut.element);
@@ -247,6 +248,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.zoomAnimationParams.currentFrame = 0;
 			this.tickZoomAnimation();
+
+			this.changeZoomOutButtonVisibility();
 		},
 
 		pushCurrentViewport: function() {
@@ -275,6 +278,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.zoomAnimationParams.currentFrame = 0;
 			this.tickZoomAnimation();
+			
+			this.changeZoomOutButtonVisibility();
 		},
 		
 		tickZoomAnimation: function() {
@@ -304,6 +309,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onZoomOutClick: function() {
 			this.zoomBackViewport();
+		},
+		
+		changeZoomOutButtonVisibility: function() {
+			if (this.viewportStack.length > 0) {
+				this.buttonZoomOut.show();
+			} else {
+				this.buttonZoomOut.hide();
+			}
 		},
 		
 		redrawBar: function() {
@@ -632,6 +645,14 @@ if (!window.mobmap) { window.mobmap={}; }
 	BarButton.prototype = {
 		eventDispatcher: function() {
 			return this.jElement;
+		},
+		
+		hide: function() {
+			this.jElement.hide();
+		},
+		
+		show: function() {
+			this.jElement.show();
 		},
 		
 		prepareBackgroundImage: function() {
