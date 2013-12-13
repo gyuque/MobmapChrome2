@@ -74,6 +74,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setupToolPane: function() {
 			var targetPaneElement = this.appScreen.getToolsPaneElement();
 			this.toolPane = new mobmap.ToolPane(targetPaneElement);
+			this.toolPane.observeContainerEvents(this.appScreen);
 		},
 		
 		setupMapPane: function() {
