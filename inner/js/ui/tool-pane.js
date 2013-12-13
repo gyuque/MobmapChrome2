@@ -41,6 +41,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var td1 = document.createElement('td');
 			var td2 = document.createElement('td');
+			td1.setAttribute('class', 'mm-tool-layoutcell-timedisp');
+
+			// Date and Time display text - - - - - - - - - -
+			var spanDate = document.createElement('span');
+			spanDate.setAttribute('class', 'mm-timeline-date-disp');
+			spanDate.innerHTML = "1970-01-01";
+			td1.appendChild(spanDate);
+			
+			var spanTime = document.createElement('span');
+			spanTime.setAttribute('class', 'mm-timeline-time-disp');
+			spanTime.innerHTML = "00:00:00";
+			td1.appendChild(spanTime);
+			// - - - - - - - - - - - - - - - - - - - - - - - -
 
 			this.layoutCell_TimeDisp = td1;
 			this.layoutCell_Timeline = td2;
