@@ -35,6 +35,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			newEnd: 0,
 			currentFrame: 0
 		};
+		
+		this.viewportStack = [];
 	}
 	
 	TimelineBar.prototype = {
@@ -50,6 +52,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		bindDateTime: function(d) {
 			this.boundData = d;
+			d.eventDispatcher().bind(mobmap.DateTime.CURRENT_TIME_CHANGE_EVENT, this.onBoundDateTimeChange.bind(this));
 			this.syncFromData();
 		},
 		
@@ -199,8 +202,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		changeByCursorX: function(cx) {
 			if (this.boundData) {
 				this.boundData.setCurrentTime(this.calcDateTimeFromX(cx));
-				this.syncFromData();
 			}
+		},
+		
+		onBoundDateTimeChange: function() {
+			this.syncFromData();
 		},
 		
 		calcDateTimeFromX: function(x) {
@@ -219,6 +225,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				return;
 			}
 			
+			this.pushCurrentViewport();
+			
 			var centerT = this.calcDateTimeFromX(centerX);
 			var centerTRatio = centerX / this.width;
 
@@ -236,7 +244,35 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.zoomAnimationParams.oldEnd = vEnd;
 			this.zoomAnimationParams.newStart = newStart;
 			this.zoomAnimationParams.newEnd = newEnd;
+
+			this.zoomAnimationParams.currentFrame = 0;
+			this.tickZoomAnimation();
+		},
+
+		pushCurrentViewport: function() {
+			var vStart = this.longSpanBar.viewportStartTime;
+			var vEnd = this.longSpanBar.viewportEndTime;
+			this.viewportStack.push([vStart, vEnd]);
+		},
+
+		zoomBackViewport: function() {
+			var vStart, vEnd;
+			if (this.viewportStack.length > 0) {
+				var popped = this.viewportStack.pop();
+				vStart = popped[0];
+				vEnd   = popped[1];
+			} else {
+				// Empty... use data range
+				vStart = this.longSpanBar.startTime;
+				vEnd   = this.longSpanBar.endTime;
+			}
 			
+			// Set params
+			this.zoomAnimationParams.oldStart = this.longSpanBar.viewportStartTime;
+			this.zoomAnimationParams.oldEnd   = this.longSpanBar.viewportEndTime;
+			this.zoomAnimationParams.newStart = vStart;
+			this.zoomAnimationParams.newEnd   = vEnd;
+
 			this.zoomAnimationParams.currentFrame = 0;
 			this.tickZoomAnimation();
 		},
@@ -267,7 +303,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onZoomOutClick: function() {
-			console.log("impl here");
+			this.zoomBackViewport();
 		},
 		
 		redrawBar: function() {
