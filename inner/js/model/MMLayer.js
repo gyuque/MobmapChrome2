@@ -14,6 +14,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.primaryView = null;
 		this._lvObserved = false;
 		this.jElement = $(document.createElement('span'));
+		this.dataTimeRange = {
+			start: 0,
+			end: 0
+		};
 		
 		this.movingData = null;
 	}
@@ -26,8 +30,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		hasPrimaryView: function() {
 			return !!this.primaryView;
 		},
+		
+		initTimeRange: function() {
+			this.dataTimeRange.start = Number.MAX_VALUE;
+			this.dataTimeRange.end   = Number.MIN_VALUE;
+		},
 
 		loadFromLoader: function(loader) {
+			this.initTimeRange(); // Set invalid time range at first
+			
 			this.sourceLoader = loader;
 			this.movingData = new mobmap.MovingData();
 
@@ -52,8 +63,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			// Generate and register record
 			var record = mobmap.MovingData.createEmptyRecord();
+			
+			// Copy data from CSV fields to record object
 			this.sourceLoader.applyAttributeMapToFieldList(fields, record);
 			this.movingData.register(record);
+			
+			this.updateDataTimeRange(record._time);
+		},
+		
+		updateDataTimeRange: function(t) {
+			if (t < this.dataTimeRange.start) {
+				this.dataTimeRange.start = t;
+			}
+			
+			if (t > this.dataTimeRange.end) {
+				this.dataTimeRange.end = t;
+			}
 		},
 		
 		csvloaderLineError: function(e) {
