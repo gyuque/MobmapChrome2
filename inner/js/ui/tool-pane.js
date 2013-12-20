@@ -6,11 +6,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	function ToolPane(containerElement) {
 		// Initialize - - - - - - - -
 		this.ownerApp = null;
+		this.layoutCell_Controls = null;
 		this.layoutCell_TimeDisp = null;
 		this.layoutCell_Timeline = null;
 		this.jLayoutCell_Timeline = null;
 		
 		this.timelineBar = new mobmap.TimelineBar();
+		this.controlPanel = null;
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
 		// - - - - - - - - - - - - - -
@@ -32,6 +34,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.layoutCell_Timeline.appendChild( this.timelineBar.element );
 			this.containerElement.appendChild( l_tbl );
+			
+			this.controlPanel = new TimelineControlPanel(this.layoutCell_Controls);
 		},
 		
 		buildLayoutTable: function() {
@@ -39,8 +43,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			tbl.setAttribute('class', 'mm-tool-layout');
 			var tr = document.createElement('tr');
 			
+			var td0 = document.createElement('td');
 			var td1 = document.createElement('td');
 			var td2 = document.createElement('td');
+			td0.setAttribute('class', 'mm-tool-layoutcell-controls');
 			td1.setAttribute('class', 'mm-tool-layoutcell-timedisp');
 
 			// Date and Time display text - - - - - - - - - -
@@ -55,10 +61,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			td1.appendChild(spanTime);
 			// - - - - - - - - - - - - - - - - - - - - - - - -
 
+			this.layoutCell_Controls = td0;
 			this.layoutCell_TimeDisp = td1;
 			this.layoutCell_Timeline = td2;
 			this.jLayoutCell_Timeline = $(this.layoutCell_Timeline);
 
+			tr.appendChild(td0);
 			tr.appendChild(td1);
 			tr.appendChild(td2);
 			tbl.appendChild(tr);
@@ -68,6 +76,31 @@ if (!window.mobmap) { window.mobmap={}; }
 		onContainerResize: function(e) {
 			var cellWidth = this.jLayoutCell_Timeline.width();
 			this.timelineBar.setWidth(cellWidth);
+		}
+	};
+	
+	function TimelineControlPanel(containerElement) {
+		this.buttons = {
+			play: null,
+			stop: null,
+			ff: null
+		};
+		
+		this.containerElement = containerElement;
+		this.buildButtons();
+	}
+	
+	TimelineControlPanel.prototype = {
+		buildButtons: function() {
+			var idMap = this.buttons;
+			for (var buttonName in idMap) {
+				var btnObj = new mobmap.ToolButton(buttonName, 25, 17);
+				idMap[buttonName] = btnObj;
+			}
+		},
+		
+		makeButtonElementId: function(buttonName) {
+			return "mm-play-button-" + buttonName;
 		}
 	};
 	
