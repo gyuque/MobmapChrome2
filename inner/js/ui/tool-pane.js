@@ -2,6 +2,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var spritePlayButtons = null;
 
 	function ToolPane(containerElement) {
 		// Initialize - - - - - - - -
@@ -16,6 +17,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
 		// - - - - - - - - - - - - - -
+		if (!spritePlayButtons) {
+			spritePlayButtons = new mobmap.ToolButtonSpriteManager('images/playbuttons-combined.png');
+		}
+		
 		this.setupWidgets();
 	}
 	
@@ -80,27 +85,66 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	function TimelineControlPanel(containerElement) {
-		this.buttons = {
-			play: null,
-			stop: null,
-			ff: null
-		};
-		
+		this.buttonsContainer = null;
+		this.optionContainer = null;
+		this.jPlaySpeedRange = null;
+		this.buttons = {};
+
 		this.containerElement = containerElement;
+		this.buildInnerContainers();
 		this.buildButtons();
+		this.buildOptionWidgets();
 	}
 	
 	TimelineControlPanel.prototype = {
+		buildInnerContainers: function() {
+			var bc = document.createElement('div');
+			bc.setAttribute('class', 'mm-tl-buttons-container');
+			this.containerElement.appendChild(bc);
+			
+			var oc = document.createElement('div');
+			oc.setAttribute('class', 'mm-tl-playoption-container');
+			this.containerElement.appendChild(oc);
+			
+			this.buttonsContainer = bc;
+			this.optionContainer = oc;
+		},
+		
 		buildButtons: function() {
 			var idMap = this.buttons;
-			for (var buttonName in idMap) {
-				var btnObj = new mobmap.ToolButton(buttonName, 25, 17);
-				idMap[buttonName] = btnObj;
+			var nextSeparated = false;
+			var buttonList = [
+				'stop',
+				'play',
+				'ff',
+				null, // -- separate --
+				'range'
+			];
+			
+			for (var buttonIndex in buttonList) {
+				var buttonName = buttonList[buttonIndex];
+				if (buttonName === null) {
+					nextSeparated = true;
+				} else {
+					var btnObj = new mobmap.ToolButton(buttonName, 25, 18);
+					btnObj.configureStyleSheet(spritePlayButtons, buttonIndex - 0);
+					idMap[buttonName] = btnObj;
+				
+					this.buttonsContainer.appendChild(btnObj.element);
+					if (nextSeparated) {
+						btnObj.setSeparated(true);
+						nextSeparated = false;
+					}
+				}
 			}
 		},
 		
-		makeButtonElementId: function(buttonName) {
-			return "mm-play-button-" + buttonName;
+		buildOptionWidgets: function() {
+			var rg = document.createElement('input');
+			rg.setAttribute('type', 'range');
+			
+			this.jPlaySpeedRange = $(rg);
+			this.optionContainer.appendChild(rg);
 		}
 	};
 	
