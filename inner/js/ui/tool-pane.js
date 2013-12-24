@@ -88,12 +88,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.buttonsContainer = null;
 		this.optionContainer = null;
 		this.jPlaySpeedRange = null;
+		this.groupPlayStates = null;
 		this.buttons = {};
 
 		this.containerElement = containerElement;
 		this.buildInnerContainers();
 		this.buildButtons();
 		this.buildOptionWidgets();
+		
+		this.makeButtonGroups();
 	}
 	
 	TimelineControlPanel.prototype = {
@@ -135,8 +138,29 @@ if (!window.mobmap) { window.mobmap={}; }
 						btnObj.setSeparated(true);
 						nextSeparated = false;
 					}
+					
+					/*
+					var handlerName = "onToolButtonClick_" + buttonName;
+					var handlerMethod = this[handlerName];
+					if (handlerMethod) {
+					}
+					*/
 				}
 			}
+		},
+		
+		makeButtonGroups: function() {
+			var b = this.buttons;
+			this.groupPlayStates = new mobmap.ToolButtonGroup("play-states");
+			this.groupPlayStates.addButton(b.stop);
+			this.groupPlayStates.addButton(b.play);
+			this.groupPlayStates.addButton(b.ff);
+			this.groupPlayStates.selectByName('stop');
+			
+			this.groupPlayStates.eventDispatcher().bind(
+				mobmap.ToolButtonGroup.EVENT_SELECT_CHANGED,
+				this.onPlayStateToggleChange.bind(this)
+			);
 		},
 		
 		buildOptionWidgets: function() {
@@ -145,6 +169,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.jPlaySpeedRange = $(rg);
 			this.optionContainer.appendChild(rg);
+		},
+		
+		onPlayStateToggleChange: function(e, group, selectedButton) {
 		}
 	};
 	
