@@ -13,7 +13,7 @@
 .mm-tool-layoutcell-controls {
 	min-width: 115px;
 	width: 115px;
-	background: linear-gradient(to bottom, #eee, #ccc);
+	background: linear-gradient(to bottom, #e0e0e0, #c0c0c0);
 }
 
 .mm-tool-layoutcell-timedisp {
@@ -33,6 +33,11 @@
 	text-align: center;
 	text-shadow: 0 2px 0 #000;
 	margin-bottom: -1px;
+}
+
+.mm-tool-layoutcell-edittool {
+	background: linear-gradient(to bottom, #e0e0e0, #f0f0f0, #eee, #eee, #e0e0e0);
+	height: 20px;
 }
 
 .mm-timeline-time-disp {

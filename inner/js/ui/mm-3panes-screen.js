@@ -11,7 +11,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		// ----------------------------------------------------------
 
 		this.jEventDispatcherElement = $(document.body);
-		this.toolsHeight = 40;
+		this.toolsHeight = 60;
 		this.fetchElements(paneOuterId, bodyPaneId, toolsPaneId);
 		
 		this.fitToWindow();

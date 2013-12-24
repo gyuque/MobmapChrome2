@@ -7,12 +7,14 @@ if (!window.mobmap) { window.mobmap={}; }
 	function ToolPane(containerElement) {
 		// Initialize - - - - - - - -
 		this.ownerApp = null;
+		this.layoutCell_Toolbar  = null;
 		this.layoutCell_Controls = null;
 		this.layoutCell_TimeDisp = null;
 		this.layoutCell_Timeline = null;
 		this.jLayoutCell_Timeline = null;
 		
 		this.timelineBar = new mobmap.TimelineBar();
+		this.editToolBar = new mobmap.MobmapEditToolBar();
 		this.controlPanel = null;
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
@@ -38,6 +40,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var l_tbl = this.buildLayoutTable();
 			
 			this.layoutCell_Timeline.appendChild( this.timelineBar.element );
+			this.layoutCell_Toolbar.appendChild( this.editToolBar.element );
 			this.containerElement.appendChild( l_tbl );
 			
 			this.controlPanel = new TimelineControlPanel(this.layoutCell_Controls);
@@ -46,7 +49,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		buildLayoutTable: function() {
 			var tbl = document.createElement('table');
 			tbl.setAttribute('class', 'mm-tool-layout');
+			var trToolBar = document.createElement('tr');
 			var tr = document.createElement('tr');
+			
+			var tdEditToolBar = document.createElement('td');
+			tdEditToolBar.setAttribute('class', 'mm-tool-layoutcell-edittool');
+			tdEditToolBar.colSpan = 3;
 			
 			var td0 = document.createElement('td');
 			var td1 = document.createElement('td');
@@ -66,6 +74,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			td1.appendChild(spanTime);
 			// - - - - - - - - - - - - - - - - - - - - - - - -
 
+			this.layoutCell_Toolbar = tdEditToolBar;
 			this.layoutCell_Controls = td0;
 			this.layoutCell_TimeDisp = td1;
 			this.layoutCell_Timeline = td2;
@@ -74,6 +83,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			tr.appendChild(td0);
 			tr.appendChild(td1);
 			tr.appendChild(td2);
+			trToolBar.appendChild(tdEditToolBar);
+			tbl.appendChild(trToolBar);
 			tbl.appendChild(tr);
 			return tbl;
 		},
