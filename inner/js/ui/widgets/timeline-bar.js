@@ -257,6 +257,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.changeZoomOutButtonVisibility();
 			this.longSpanBar.fullViewport();
 		},
+		
+		adjustDateTimeIfOutsideRange: function() {
+			var d = this.boundData;
+			if (d) {
+				var t = d.getCurrentTime();
+				if (t < this.longSpanBar.startTime) {
+					t = this.longSpanBar.startTime;
+				} else if (t > this.longSpanBar.endTime) {
+					t = this.longSpanBar.endTime;
+				}
+				
+				if (t !== d.getCurrentTime()) {
+					d.setCurrentTime(t);
+				}
+			}
+		},
 
 		pushCurrentViewport: function() {
 			var vStart = this.longSpanBar.viewportStartTime;

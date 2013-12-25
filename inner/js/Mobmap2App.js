@@ -70,8 +70,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				// Valid range
 
 				if (this.toolPane) {
-					this.toolPane.getTimelineBar().setTimeRange(allRange.start, allRange.end);
-					this.toolPane.getTimelineBar().resetAndFullViewport();
+					var tl = this.toolPane.getTimelineBar();
+					tl.setTimeRange(allRange.start, allRange.end);
+					tl.resetAndFullViewport();
+					tl.adjustDateTimeIfOutsideRange();
 				}
 			}
 		},
