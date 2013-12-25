@@ -20,6 +20,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			end: 0
 		};
 		
+		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.movingData = null;
 	}
 	
