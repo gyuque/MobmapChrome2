@@ -371,7 +371,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			g.save();
 			
-			g.fillStyle = "#aaa";
+			g.fillStyle = "#888";
 			g.fillRect(0,y,w,h);
 
 			g.fillStyle = "#111";
