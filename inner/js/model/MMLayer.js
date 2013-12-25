@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	function MovingObjectLayer() {
+		this.ownerList = null;
 		this.sourceLoader = null;
 		this.primaryView = null;
 		this._lvObserved = false;
@@ -27,13 +28,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.jElement;
 		},
 		
+		setOwnerList: function(ls) {
+			this.ownerList = ls;
+		},
+		
+		setParentEventElement: function(parentEventElement) {
+			var selfElem = this.jElement[0];
+			var cur = selfElem.parentNode;
+			if (cur === parentEventElement) { return; }
+			if (cur) { cur.removeChild(selfElem); }
+			
+			parentEventElement.appendChild(selfElem);
+		},
+		
 		hasPrimaryView: function() {
 			return !!this.primaryView;
 		},
 		
 		initTimeRange: function() {
 			this.dataTimeRange.start = Number.MAX_VALUE;
-			this.dataTimeRange.end   = Number.MIN_VALUE;
+			this.dataTimeRange.end   = -1;
 		},
 
 		loadFromLoader: function(loader) {

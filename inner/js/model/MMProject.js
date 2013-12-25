@@ -3,8 +3,8 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	function MMProject() {
-		this.layerList = new LayerList();
 		this.jElement = $(document.createElement('span'));
+		this.layerList = new LayerList(this.jElement[0]);
 	}
 	
 	MMProject.LAYERLIST_CHANGE = "mmprj-event-layerlist-change";
@@ -24,13 +24,31 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		triggerEvent: function(eventType) {
 			this.eventDispatcher().trigger(eventType, this);
+		},
+		
+		getAllLayersTimeRange: function() {
+			var start_t = Number.MAX_VALUE;
+			var end_t   = -1;
+			
+			var len = this.layerList.getCount();
+			for (var i = 0;i < len;++i) {
+				var lyr = this.layerList.getLayerAt(i);
+				if (lyr.dataTimeRange.start < start_t) { start_t = lyr.dataTimeRange.start; }
+				if (lyr.dataTimeRange.end > end_t) { end_t = lyr.dataTimeRange.end; }
+			}
+			
+			return {
+				start: start_t,
+				end: end_t
+			};
 		}
 	};
 	
 	// ---------------------------
-	function LayerList() {
+	function LayerList(parentEventElement) {
 		// From bottom to top
 		this.array = [];
+		this.parentEventElement = parentEventElement;
 	}
 	
 	LayerList.prototype = {
@@ -47,6 +65,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				return;
 			}
 
+			newLayer.setOwnerList(this);
+			newLayer.setParentEventElement(this.parentEventElement);
 			this.array.push(newLayer);
 		},
 		

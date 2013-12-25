@@ -31,10 +31,42 @@ if (!window.mobmap) { window.mobmap={}; }
 		setProject: function(prj) {
 			this.currentProject = prj;
 			this.eventDispatcher().trigger(Mobmap2App.PROJECT_SET_EVENT, prj);
+			this.observeProjectEvents(prj);
 		},
 
 		getCurrentPeoject: function() {
 			return this.currentProject;
+		},
+		
+		observeProjectEvents: function(prj) {
+			prj.eventDispatcher().
+			 bind(
+				mobmap.MMProject.LAYERLIST_CHANGE,
+				this.onProjectLayerlistChange.bind(this)
+			 ).
+			 bind(
+				mobmap.LayerEvent.LoadFinish,
+				this.onAnyLayerLoadFinish.bind(this)
+			 );
+		},
+
+		onProjectLayerlistChange: function(e, senderProject) {
+			if (senderProject === this.currentProject) {
+				this.refreshAllLayersTimeRange();
+			}
+		},
+		
+		onAnyLayerLoadFinish: function(e, senderLayer) {
+			this.refreshAllLayersTimeRange();
+		},
+		
+		refreshAllLayersTimeRange: function() {
+			var allRange = this.currentProject.getAllLayersTimeRange();
+			if (allRange.end > allRange.start && allRange.end > 0) {
+				// Valid range
+
+				console.log(allRange);
+			}
 		},
 
 		// -----------------------------------------------------
