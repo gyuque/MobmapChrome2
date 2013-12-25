@@ -92,6 +92,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		onContainerResize: function(e) {
 			var cellWidth = this.jLayoutCell_Timeline.width();
 			this.timelineBar.setWidth(cellWidth);
+		},
+		
+		getTimelineBar: function() {
+			return this.timelineBar;
 		}
 	};
 	

@@ -4,7 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	var TL_DEFAULT_HEIGHT = 40;
 	var RE_HTML_TAG = /html/i ;
-	var ZOOM_ANIMATION_DIVS = 13;
+	var ZOOM_ANIMATION_DIVS = 11;
 	
 	function TimelineBar() {
 		BarButton.appendButtonStyleSheet();
@@ -252,6 +252,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.changeZoomOutButtonVisibility();
 		},
 
+		resetAndFullViewport: function() {
+			this.viewportStack.length = 0;
+			this.changeZoomOutButtonVisibility();
+			this.longSpanBar.fullViewport();
+		},
+
 		pushCurrentViewport: function() {
 			var vStart = this.longSpanBar.viewportStartTime;
 			var vEnd = this.longSpanBar.viewportEndTime;
@@ -292,7 +298,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				// finish
 				this.zoomAnimationParams.currentFrame = 0;
 			} else {
-				setTimeout(this.tickZoomAnimation.bind(this), 15);
+				setTimeout(this.tickZoomAnimation.bind(this), 8);
 			}
 		},
 		

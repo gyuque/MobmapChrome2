@@ -32,6 +32,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.currentProject = prj;
 			this.eventDispatcher().trigger(Mobmap2App.PROJECT_SET_EVENT, prj);
 			this.observeProjectEvents(prj);
+			
+			if (this.toolPane) {
+				this.toolPane.getTimelineBar().bindDateTime( prj.currentDateTime );
+			}
 		},
 
 		getCurrentPeoject: function() {
@@ -65,7 +69,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (allRange.end > allRange.start && allRange.end > 0) {
 				// Valid range
 
-				console.log(allRange);
+				if (this.toolPane) {
+					this.toolPane.getTimelineBar().setTimeRange(allRange.start, allRange.end);
+					this.toolPane.getTimelineBar().resetAndFullViewport();
+				}
 			}
 		},
 
