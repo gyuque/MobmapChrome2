@@ -52,6 +52,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				mobmap.LayerEvent.LoadFinish,
 				this.onAnyLayerLoadFinish.bind(this)
 			 );
+			
+			prj.currentDateTime.eventDispatcher().bind(
+				mobmap.DateTime.CURRENT_TIME_CHANGE_EVENT,
+				this.onCurrentDateTimeChange.bind(this)
+			);
 		},
 
 		onProjectLayerlistChange: function(e, senderProject) {
@@ -76,6 +81,11 @@ if (!window.mobmap) { window.mobmap={}; }
 					tl.adjustDateTimeIfOutsideRange();
 				}
 			}
+		},
+
+		onCurrentDateTimeChange: function(e, sender) {
+			var t = sender.getCurrentTime();
+			console.log( t );
 		},
 
 		// -----------------------------------------------------
