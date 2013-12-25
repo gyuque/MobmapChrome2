@@ -12,6 +12,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.layoutCell_TimeDisp = null;
 		this.layoutCell_Timeline = null;
 		this.jLayoutCell_Timeline = null;
+		this.elementDateDisp = null;
+		this.elementTimeDisp = null;
 		
 		this.timelineBar = new mobmap.TimelineBar();
 		this.editToolBar = new mobmap.MobmapEditToolBar();
@@ -24,6 +26,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 		
 		this.setupWidgets();
+		this.setupDisplayArea();
 	}
 	
 	ToolPane.prototype = {
@@ -44,6 +47,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.containerElement.appendChild( l_tbl );
 			
 			this.controlPanel = new TimelineControlPanel(this.layoutCell_Controls);
+		},
+		
+		setupDisplayArea: function() {
+			this.timelineBar.setDateDisplayElement(this.elementDateDisp);
+			this.timelineBar.setTimeDisplayElement(this.elementTimeDisp);
 		},
 		
 		buildLayoutTable: function() {
@@ -72,6 +80,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			spanTime.setAttribute('class', 'mm-timeline-time-disp');
 			spanTime.innerHTML = "00:00:00";
 			td1.appendChild(spanTime);
+			
+			this.elementDateDisp = spanDate;
+			this.elementTimeDisp = spanTime;
 			// - - - - - - - - - - - - - - - - - - - - - - - -
 
 			this.layoutCell_Toolbar = tdEditToolBar;
