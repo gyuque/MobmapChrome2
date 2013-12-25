@@ -7,6 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MapPane(containerElement) {
 		this.gmap = null;
 		this.mobLayer = null;
+		this.ownerApp = null;
 		
 		this.initialLocation = {
 			zoom: 8,
@@ -21,9 +22,20 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MapPane.prototype = {
+		setApp: function(a) {
+			this.ownerApp = a;
+		},
+		
 		observeContainerEvents: function(app3PanesView) {
 			app3PanesView.eventDispatcher().bind(mobmap.Mobmap3PanesScreen.RESIZE_EVENT,
 				this.onContainerResize.bind(this));
+		},
+		
+		observeProjectEvents: function(prj) {
+			prj.currentDateTime.eventDispatcher().bind(
+				mobmap.DateTime.CURRENT_TIME_CHANGE_EVENT,
+				this.onCurrentDateTimeChange.bind(this)
+			);
 		},
 		
 		onContainerResize: function() {
@@ -61,6 +73,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				google.maps.MapTypeId.TERRAIN,
 				DARKMAP_ID
 			];
+		},
+
+		onCurrentDateTimeChange: function(e, sender) {
+			this.redraw();
+		},
+
+		redraw: function() {
+			var targetProject = this.ownerApp.getCurrentPeoject();
+			if (!targetProject) {return;}
+			
+			var targetTime = targetProject.currentDateTime;
+			var sec = targetTime.getCurrentTime();
+			
+			console.log("render "+sec);
 		}
 	};
 

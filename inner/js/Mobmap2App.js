@@ -32,6 +32,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.currentProject = prj;
 			this.eventDispatcher().trigger(Mobmap2App.PROJECT_SET_EVENT, prj);
 			this.observeProjectEvents(prj);
+			this.mapPane.observeProjectEvents(prj);
 			
 			if (this.toolPane) {
 				this.toolPane.getTimelineBar().bindDateTime( prj.currentDateTime );
@@ -84,8 +85,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onCurrentDateTimeChange: function(e, sender) {
-			var t = sender.getCurrentTime();
-			console.log( t );
 		},
 
 		// -----------------------------------------------------
@@ -147,6 +146,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		connectWithViews: function() {
 			this.toolPane.setApp(this);
 			this.infoPane.setApp(this);
+			this.mapPane.setApp(this);
 			this.layersView.setApp(this);
 		}
 	};
