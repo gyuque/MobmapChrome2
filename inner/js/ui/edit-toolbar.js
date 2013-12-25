@@ -2,8 +2,13 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var editbuttonsSpriteManager = null;
 	
 	function MobmapEditToolBar() {
+		if (!editbuttonsSpriteManager) {
+			editbuttonsSpriteManager = new mobmap.ToolButtonSpriteManager('images/editbuttons-combined.png');
+		}
+		
 		this.element = document.createElement("table");
 		this.tableRow = document.createElement("tr");
 		this.element.appendChild(this.tableRow);
@@ -40,7 +45,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				var sp_index = buttonData[1];
 				
 				var btnObj = new mobmap.ToolButton(bname, 25, 18);
-				generatedButtonMap[bname] = btnObj; 
+				btnObj.configureStyleSheet(editbuttonsSpriteManager, sp_index);
+				generatedButtonMap[bname] = btnObj;
+				
+				targetCol.appendChild(btnObj.element);
 			}
 		},
 		
@@ -48,8 +56,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tdHeadCol = document.createElement('th');
 			var tdBodyCol = document.createElement('td');
 			
-			tdHeadCol.setAttribute('mm-editbarcol-caption');
-			tdBodyCol.setAttribute('mm-editbarcol-body');
+			tdHeadCol.setAttribute('class', 'mm-editbarcol-caption');
+			tdBodyCol.setAttribute('class', 'mm-editbarcol-body editbarcol-body-'+name);
 			tdHeadCol.appendChild( document.createTextNode(initialText) );
 			
 			this.tableRow.appendChild(tdHeadCol);

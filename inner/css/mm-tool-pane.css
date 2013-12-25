@@ -36,8 +36,24 @@
 }
 
 .mm-tool-layoutcell-edittool {
-	background: linear-gradient(to bottom, #e0e0e0, #f0f0f0, #eee, #eee, #e0e0e0);
-	height: 20px;
+	background: linear-gradient(to bottom, #efefef, #f3f3f3, #f3f3f3, #f3f3f3, #f3f3f3, #ddd);
+	height: 28px;
+}
+
+.mm-editbarcol-caption {
+	font-weight: 100;
+	color: #555;
+	font-size: 8px;
+	padding-left: 0.4em;
+	padding-right: 0.3em;
+}
+
+.mm-editbarcol-body img {
+	vertical-align: middle;
+}
+
+.editbarcol-body-sel img {
+	margin: 0 1px;
 }
 
 .mm-timeline-time-disp {

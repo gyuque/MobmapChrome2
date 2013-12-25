@@ -473,7 +473,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		drawBackground: function() {
 			var g = this.g;
-			g.fillStyle = "#aaa";
+			g.fillStyle = "#bbb";
 			g.fillRect(0, 0, this.width, this.height);
 			g.fillStyle = this.backgroundGradient;
 			g.fillRect(1, 1, this.width-2, this.height-2);
@@ -618,7 +618,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			grad.addColorStop(0  ,'#eee');
 			grad.addColorStop(0.1,'#ddd');
 			grad.addColorStop(0.7,'#bbb');
-			grad.addColorStop(1  ,'#999');
+			grad.addColorStop(1  ,'#aaa');
 			return grad;
 		}
 	};
