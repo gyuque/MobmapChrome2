@@ -68,7 +68,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		return RGBlist;
 	};
 	
-	MarkerGenerator.renderDotMarker = function(g, baseColor) {
+	MarkerGenerator.renderDotMarker = function(g, baseColor, blendColor) {
 		g.beginPath();
 		g.moveTo(0, 0);
 		g.lineTo(7, 0);
@@ -84,6 +84,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		g.beginPath();
 		g.arc(3.5, 3.5, 3, 0, Math.PI*2);
 		g.fill();
+		
+		if (blendColor) {
+			g.save();
+			g.fillStyle = blendColor;
+			g.globalAlpha = 0.9;
+			g.fillRect(-1, -1, 9, 9);
+			g.restore();
+		}
 
 		// Remove outer area
 		g.clearRect(0, 0, 2, 1);
@@ -108,7 +116,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.save();
 			g.translate(ox + x, oy);
 			MarkerGenerator.renderDotMarker(g, baseColorList[i]);
-			
+			g.restore();
+
+			g.save();
+			g.translate(ox + x, oy + yStep);
+			MarkerGenerator.renderDotMarker(g, baseColorList[i], '#666');
 			g.restore();
 
 			x += xStep;
