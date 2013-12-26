@@ -17,11 +17,12 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.jElement = $(this.element);
 		this.jHeadingAreaElement = $(this.headingAreaElement);
-		this.jClosedContentElement = $(this.closedContentElement);
-		this.jExpandedContentElement = $(this.expandedContentElement);
+		this.jClosedContentElement = $(this.closedContentElement).text("Closed content here.");
+		this.jExpandedContentElement = $(this.expandedContentElement).text("Expanded content here.");
 		
 		this.element.setAttribute('class', 'mm-expandable-panel-outer');
 		this.headingAreaElement.setAttribute('class', 'mm-expandable-panel-heading');
+		this.closedContentElement.setAttribute('class', 'mm-expandable-panel-closed');
 		this.expandedContentElement.setAttribute('class', 'mm-expandable-panel-expanded');
 		
 		this.jHeadingAreaElement.click(this.onHeadingClick.bind(this));

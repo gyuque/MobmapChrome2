@@ -26,7 +26,7 @@
 	display: block;
 	background-color: #d6e5d0;
 	background: linear-gradient(to bottom, #eef8e0, #d6e5d0, #b6c5b0);
-	box-shadow: 0 1px 10px rgba(0,0,0,0.3) inset;
+	box-shadow: 0 1px 10px rgba(0,0,0,0.2) inset;
 	margin: 2px;
 	padding-top: 2px;
 	padding-bottom: 2px;
@@ -39,7 +39,7 @@
 
 .mm-timeline-date-disp {
 	font-family: monospace;
-	color: #000;
+	color: rgba(0,0,0,0.8);
 	font-size: 9px;
 	font-weight: bold;
 	display: block;
@@ -50,7 +50,7 @@
 
 .mm-timeline-time-disp {
 	font-family: monospace;
-	color: #000;
+	color: rgba(0,0,0,0.8);
 	font-size: 11px;
 	font-weight: bold;
 	display: block;
@@ -89,7 +89,7 @@
 
 .mm-tl-playoption-container input[type=range] {
 	height: 8px;
-	width: 70px;
+	width: 90px;
 }
 
 .mm-tl-playoption-container {

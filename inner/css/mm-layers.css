@@ -26,6 +26,30 @@
 	border-bottom: 1px solid #ccc;
 }
 
+.mm-layer-view-item-box .mm-expandable-panel-outer {
+	margin: 1px;
+	border: 1px solid #999;
+}
+
+.mm-layer-view-item-box .mm-expandable-panel-heading {
+	background: #eee url(../images/expand-mark.png) 0 0 no-repeat;
+	box-shadow: 0 -2px 1px #ddd inset;
+	cursor: pointer;
+	font-size: 9px;
+	padding: 2px 2px 2px 13px;
+}
+
+.mm-layer-view-item-box .expanded .mm-expandable-panel-heading {
+	background: #eee url(../images/expand-mark.png) 0 -24px no-repeat;
+}
+
+.expanded .mm-expandable-panel-closed {display: none;}
+.mm-expandable-panel-expanded {display:none;}
+.mm-layer-view-item-box .expanded .mm-expandable-panel-expanded {
+	display: block;
+}
+
+
 .mm-layer-loading-label {
 	font-size: 10px;
 	margin: 0;
