@@ -95,7 +95,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				var layer = ls.getLayerAt(i);
 				if (!layer.hasPrimaryView()) {
 					
-					var lv = new LayerItemView();
+					var lv = new LayerItemView(layer);
 					layer.primaryView = lv;
 					this.appendLayerItemView(layer.primaryView,
 						nextInView ? nextInView.primaryView : null);
@@ -143,7 +143,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	// Layer item view
-	function LayerItemView() {
+	function LayerItemView(layer) {
+		this.boundLayer = layer;
+		
 		this.progressBar = null;
 		this.progressLabel = null;
 		this.subCaptionElement = null;
@@ -182,7 +184,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		buildMarkerConfigurationPanel: function() {
-			this.markerPanel = new mobmap.MarkerConfigurationPanel();
+			this.markerPanel = new mobmap.MarkerConfigurationPanel(this.boundLayer.markerGenerator);
 			this.markerPanel.hide();
 			this.element.appendChild(this.markerPanel.element);
 		},

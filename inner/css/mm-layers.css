@@ -49,6 +49,9 @@
 	display: block;
 }
 
+.mm-layer-view-item-box .mm-expandable-panel-closed {
+	padding: 3px;
+}
 
 .mm-layer-loading-label {
 	font-size: 10px;
@@ -66,4 +69,9 @@
 
 .mm-layer-view-item-box .mm-mini-progress-bar {
 	margin: 2px auto 4px;
+}
+
+.mm-marker-preview-canvas {
+	background-color: #444;
+	border: 1px solid #ccc;
 }
