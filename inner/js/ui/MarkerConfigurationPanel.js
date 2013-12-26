@@ -17,7 +17,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			var cc = this.expandablePanel.closedContentElement;
 			cc.innerHTML = '';
 			cc.appendChild( this.markerGenerator.previewCanvas );
-			cc.appendChild( this.markerGenerator.resultCanvas );
 		},
 		
 		show: function() { this.expandablePanel.show(); },

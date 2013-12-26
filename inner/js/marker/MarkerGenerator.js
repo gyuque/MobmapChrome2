@@ -46,6 +46,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			var baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220);
 			
 			MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
+			MarkerGenerator.renderPreviewImage(
+				this.previewG,
+				this.previewCanvas.width - 0,
+				this.previewCanvas.height - 0,
+				this.resultCanvas
+			);
 		}
 	};
 	
@@ -145,6 +151,24 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return "rgb(" +cR+ "," +cG+ "," +cB+ ")";
 	};
+
+	MarkerGenerator.renderPreviewImage = function(destG, destW, destH, sourceCanvas) {
+		// Generate fade image
+		var g = destG;
+		var x;
+		var a;
+		var h = destH;
+		for (x = 0;x < destW;++x) {
+			a = 2.0 - x / (destW / 2);
+			if (a > 1) {a = 1;}
+			
+			g.save();
+			g.globalAlpha = a;
+			g.drawImage(sourceCanvas, x, 0, 1, h,
+			                          x, 0, 1, h);
+			g.restore();
+		}
+	}
 
 	// --------------
 	function MarkerGeneratorOptions() {
