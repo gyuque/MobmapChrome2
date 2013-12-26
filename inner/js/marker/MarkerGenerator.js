@@ -31,6 +31,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		testDummyMarkerGenerator: function() {
 			var op = this.options;
 			var baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220);
+			
+			MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight);
 		}
 	};
 	
@@ -55,6 +57,19 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	MarkerGenerator.renderDotMarker = function(g) {
 		
+	};
+
+	MarkerGenerator.renderDotMarkerSequence = function(g, n, xStep, yStep) {
+		var x = 0;
+		for (var i = 0;i < n;++i) {
+			g.save();
+			g.translate(x, 0);
+			MarkerGenerator.renderDotMarker(g);
+			
+			g.restore();
+
+			x += xStep;
+		}
 	};
 	
 	// --------------
