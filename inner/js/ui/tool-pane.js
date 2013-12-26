@@ -71,15 +71,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			td1.setAttribute('class', 'mm-tool-layoutcell-timedisp');
 
 			// Date and Time display text - - - - - - - - - -
+			var displayAreaContainer = document.createElement('span');
+			displayAreaContainer.setAttribute('class', 'mm-timeline-disp-container');
+			td1.appendChild(displayAreaContainer);
+			
 			var spanDate = document.createElement('span');
 			spanDate.setAttribute('class', 'mm-timeline-date-disp');
 			spanDate.innerHTML = "1970-01-01";
-			td1.appendChild(spanDate);
+			displayAreaContainer.appendChild(spanDate);
 			
 			var spanTime = document.createElement('span');
 			spanTime.setAttribute('class', 'mm-timeline-time-disp');
 			spanTime.innerHTML = "00:00:00";
-			td1.appendChild(spanTime);
+			displayAreaContainer.appendChild(spanTime);
 			
 			this.elementDateDisp = spanDate;
 			this.elementTimeDisp = spanTime;
