@@ -14,6 +14,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.resultG = this.resultCanvas.getContext('2d');
 		
 		this.configureCanvas();
+		
+		this.testDummyMarkerGenerator();
 	}
 	
 	MarkerGenerator.prototype = {
@@ -24,7 +26,35 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.previewCanvas.width = w;
 			this.previewCanvas.height = h;
+		},
+		
+		testDummyMarkerGenerator: function() {
+			var op = this.options;
+			var baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220);
 		}
+	};
+	
+	MarkerGenerator.generateRainbowColors = function(n, hueMax) {
+		var RGBlist = [];
+		var tmpC = [0,0,0];
+		
+		for (var i = 0;i < n;++i) {
+			var t = i / (n - 0.99);
+			var hue = Math.floor(hueMax * t);
+			tmpC[0] = hue;
+			tmpC[1] = 1;
+			tmpC[2] = 0.8;
+
+			hsvToRGB(tmpC);
+			var rgb = new RGBColor(tmpC[0], tmpC[1], tmpC[2]);
+			RGBlist.push(rgb);
+		}
+		
+		return RGBlist;
+	};
+	
+	MarkerGenerator.renderDotMarker = function(g) {
+		
 	};
 	
 	// --------------

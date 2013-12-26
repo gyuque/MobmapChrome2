@@ -92,4 +92,60 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return el;
 	};
+	
+	aGlobal.RGBColor = function(r,g,b) {
+		this.r = r || 0;
+		this.g = g || 0;
+		this.b = b || 0;
+	};
+	
+	aGlobal.hsvToRGB = function(aHSV) {
+		var hue = aHSV[0] % 360;
+		var sat = aHSV[1];
+		var v = aHSV[2];
+		var r, g, b;
+		
+		var h = hue / 60.0;
+		var i = Math.floor(h);
+		var f = h - i;
+		var p = v * (1.0 - sat);
+		var q = (i%2) ? v * (1.0 - f * sat) : v * (1.0 - (1.0 - f) * sat);
+		
+		switch(i) {
+		case 0:
+	 		r = v;
+			g = q;
+			b = p;
+			break;
+		case 1:
+ 			r = q;
+			g = v;
+			b = p;
+			break;
+		case 2:
+			r = p;
+			g = v;
+			b = q;
+			break;
+		case 3:
+			r = p;
+			g = q;
+			b = v;
+			break;
+		case 4:
+			r = q;
+			g = p;
+			b = v;
+			break;
+		case 5:
+			r = v;
+			g = p;
+			b = q;
+			break;
+		}
+		
+		aHSV[0] = Math.floor(r * 255);
+		aHSV[1] = Math.floor(g * 255);
+		aHSV[2] = Math.floor(b * 255);
+	}
 })(window);
