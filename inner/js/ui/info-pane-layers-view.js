@@ -137,7 +137,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerLoadFinish: function(e, layer) {
 			if (layer.hasPrimaryView()) {
-				layer.primaryView.hideProgress();
+				layer.primaryView.setLayerReady(true);
 			}
 		}
 	};
@@ -147,10 +147,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.progressBar = null;
 		this.progressLabel = null;
 		this.subCaptionElement = null;
+		this.markerPanel = null;
 		
 		this.element = $H('div', 'mm-layer-view-item-box');
 		this.jElement = $(this.element);
 		this.build();
+		
+		this.layerReady = false;
 	}
 	
 	LayerItemView.prototype = {
@@ -174,6 +177,14 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.element.appendChild(this.progressLabel);
 			this.element.appendChild(this.progressBar.element);
+			
+			this.buildMarkerConfigurationPanel();
+		},
+		
+		buildMarkerConfigurationPanel: function() {
+			this.markerPanel = new mobmap.MarkerConfigurationPanel();
+			this.markerPanel.hide();
+			this.element.appendChild(this.markerPanel.element);
 		},
 		
 		setSubCaption: function(label) {
@@ -187,6 +198,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		hideProgress: function() {
 			this.progressBar.hide();
 			this.progressLabel.style.display = 'none';
+		},
+		
+		setLayerReady: function(r) {
+			this.layerReady = r;
+			this.toggleVisibilities();
+		},
+		
+		toggleVisibilities: function() {
+			if (this.layerReady) {
+				this.hideProgress();
+				this.markerPanel.show();
+			}
 		}
 	};
 	
