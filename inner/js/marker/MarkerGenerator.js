@@ -45,7 +45,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var op = this.options;
 			var baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220);
 			
-			MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight);
+			MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
 		}
 	};
 	
@@ -55,7 +55,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		for (var i = 0;i < n;++i) {
 			var t = i / (n - 0.99);
-			var hue = Math.floor(hueMax * t);
+			var hue = Math.floor(hueMax * (1-t));
 			tmpC[0] = hue;
 			tmpC[1] = 1;
 			tmpC[2] = 0.8;
@@ -68,7 +68,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		return RGBlist;
 	};
 	
-	MarkerGenerator.renderDotMarker = function(g) {
+	MarkerGenerator.renderDotMarker = function(g, baseColor) {
 		g.beginPath();
 		g.moveTo(0, 0);
 		g.lineTo(7, 0);
@@ -76,11 +76,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		g.lineTo(0, 7);
 		g.clip();
 		
-		g.fillStyle = "#000";
+		g.fillStyle = '#000';
 		g.fillRect(-1, -1, 9, 9);
 
 		// Inner fill
-		g.fillStyle = '#ff0';
+		g.fillStyle = MarkerGenerator.createBallGradient(g, baseColor.r, baseColor.g, baseColor.b, 1);
 		g.beginPath();
 		g.arc(3.5, 3.5, 3, 0, Math.PI*2);
 		g.fill();
@@ -99,7 +99,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		g.clearRect(6, 5, 1, 1);
 	};
 
-	MarkerGenerator.renderDotMarkerSequence = function(g, n, xStep, yStep) {
+	MarkerGenerator.renderDotMarkerSequence = function(g, n, xStep, yStep, baseColorList) {
 		var ox = 4;
 		var oy = 4;
 
@@ -107,7 +107,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		for (var i = 0;i < n;++i) {
 			g.save();
 			g.translate(ox + x, oy);
-			MarkerGenerator.renderDotMarker(g);
+			MarkerGenerator.renderDotMarker(g, baseColorList[i]);
 			
 			g.restore();
 
@@ -115,6 +115,25 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 	
+	MarkerGenerator.createBallGradient = function(g, cR, cG, cB, hdiv) {
+		hdiv = (hdiv < 2) ? 1 : hdiv;
+		var gr = g.createRadialGradient(3.3, 2.5, 1, 3.5, 3, 4);
+		gr.addColorStop(0  , this.toRGB(cR, cG, cB, 130 / hdiv));
+		gr.addColorStop(0.3, this.toRGB(cR, cG, cB, 50 / hdiv));
+		gr.addColorStop(1  , this.toRGB(cR, cG, cB));
+		
+		return gr;
+	};
+	
+	MarkerGenerator.toRGB = function(cR, cG, cB, additional) {
+		additional = additional || 0;
+		cR = Math.min(255, cR + additional);
+		cG = Math.min(255, cG + additional);
+		cB = Math.min(255, cB + additional);
+		
+		return "rgb(" +cR+ "," +cG+ "," +cB+ ")";
+	};
+
 	// --------------
 	function MarkerGeneratorOptions() {
 		this.jEventElement = $(document.createElement('span'));

@@ -25,7 +25,7 @@
 .mm-timeline-disp-container {
 	display: block;
 	background-color: #d6e5d0;
-	background: linear-gradient(to bottom, #eef8e0, #d6e5d0, #b6c5b0);
+	background: linear-gradient(to bottom, #f3f8e0, #dce5d0, #bcc5b0);
 	box-shadow: 0 1px 10px rgba(0,0,0,0.2) inset;
 	margin: 2px;
 	padding-top: 2px;
