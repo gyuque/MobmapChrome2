@@ -26,9 +26,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.previewCanvas.width = w;
 			this.previewCanvas.height = h;
+
+			this.resultCanvas.width = w;
+			this.resultCanvas.height = h;
+		},
+		
+		clearCanvas: function() {
+			var w = this.resultCanvas.width - 0;
+			var h = this.resultCanvas.height - 0;
+			
+			this.previewG.clearRect(0, 0, w, h);
+			this.resultG.clearRect(0, 0, w, h);
 		},
 		
 		testDummyMarkerGenerator: function() {
+			this.clearCanvas();
+			
 			var op = this.options;
 			var baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220);
 			
@@ -56,14 +69,44 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	MarkerGenerator.renderDotMarker = function(g) {
+		g.beginPath();
+		g.moveTo(0, 0);
+		g.lineTo(7, 0);
+		g.lineTo(7, 7);
+		g.lineTo(0, 7);
+		g.clip();
 		
+		g.fillStyle = "#000";
+		g.fillRect(-1, -1, 9, 9);
+
+		// Inner fill
+		g.fillStyle = '#ff0';
+		g.beginPath();
+		g.arc(3.5, 3.5, 3, 0, Math.PI*2);
+		g.fill();
+
+		// Remove outer area
+		g.clearRect(0, 0, 2, 1);
+		g.clearRect(0, 1, 1, 1);
+
+		g.clearRect(0, 6, 2, 1);
+		g.clearRect(0, 5, 1, 1);
+
+		g.clearRect(5, 0, 2, 1);
+		g.clearRect(6, 1, 1, 1);
+
+		g.clearRect(5, 6, 2, 1);
+		g.clearRect(6, 5, 1, 1);
 	};
 
 	MarkerGenerator.renderDotMarkerSequence = function(g, n, xStep, yStep) {
+		var ox = 4;
+		var oy = 4;
+
 		var x = 0;
 		for (var i = 0;i < n;++i) {
 			g.save();
-			g.translate(x, 0);
+			g.translate(ox + x, oy);
 			MarkerGenerator.renderDotMarker(g);
 			
 			g.restore();
