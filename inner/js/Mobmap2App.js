@@ -5,7 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function Mobmap2App(appScreen) {
 		this.toolPane = this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
-		this.layerController = new mobmap.LayerController();
+		this.layerController = new mobmap.LayerController(this);
 		this.jEventDispatcherElement = $(document.body);
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
@@ -92,6 +92,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		// -----------------------------------------------------
 		// Operations
+		getMapPane: function() {
+			return this.mapPane;
+		},
+		
 		loadLocalCSVMovingData: function() {
 			this.localfilePicker.open();
 		},
@@ -134,6 +138,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetPaneElement = this.appScreen.getContentPaneElement();
 			this.mapPane = new mobmap.MapPane(targetPaneElement);
 			this.mapPane.observeContainerEvents(this.appScreen);
+			
+			this.layerController.observeMapPane(this.mapPane);
 		},
 		
 		setupInfoPane: function() {

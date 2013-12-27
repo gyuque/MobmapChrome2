@@ -20,9 +20,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.setupGoogleMaps();
 	}
 	
+	MapPane.NEED_OVERLAYS_RENDER_EVENT = "mappane-needs-overalys-render";
+	
 	MapPane.prototype = {
+		eventDispatcher: function() {
+			return this.jContainerElement;
+		},
+		
 		setApp: function(a) {
 			this.ownerApp = a;
+		},
+		
+		getGoogleMaps: function() {
+			return this.gmap;
 		},
 		
 		observeContainerEvents: function(app3PanesView) {
@@ -88,7 +98,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetTime = targetProject.currentDateTime;
 			var sec = targetTime.getCurrentTime();
 			
-			console.log("render "+sec);
+			this.eventDispatcher().trigger(MapPane.NEED_OVERLAYS_RENDER_EVENT, [this, sec]);
 		}
 	};
 
