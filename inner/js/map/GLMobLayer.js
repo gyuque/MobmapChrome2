@@ -33,6 +33,7 @@ function installMobLayer(pkg) {
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
 		
+		this.ownerObject = null;
 		this.canvasReadyCallback = null;
 		this.projectionGrid = new mobmap.FastProjectionGrid(9);
 	}

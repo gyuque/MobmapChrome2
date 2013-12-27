@@ -5,6 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function Mobmap2App(appScreen) {
 		this.toolPane = this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
+		this.layerController = new mobmap.LayerController();
 		this.jEventDispatcherElement = $(document.body);
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
@@ -58,6 +59,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				mobmap.DateTime.CURRENT_TIME_CHANGE_EVENT,
 				this.onCurrentDateTimeChange.bind(this)
 			);
+			
+			this.layerController.observeProject(prj);
 		},
 
 		onProjectLayerlistChange: function(e, senderProject) {

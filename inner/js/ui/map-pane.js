@@ -6,7 +6,6 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function MapPane(containerElement) {
 		this.gmap = null;
-		this.mobLayer = null;
 		this.ownerApp = null;
 		
 		this.initialLocation = {
@@ -61,9 +60,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			};
 
 			this.gmap = new google.maps.Map(this.containerElement, mapOptions);
+			/*
 			this.mobLayer = new mobmap.GLMobLayer();
 			this.mobLayer.canvasReadyCallback = this.onLayerCanvasReady.bind(this);
 			this.mobLayer.setMap(this.gmap);
+			*/
 		},
 		
 		generateDefaultMapTypeList: function() {
@@ -78,10 +79,6 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		onCurrentDateTimeChange: function(e, sender) {
 			this.redraw();
-		},
-		
-		onLayerCanvasReady: function() {
-			
 		},
 
 		redraw: function() {
