@@ -35,6 +35,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					mapOverlay = new mobmap.GLMobLayer();
 					var mapPane = this.ownerApp.getMapPane();
 					var gmap = mapPane.getGoogleMaps();
+					mapOverlay.markerPoolStack.createPoolOnTop();
 					
 					mapOverlay.setMap(gmap);
 					mapOverlay.ownerObject = lyr;
@@ -69,9 +70,21 @@ if (!window.mobmap) { window.mobmap={}; }
 				var layer   = ls[i].ownerObject;
 				
 				if (layer.shouldRenderAsPoints) {
+					this.fillMarkerPool(overlay, layer, targetTimeSec);
 					console.log("OV Render: "+targetTimeSec, overlay, layer);
 				}
 			}
+		},
+		
+		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
+			var markerPool = overlay.markerPoolStack.getAt(0);
+			var movingData = sourceLayer.movingData;
+			
+			// Prepare pick pool (if not ready)
+			if (!overlay._stockPickPool) {
+				overlay._stockPickPool = movingData.createPickPool();
+			}
+
 		}
 	};
 
