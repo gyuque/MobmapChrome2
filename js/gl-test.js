@@ -44,7 +44,10 @@
 		testMovingData.pickAt(mdPickPool, pickTime);
 		var len = mdPickPool.pickedCount;
 		
-		var pl = mobLayer.markerPool;
+		var pl = mobLayer.markerPoolStack.getAt(0);
+		if (!pl) {
+			throw "Bad MarkerPool:"+pl;
+		}
 		pl.begin(len);
 
 		var srcArray = mdPickPool.getArray();
@@ -97,6 +100,7 @@
 		// ----------------------------------------------
 		
 		gllayer = new mobmap.GLMobLayer();
+		gllayer.markerPoolStack.createPoolOnTop();
 		
 		gllayer.canvasReadyCallback = function() {
 			gllayer.setMarkerImage(testTextureImage);

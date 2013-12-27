@@ -12,7 +12,7 @@ function installMobLayer(pkg) {
 		this.canvas = null;
 		this.cachedDiv = null;
 		this.jCachedDiv = null;
-		this.markerPool = new MarkerPool();
+		this.markerPoolStack = new MarkerPoolStack();
 		this.bufferCapacityInVertices = 48000;
 		this.vertexDimension = 2;
 		
@@ -176,8 +176,7 @@ function installMobLayer(pkg) {
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-		this.prepareRendering();
-		this.renderPooledMarkers();
+		this.renderLayerStack();
 
 		gl.flush();
 	};
@@ -210,8 +209,21 @@ function installMobLayer(pkg) {
 		gl.uniformMatrix4fv(this.shaderParams.transform, false, this.markerTransformMatrix);
 	};
 	
-	GLMobLayer.prototype.renderPooledMarkers = function() {
-		var pl = this.markerPool;
+	GLMobLayer.prototype.renderLayerStack = function() {
+		var st = this.markerPoolStack;
+		var len = st.getCount();
+		for (var i = 0;i < len;++i) {
+			var markerPool = st.getAt(i);
+			this.prepareRendering();
+			this.renderPooledMarkers(markerPool);
+		}
+	};
+	
+	GLMobLayer.prototype.renderPooledMarkers = function(pl) {
+		if (!pl) {
+			throw "MarkerPool must be specified: " + pl;
+		}
+		
 		var m_arr = pl.getArray();
 		var len = pl.requestedCount;
 		var triCount = 0;
@@ -375,14 +387,22 @@ function installMobLayer(pkg) {
 	};
 	
 	GLMobLayer.prototype.setMarkerImage = function(img) {
-		var gl = this.gl;
+		var tex = GLMobLayer.createTextureObject(this.gl, img);
+		this.markerTexture = tex;
+		this.renderGL();
+	};
+
+	GLMobLayer.prototype.setCurrentMarkerTexture = function(tex) {
+		this.markerTexture = tex;
+	};
+	
+	GLMobLayer.createTextureObject = function(gl, sourceImage) {
 		var tex = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, tex);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourceImage);
 		gl.generateMipmap(gl.TEXTURE_2D);
-		this.markerTexture = tex;
 		
-		this.renderGL();
+		return tex;
 	};
 
 	// Map event handlers --------------------------------------
@@ -488,6 +508,27 @@ function installMobLayer(pkg) {
 		
 		getArray: function() {
 			return this.array;
+		}
+	};
+	
+	// -----------
+	function MarkerPoolStack() {
+		this.stack = [];
+	}
+	
+	MarkerPoolStack.prototype = {
+		getCount: function() {
+			return this.stack.length;
+		},
+		
+		getAt: function(i) {
+			return this.stack[i] || null;
+		},
+		
+		createPoolOnTop: function() {
+			var mp = new MarkerPool();
+			this.stack.push(mp);
+			return mp;
 		}
 	};
 
