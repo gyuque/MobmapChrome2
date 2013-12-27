@@ -61,7 +61,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onMapPaneNeedsOverlaysRender: function(e, senderMapPane, targetTimeSec) {
-			console.log("OV Render: "+targetTimeSec);
+			var ls = this.mapOverlayList;
+			var len = ls.length;
+			
+			for (var i = 0;i < len;++i) {
+				var overlay = ls[i];
+				var layer   = ls[i].ownerObject;
+				
+				if (layer.shouldRenderAsPoints) {
+					console.log("OV Render: "+targetTimeSec, overlay, layer);
+				}
+			}
 		}
 	};
 

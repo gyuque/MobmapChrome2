@@ -22,6 +22,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.movingData = null;
+		
+		this.shouldRenderAsPoints = true;
 	}
 	
 	MovingObjectLayer.prototype = {
