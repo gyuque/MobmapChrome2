@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.previewCanvas = document.createElement('canvas');
 		this.resultCanvas = document.createElement('canvas');
 		this.previewCanvas.setAttribute('class', 'mm-marker-preview-canvas');
+		this.jResultCanvas = $(this.resultCanvas);
 
 		this.previewG = this.previewCanvas.getContext('2d');
 		this.resultG = this.resultCanvas.getContext('2d');
@@ -19,6 +20,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MarkerGenerator.prototype = {
+		eventDispatcher: function() {
+			return this.jResultCanvas;
+		},
+		
 		configureCanvas: function() {
 			var op = this.options;
 			var w = op.chipWidth * op.nVariations;
