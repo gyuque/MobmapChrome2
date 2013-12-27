@@ -237,6 +237,11 @@ if (!window.mobmap) window.mobmap={};
 					pickedRec._pickIndex = pickIndex;
 					pickedRec._pickTime  = seconds;
 				}
+
+				if (!pickedRec) {
+					console.log("WARNING: Cannot get pick-record: "+pickedRec);
+					return;
+				}
 				
 				if (i > 0) {
 					if (i < len) {

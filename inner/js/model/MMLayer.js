@@ -22,6 +22,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.movingData = null;
+		this.dataReady = false;
 		
 		this.shouldRenderAsPoints = true;
 	}
@@ -103,8 +104,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		csvloaderLoadFinish: function() {
-			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
+			this.dataReady = true;
 			this.movingData.close();
+			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
 			//console.log(this.movingData)
 		}
 	};

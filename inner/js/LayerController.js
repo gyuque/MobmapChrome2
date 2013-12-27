@@ -71,12 +71,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				if (layer.shouldRenderAsPoints) {
 					this.fillMarkerPool(overlay, layer, targetTimeSec);
-					console.log("OV Render: "+targetTimeSec, overlay, layer);
 				}
 			}
 		},
 		
 		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
+			if (!sourceLayer.dataReady) {return;}
 			var markerPool = overlay.markerPoolStack.getAt(0);
 			var movingData = sourceLayer.movingData;
 			
@@ -85,6 +85,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				overlay._stockPickPool = movingData.createPickPool();
 			}
 
+			var pickPool = overlay._stockPickPool;
+			pickPool.clear();
+			movingData.pickAt(pickPool, targetTimeSec);
+			var count = pickPool.pickedCount;
 		}
 	};
 
