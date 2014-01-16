@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function MarkerGenerator() {
+		this.dirty = true;
 		this.options = new MarkerGeneratorOptions();
 		
 		this.previewCanvas = document.createElement('canvas');

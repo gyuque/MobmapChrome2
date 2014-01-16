@@ -35,7 +35,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					mapOverlay = new mobmap.GLMobLayer();
 					var mapPane = this.ownerApp.getMapPane();
 					var gmap = mapPane.getGoogleMaps();
-					mapOverlay.markerPoolStack.createPoolOnTop();
+					mapOverlay.preapareDefaultMarkerPool();
 					
 					mapOverlay.setMap(gmap);
 					mapOverlay.ownerObject = lyr;
@@ -77,8 +77,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
 			if (!sourceLayer.dataReady) {return;}
-			var markerPool = overlay.markerPoolStack.getAt(0);
+			
 			var movingData = sourceLayer.movingData;
+			var mk_pool = overlay.getTopMarkerPool();
+			mk_pool.clear();
+			
+			this.applyGeneratedMarkerOfLayer(overlay, sourceLayer);
 			
 			// Prepare pick pool (if not ready)
 			if (!overlay._stockPickPool) {
@@ -89,6 +93,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			pickPool.clear();
 			movingData.pickAt(pickPool, targetTimeSec);
 			var count = pickPool.pickedCount;
+			
+			// console.log(count + " points on layer");
+			
+			mk_pool.begin(count);
+			var src_array = pickPool.getArray();
+			var m_array = mk_pool.getArray();
+			for (var i = 0;i < count;++i) {
+				var sourceRecord = src_array[i];
+				
+				m_array[i].lat = sourceRecord.y;
+				m_array[i].lng = sourceRecord.x;
+			}
+			
+			overlay.renderGL();
+		},
+	
+		applyGeneratedMarkerOfLayer: function(targetLayer, layer) {
+			var mg = layer.markerGenerator;
+			if (!mg.dirty) {
+				return;
+			}
+			
+			var textureSourceImage = mg.resultCanvas;
+			if (targetLayer.setMarkerImage(textureSourceImage)) { // Success?
+				mg.dirty = false;
+			}
 		}
 	};
 

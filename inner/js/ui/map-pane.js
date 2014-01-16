@@ -98,7 +98,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetTime = targetProject.currentDateTime;
 			var sec = targetTime.getCurrentTime();
 			
+			// ----------------------------------------------------------------------------
+			//  Rendering routine is not here.
+			//  Event observer will render overlays.
 			this.eventDispatcher().trigger(MapPane.NEED_OVERLAYS_RENDER_EVENT, [this, sec]);
+			// ----------------------------------------------------------------------------
 		}
 	};
 

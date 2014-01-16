@@ -36,6 +36,13 @@ function installMobLayer(pkg) {
 		this.ownerObject = null;
 		this.canvasReadyCallback = null;
 		this.projectionGrid = new mobmap.FastProjectionGrid(9);
+		
+		// - - - - - - - - - - - - -
+		// External class will set this property.
+		  this._stockPickPool = null;
+		// - - - - - - - - - - - - -
+		
+		console.log("Generated new GLMobLayer");
 	}
 	
 	// Inherit
@@ -63,6 +70,22 @@ function installMobLayer(pkg) {
 		}
 		
 		this.locateCanvas();
+	};
+
+	GLMobLayer.prototype.preapareDefaultMarkerPool = function() {
+		// Generate a marker pool if there are not any marker pools.
+		if (this.markerPoolStack.getCount() < 1) {
+			this.markerPoolStack.createPoolOnTop();
+		}
+	};
+	
+	GLMobLayer.prototype.getTopMarkerPool = function() {
+		var len = this.markerPoolStack.getCount();
+		if (len < 1) {
+			return null;
+		}
+		
+		return this.markerPoolStack.getAt(len - 1);
 	};
 
 	GLMobLayer.prototype.initializeGLObjects = function(gl) {
@@ -162,11 +185,11 @@ function installMobLayer(pkg) {
 	};
 
 	// Rendering
-	GLMobLayer.prototype.renderGL = function() {
+	GLMobLayer.prototype.renderGL = function() {		
 		var gl = this.gl;
 		if (!gl) {return;}
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
-		
+	
 		this.updateProjectionGrid();
 //		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -196,6 +219,7 @@ function installMobLayer(pkg) {
 	var testcount = 0;
 	GLMobLayer.prototype.prepareRendering = function() {
 		var gl = this.gl;
+
 		gl.disable(gl.DEPTH_TEST);
 		this.nTrianglesBuffered = 0;
 
@@ -211,6 +235,8 @@ function installMobLayer(pkg) {
 	};
 	
 	GLMobLayer.prototype.renderLayerStack = function() {
+		if (!this.gl) { return; }
+		
 		var st = this.markerPoolStack;
 		var len = st.getCount();
 		for (var i = 0;i < len;++i) {
@@ -239,6 +265,7 @@ function installMobLayer(pkg) {
 		var txi = 0;
 
 		var trisLimit = Math.floor(this.bufferCapacityInVertices / 3);
+		// console.log("rendering "+len+" marker polygons");
 
 		for (var i = 0;i < len;++i) {
 			var mk = m_arr[i];
@@ -256,7 +283,8 @@ function installMobLayer(pkg) {
 			vi += 6;
 			
 			// Append texture coordinates
-			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
+//			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
+			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 1.0);
 
 			bi += this.setMarkerTextureCoords(tblist, bi, 0.25, 0.0, 0.0, 0.0);
 
@@ -388,9 +416,13 @@ function installMobLayer(pkg) {
 	};
 	
 	GLMobLayer.prototype.setMarkerImage = function(img) {
+		if (!this.gl) { return false; }
+		this.destroyMarkerTexture();
+		
 		var tex = GLMobLayer.createTextureObject(this.gl, img);
 		this.markerTexture = tex;
 		this.renderGL();
+		return true;
 	};
 
 	GLMobLayer.prototype.setCurrentMarkerTexture = function(tex) {
@@ -404,6 +436,13 @@ function installMobLayer(pkg) {
 		gl.generateMipmap(gl.TEXTURE_2D);
 		
 		return tex;
+	};
+	
+	GLMobLayer.prototype.destroyMarkerTexture = function() {
+		if (this.markerTexture) {
+			this.gl.deleteTexture(this.markerTexture);
+			this.markerTexture = null;
+		}
 	};
 
 	// Map event handlers --------------------------------------
@@ -507,6 +546,10 @@ function installMobLayer(pkg) {
 			this.currentCapacity = newSize;
 		},
 		
+		clear: function() {
+			this.requestedCount = 0;
+		},
+		
 		getArray: function() {
 			return this.array;
 		}
@@ -561,7 +604,8 @@ function installMobLayer(pkg) {
 		"varying vec2 vTextureCoord;",
 		"varying vec2 vTextureBase;",
 		"void main(void) {",
-		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.06 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.19) {discard;}",
+//		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.06 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.19) {discard;}",
+		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.12 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.38) {discard;}",
 		" vec4 texel = texture2D(texture, vTextureCoord + vTextureBase);",
 //		" if (texel.z < 0.001) {discard;} ",
 		" gl_FragColor  = texel;",

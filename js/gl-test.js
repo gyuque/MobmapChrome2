@@ -36,7 +36,10 @@
 	function showCurrentTime(rangeElement) {
 		var t = dataMinSec + (rangeElement.value - 0) * 30;
 		fillMarkerData(gllayer, t);
+		
+		var tStart = new Date();
 		gllayer.renderGL();
+		console.log((new Date()) - tStart);
 	}
 	
 	function fillMarkerData(mobLayer, pickTime) {
@@ -61,6 +64,8 @@
 			renderMk.lng = pickedRec.x;
 			renderMk.lat = pickedRec.y;
 		}
+		
+		console.log(len + " points");
 	}
 	
 	function generateTestData() {
