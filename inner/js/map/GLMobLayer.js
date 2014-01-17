@@ -24,6 +24,7 @@ function installMobLayer(pkg) {
 		this.shaderParams = {};
 		this.glBuffers = {};
 		this.markerTexture = 0;
+		this.markerTextureConf = new MarkerTextureConfiguration();
 		this.markerTransformMatrix = mat4.create();
 		this.nTrianglesBuffered = 0;
 		// WebGL objects ------------------------------
@@ -129,12 +130,14 @@ function installMobLayer(pkg) {
 		var a_tc  = gl.getAttribLocation(prg, 'aTextureCoord');
 		var a_tb  = gl.getAttribLocation(prg, 'aTextureBase');
 		var u_tex = gl.getUniformLocation(prg, 'texture');
+		var u_validUV = gl.getUniformLocation(prg, 'validUV');
 		var u_trans = gl.getUniformLocation(prg, 'transform');
 
 		this.shaderParams.vertexPosition = a_pos;
 		this.shaderParams.textureCoord   = a_tc;
 		this.shaderParams.textureBase    = a_tb;
 		this.shaderParams.texture        = u_tex;
+		this.shaderParams.validUV        = u_validUV;
 		this.shaderParams.transform      = u_trans;
 	};
 	
@@ -232,6 +235,15 @@ function installMobLayer(pkg) {
 		gl.useProgram(this.shaderProgram);
 		gl.uniform1i(this.shaderParams.texture, 0);
 		gl.uniformMatrix4fv(this.shaderParams.transform, false, this.markerTransformMatrix);
+
+		this.calcMarkerUVRange(gl, this.shaderParams.validUV);
+	};
+	
+	GLMobLayer.prototype.calcMarkerUVRange = function(gl, loc) {
+		var mgn = 4 / this.markerTextureConf.originalWidth;
+		var u_width = this.markerTextureConf.chipWidth / this.markerTextureConf.originalWidth;
+
+		gl.uniform4f(loc, mgn, 0, u_width - mgn, 0);
 	};
 	
 	GLMobLayer.prototype.renderLayerStack = function() {
@@ -266,6 +278,9 @@ function installMobLayer(pkg) {
 
 		var trisLimit = Math.floor(this.bufferCapacityInVertices / 3);
 		// console.log("rendering "+len+" marker polygons");
+		
+		var texWidth = this.markerTextureConf.originalWidth;
+		var u_width = this.markerTextureConf.chipWidth / texWidth;
 
 		for (var i = 0;i < len;++i) {
 			var mk = m_arr[i];
@@ -284,9 +299,9 @@ function installMobLayer(pkg) {
 			
 			// Append texture coordinates
 //			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
-			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 1.0);
+			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, u_width * 2.0, 1.0);
 
-			bi += this.setMarkerTextureCoords(tblist, bi, 0.25, 0.0, 0.0, 0.0);
+			bi += this.setMarkerTextureCoords(tblist, bi, mk.chipX / texWidth, 0.0, 0.0, 0.0);
 
 			++triCount;
 			if (
@@ -418,6 +433,9 @@ function installMobLayer(pkg) {
 	GLMobLayer.prototype.setMarkerImage = function(img) {
 		if (!this.gl) { return false; }
 		this.destroyMarkerTexture();
+		
+		this.markerTextureConf.originalWidth  = img.width - 0;
+		this.markerTextureConf.originalHeight = img.height - 0;
 		
 		var tex = GLMobLayer.createTextureObject(this.gl, img);
 		this.markerTexture = tex;
@@ -580,8 +598,14 @@ function installMobLayer(pkg) {
 	function MarkerDisplayData() {
 		this.used = false;
 		this.screenX = this.screenY = this.lat = this.lng = 0;
+		this.chipX = 32;
 	}
 	
+	function MarkerTextureConfiguration() {
+		this.originalWidth  = 1;
+		this.originalHeight = 1;
+		this.chipWidth      = 16;
+	}
 
 	// Shaders ---------------------------------------------
 	var FillTestVertexShader = [
@@ -601,11 +625,16 @@ function installMobLayer(pkg) {
 	var FillTestFragmentShader = [
 		"precision mediump float;",
 		"uniform sampler2D texture;",
+		"uniform vec4 validUV;",
 		"varying vec2 vTextureCoord;",
 		"varying vec2 vTextureBase;",
 		"void main(void) {",
 //		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.06 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.19) {discard;}",
-		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.12 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.38) {discard;}",
+//		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.12 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.38) {discard;}",
+
+		// rgba -> u1,v2,u2,v2
+		" if(vTextureCoord.x < validUV.r || vTextureCoord.y < 0.12 || vTextureCoord.x > validUV.b || vTextureCoord.y > 0.38) {discard;}",
+
 		" vec4 texel = texture2D(texture, vTextureCoord + vTextureBase);",
 //		" if (texel.z < 0.001) {discard;} ",
 		" gl_FragColor  = texel;",
@@ -614,6 +643,7 @@ function installMobLayer(pkg) {
 	
 	var _tempM4 = mat4.create();
 	pkg.GLMobLayer = GLMobLayer;
+	pkg.GLMobLayer.MarkerTextureConfiguration = MarkerTextureConfiguration;
 }
 
 if (window.ENABLE_MOBMAP_LAZY_LOAD) {

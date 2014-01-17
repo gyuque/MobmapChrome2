@@ -185,7 +185,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	MarkerGeneratorOptions.prototype.reset = function() {
 		this.chipWidth = 16;
 		this.chipHeight = 16;
-		this.nVariations = 4;
+		this.nVariations = 8;
 	}
 	
 	aGlobal.mobmap.MarkerGenerator = MarkerGenerator;
