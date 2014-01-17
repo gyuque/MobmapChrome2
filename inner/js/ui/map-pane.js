@@ -7,6 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MapPane(containerElement) {
 		this.gmap = null;
 		this.ownerApp = null;
+		this.darkMapType = null;
 		
 		this.initialLocation = {
 			zoom: 8,
@@ -70,11 +71,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			};
 
 			this.gmap = new google.maps.Map(this.containerElement, mapOptions);
+			this.setupDarkMap(this.gmap, "Dark");
 			/*
 			this.mobLayer = new mobmap.GLMobLayer();
 			this.mobLayer.canvasReadyCallback = this.onLayerCanvasReady.bind(this);
 			this.mobLayer.setMap(this.gmap);
 			*/
+		},
+		
+		setupDarkMap: function(gmap, typeName) {
+			if (this.darkMapType) {return;}
+			
+			var darkMap = new google.maps.StyledMapType(kDarkMapStyle, {
+			                                             map: gmap, name: typeName
+			                                            });
+			gmap.mapTypes.set(DARKMAP_ID, darkMap);
+			this.darkMapType = darkMap;
 		},
 		
 		generateDefaultMapTypeList: function() {
