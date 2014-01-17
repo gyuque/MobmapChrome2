@@ -96,6 +96,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.mapPane;
 		},
 		
+		redrawMap: function() {
+			this.getMapPane().redraw();
+		},
+		
 		loadLocalCSVMovingData: function() {
 			this.localfilePicker.open();
 		},

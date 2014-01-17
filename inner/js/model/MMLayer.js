@@ -14,6 +14,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.sourceLoader = null;
 		this.primaryView = null;
 		this._lvObserved = false;
+		this._lctrlObserved = false;
 		this.jElement = $(document.createElement('span'));
 		this.dataTimeRange = {
 			start: 0,
