@@ -32,6 +32,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	ToolPane.prototype = {
 		setApp: function(a) {
 			this.ownerApp = a;
+			this.controlPanel.setApp(a);
 		},
 
 		observeContainerEvents: function(app3PanesView) {
@@ -115,6 +116,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	function TimelineControlPanel(containerElement) {
+		this.ownerApp = null;
 		this.buttonsContainer = null;
 		this.optionContainer = null;
 		this.jPlaySpeedRange = null;
@@ -130,6 +132,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	TimelineControlPanel.prototype = {
+		setApp: function(a) {
+			this.ownerApp = a;
+		},
+		
 		buildInnerContainers: function() {
 			var bc = document.createElement('div');
 			bc.setAttribute('class', 'mm-tl-buttons-container');
@@ -202,6 +208,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onPlayStateToggleChange: function(e, group, selectedButton) {
+			// Callback name to invoke
+			var invoke_name = "onPlayStateButtonPush_" + selectedButton.name;
+			
+			if (this.ownerApp && this.ownerApp[invoke_name]) {
+				this.ownerApp[invoke_name]();
+			} else {
+				console.log("WARNING: cannot invoke App."+invoke_name );
+			}
 		}
 	};
 	

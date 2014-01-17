@@ -157,6 +157,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.infoPane.setApp(this);
 			this.mapPane.setApp(this);
 			this.layersView.setApp(this);
+		},
+		
+		// Play buttons - - - - - - - - - - - -
+		onPlayStateButtonPush_play: function() {
+			console.log("play button");
+		},
+
+		onPlayStateButtonPush_stop: function() {
+			console.log("stop button");
+		},
+
+		onPlayStateButtonPush_ff: function() {
+			console.log("ff button");
 		}
 	};
 
