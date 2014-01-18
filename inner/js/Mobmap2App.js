@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function Mobmap2App(appScreen) {
 		this.toolPane = this.mapPane = this.infoPane = this.layersView = this.currentProject = null;
 		this.layerController = new mobmap.LayerController(this);
+		this.playController = new mobmap.PlayController(this);
 		this.jEventDispatcherElement = $(document.body);
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
@@ -165,15 +166,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Play buttons - - - - - - - - - - - -
 		onPlayStateButtonPush_play: function() {
-			console.log("play button");
+			this.playController.play();
 		},
 
 		onPlayStateButtonPush_stop: function() {
-			console.log("stop button");
+			this.playController.stop();
 		},
 
 		onPlayStateButtonPush_ff: function() {
-			console.log("ff button");
+			this.playController.playFast();
 		}
 	};
 
