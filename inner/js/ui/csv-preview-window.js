@@ -410,8 +410,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		writeExtraAttributes: function(targetAttrMap) {
-			this.additionalInputManager.forEachValidField(function(colObj){
-				console.log("IMPL", colObj.valName, colObj.valType);
+			this.additionalInputManager.forEachValidField(function(colObj, index){
+				var meta = targetAttrMap.addAttribute(colObj.valName);
+				meta.csvColumnIndex = index;
+				meta.dataType = colObj.valType;
+				console.log(colObj.valName,"=>",index);
 			});
 		},
 
@@ -703,7 +706,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < len;++i) {
 				var colObj = ls[i];
 				if (AdditionalInputManager.isValidName(colObj.valName)) {
-					proc(colObj);
+					proc(colObj, i);
 				}
 			}
 		}
