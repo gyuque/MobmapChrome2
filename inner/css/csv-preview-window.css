@@ -74,6 +74,10 @@ tr[data-attr-row-name="time"] td:hover { background-color: #edb; }
 tr[data-attr-row-name="x"]    td:hover { background-color: #cfc; }
 tr[data-attr-row-name="y"]    td:hover { background-color: #ddf; }
 
+.mm-csv-setting-additional-headcol {
+	background: -webkit-gradient(linear, left top, left center, to(#ddd), from(#fff));
+}
+
 .mm-csv-additional-input-col {
 	margin: 0;
 	padding: 0;
@@ -85,4 +89,20 @@ tr[data-attr-row-name="y"]    td:hover { background-color: #ddf; }
 	padding: 0;
 	width: 100%;
 	border: none;
+}
+
+.a-specified-string input {
+	background-color: #cdf;
+}
+
+.a-specified-integer input {
+	background-color: #cfd;
+}
+
+.a-specified-float input {
+	background-color: #cfddcc;
+}
+
+.a-specified-cfloat input {
+	background-color: #cfd4c4;
 }

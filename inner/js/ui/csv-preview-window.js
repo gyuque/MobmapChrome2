@@ -410,6 +410,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		writeExtraAttributes: function(targetAttrMap) {
+			this.additionalInputManager.forEachValidField(function(colObj){
+				console.log("IMPL", colObj.valName, colObj.valType);
+			});
 		},
 
 		pickCursorPosition: function(targetRow) {
@@ -673,17 +676,51 @@ if (!window.mobmap) { window.mobmap={}; }
 			var n_changed = (colObj.valName !== parseRes.name);
 			var t_changed = (colObj.valType !== parseRes.type);
 			if (t_changed || n_changed) {
-				
+				colObj.valType = parseRes.type;
+				colObj.valName = parseRes.name;
+				this.modifyColumnStyle(colObj);
+			}
+		},
+		
+		modifyColumnStyle: function(colObj) {
+			this.removeAllClasses(colObj.jCol);
+			var c = AdditionalInputManager.TypeClassNames[colObj.valType];
+			if (c && AdditionalInputManager.isValidName(colObj.valName)) {
+				colObj.jCol.addClass(c);
+			}
+		},
+		
+		removeAllClasses: function(j) {
+			var m = AdditionalInputManager.TypeClassNames;
+			for (var i in m) {
+				j.removeClass(m[i]);
+			}
+		},
+		
+		forEachValidField: function(proc) {
+			var ls = this.list;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var colObj = ls[i];
+				if (AdditionalInputManager.isValidName(colObj.valName)) {
+					proc(colObj);
+				}
 			}
 		}
 	};
+	
+	AdditionalInputManager.TypeClassNames = {};
+	AdditionalInputManager.TypeClassNames[AttributeType.STRING ] = 'a-specified-string';
+	AdditionalInputManager.TypeClassNames[AttributeType.INTEGER] = 'a-specified-integer';
+	AdditionalInputManager.TypeClassNames[AttributeType.FLOAT  ] = 'a-specified-float';
+	AdditionalInputManager.TypeClassNames[AttributeType.CFLOAT ] = 'a-specified-cfloat';
 	
 	AdditionalInputManager.parseFieldName = function(raw) {
 		var namePart;
 		var atype = AttributeType.STRING;
 
 		if (raw.indexOf(':') >= 0) {
-			var sp_str = colObj.split(':');
+			var sp_str = raw.split(':');
 			namePart = sp_str[0];
 			atype = AdditionalInputManager.typeFromTypeNameString( sp_str[1] );
 		} else {
@@ -706,6 +743,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		return AttributeType.STRING;
 	};
 
+	AdditionalInputManager.isValidName = function(s) {
+		if (!s) {return false;}
+		return AttributeNamePattern.test(s);
+	};
 
 	// / / test data
 	var TestRecords = [

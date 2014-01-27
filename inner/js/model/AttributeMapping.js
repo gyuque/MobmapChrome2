@@ -68,6 +68,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function RecordAttributeMeta(name) {
 		this.name = name;
+		this.dataType = AttributeType.string;
 		this.csvColumnIndex = -1;
 	}
 	
