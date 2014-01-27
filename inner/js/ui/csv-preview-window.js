@@ -383,6 +383,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			input.type = 'text';
 			
 			colElement.appendChild(input);
+			
+			// Add to manager - - - - - -
+			this.additionalInputManager.addField(colElement, input);
 		},
 
 
@@ -630,12 +633,79 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	AdditionalInputManager.prototype = {
 		addField: function(containerColumn, inputElement) {
-			this.list.push({
+			
+			var colObj = {
 				jCol: $(containerColumn),
-				jInput: $(inputElement)
-			});
+				jInput: $(inputElement),
+				valType: -1,
+				valName: null
+			};
+			
+			this.list.push(colObj);
+			this.observeColumn(colObj);
+		},
+		
+		observeColumn: function(colObj) {
+			var handler = (function(e) {
+				this.onFieldChange(colObj);
+			}).bind(this);
+			
+			colObj.jInput.blur(handler).keyup(handler);
+		},
+		
+		onFieldChange: function(colObj) {
+			this.updateFieldStatuses();
+		},
+		
+		updateFieldStatuses: function() {
+			var ls = this.list;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var colObj = ls[i];
+				this.updateFieldStatusOfColumn(colObj);
+			}
+		},
+		
+		updateFieldStatusOfColumn: function(colObj) {
+			var currentVal = colObj.jInput.val();
+			var parseRes = AdditionalInputManager.parseFieldName(currentVal);
+
+			var n_changed = (colObj.valName !== parseRes.name);
+			var t_changed = (colObj.valType !== parseRes.type);
+			if (t_changed || n_changed) {
+				
+			}
 		}
 	};
+	
+	AdditionalInputManager.parseFieldName = function(raw) {
+		var namePart;
+		var atype = AttributeType.STRING;
+
+		if (raw.indexOf(':') >= 0) {
+			var sp_str = colObj.split(':');
+			namePart = sp_str[0];
+			atype = AdditionalInputManager.typeFromTypeNameString( sp_str[1] );
+		} else {
+			namePart = raw;
+		}
+
+		return {
+			name: namePart,
+			type: atype
+		};
+	};
+
+	AdditionalInputManager.typeFromTypeNameString = function(name) {
+		switch( name.toLowerCase() ) {
+		case 'int':    return AttributeType.INTEGER; break;
+		case 'float':  return AttributeType.FLOAT;   break;
+		case 'cfloat': return AttributeType.CFLOAT;  break;
+		}
+		
+		return AttributeType.STRING;
+	};
+
 
 	// / / test data
 	var TestRecords = [
