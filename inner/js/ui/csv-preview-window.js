@@ -160,6 +160,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function CSVPreviewTable(sourceRecords, listener) {
 		this.sourceRecords = sourceRecords;
 		this.listener = listener || null;
+		this.additionalInputManager = null;
 		
 		this.attrRows = [];
 		this.dataRows = [];
@@ -261,7 +262,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var headCol = $H('td', 'mm-heading-column');
 			headCol.appendChild($T(lineno));
 			rowElement.appendChild(headCol);
-			
+
 			for (var i = 0;i < columnsCount;++i) {
 				var td = $H('td');
 				td.setAttribute(DATAATTR_COLI, i);
@@ -301,6 +302,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		// ==== Column picker ====
 
+		// Required fields + additinal attribute input fields
 		createSettingRows: function(targetTable, columnsCount) {
 			var attrs = kRequiredAttributes;
 			var len = attrs.length;
@@ -326,6 +328,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				targetTable.appendChild(tr);
 			}
+			
+			// additional field
+			this.additionalInputManager = new AdditionalInputManager();
+			this.createAdditinalAttributesRow(targetTable, columnsCount);
 		},
 		
 		generateSettingRowHeadCol: function(attrName) {
@@ -344,7 +350,42 @@ if (!window.mobmap) { window.mobmap={}; }
 				td.appendChild($T(attrName));
 			}
 		},
+
+
+		// Additional attributes
+		createAdditinalAttributesRow: function(targetTable, columnsCount) {
+			var rowElement = $H('tr');
+			targetTable.appendChild(rowElement);
+
+			var headCol = this.generateAdditionalAttributesHeadCol();
+			rowElement.appendChild(headCol);
+			
+			this.generateAdditionalAttributesInputColumns(rowElement, columnsCount);
+			return rowElement;
+		},
 		
+		generateAdditionalAttributesHeadCol: function() {
+			var td = $H('td', 'mm-csv-setting-additional-headcol');
+			td.appendChild($T("Additional"));
+			return td;
+		},
+
+		generateAdditionalAttributesInputColumns: function(targetRow, columnsCount) {
+			for (var i = 0;i < columnsCount;++i) {
+				var td = $H('td', 'mm-csv-additional-input-col');
+				targetRow.appendChild(td);
+				this.setupAdditionalFieldInputColumn(td);
+			}
+		},
+		
+		setupAdditionalFieldInputColumn: function(colElement) {
+			var input = document.createElement('input');
+			input.type = 'text';
+			
+			colElement.appendChild(input);
+		},
+
+
 		showSetting: function(attrMap) {
 			var ls = this.attrRows;
 			var len = ls.length;
@@ -580,6 +621,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return -1;
+		}
+	};
+
+	function AdditionalInputManager() {
+		this.list = [];
+	}
+	
+	AdditionalInputManager.prototype = {
+		addField: function(containerColumn, inputElement) {
+			this.list.push({
+				jCol: $(containerColumn),
+				jInput: $(inputElement)
+			});
 		}
 	};
 

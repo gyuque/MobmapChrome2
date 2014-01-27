@@ -73,3 +73,16 @@ tr[data-attr-row-name="id"]   td:hover { background-color: #fcd; }
 tr[data-attr-row-name="time"] td:hover { background-color: #edb; }
 tr[data-attr-row-name="x"]    td:hover { background-color: #cfc; }
 tr[data-attr-row-name="y"]    td:hover { background-color: #ddf; }
+
+.mm-csv-additional-input-col {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+.mm-csv-additional-input-col input {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	border: none;
+}
