@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.animationRunning = false;
 		
 		this.prevDrawTime = 0;
+		this.prevShownDataTime = 0;
 	}
 	
 	PlayController.prototype = {
@@ -34,6 +35,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		initTimerStatus: function() {
 			this.prevDrawTime = now_time();
 			var dt = this.ownerApp.getCurrentProjectDateTime();
+			
+			this.prevShownDataTime = dt.getCurrentTime();
 		},
 		
 		runAnimation: function() {
@@ -61,8 +64,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		processAnimationFrame: function() {
 			var cur_t = now_time();
+			var dt = cur_t - this.prevDrawTime;
+			
+			var realt_per_ms = 600 * 1000;
+			var dDataTime = Math.floor(dt * realt_per_ms + 0.5);
+			
+			var endTime = this.getEndOfVisibleTimeline();
+			console.log(dDataTime, endTime);
 			
 			this.prevDrawTime = cur_t;
+		},
+		
+		getEndOfVisibleTimeline: function() {
+			var tl = this.ownerApp.getTimelineBar();
+			return tl.getViewportEnd();
 		}
 	};
 	

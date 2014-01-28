@@ -106,6 +106,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.mapPane;
 		},
 		
+		getTimelineBar: function() {
+			return this.toolPane.getTimelineBar();
+		},
+		
 		redrawMap: function() {
 			this.getMapPane().redraw();
 		},
