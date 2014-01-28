@@ -7,10 +7,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	function ToolPane(containerElement) {
 		// Initialize - - - - - - - -
 		this.ownerApp = null;
+		this.jLayoutTable = null;
 		this.layoutCell_Toolbar  = null;
 		this.layoutCell_Controls = null;
 		this.layoutCell_TimeDisp = null;
 		this.layoutCell_Timeline = null;
+		this.jLayoutCell_Controls = null;
+		this.jLayoutCell_TimeDisp = null;
 		this.jLayoutCell_Timeline = null;
 		this.elementDateDisp = null;
 		this.elementTimeDisp = null;
@@ -42,6 +45,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		setupWidgets: function() {
 			var l_tbl = this.buildLayoutTable();
+			this.jLayoutTable = $(l_tbl);
 			
 			this.layoutCell_Timeline.appendChild( this.timelineBar.element );
 			this.layoutCell_Toolbar.appendChild( this.editToolBar.element );
@@ -94,6 +98,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.layoutCell_Controls = td0;
 			this.layoutCell_TimeDisp = td1;
 			this.layoutCell_Timeline = td2;
+			this.jLayoutCell_Controls = $(this.layoutCell_Controls);
+			this.jLayoutCell_TimeDisp = $(this.layoutCell_TimeDisp);
 			this.jLayoutCell_Timeline = $(this.layoutCell_Timeline);
 
 			tr.appendChild(td0);
@@ -106,8 +112,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onContainerResize: function(e) {
-			var cellWidth = this.jLayoutCell_Timeline.width();
-			this.timelineBar.setWidth(cellWidth);
+			var w1 = this.jLayoutCell_TimeDisp.width();
+			var w2 = this.jLayoutCell_Controls.width();
+			var remainW = this.jContainerElement.width() - (w1 + w2);
+
+			this.timelineBar.setWidth(remainW);
+		},
+		
+		calcTimelineCellWidth: function() {
+			
 		},
 		
 		getTimelineBar: function() {
