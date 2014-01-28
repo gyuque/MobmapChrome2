@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function PlayController(ownerApp) {
 		this.tickAnimationClosure = this.tickAnimation.bind(this);
 		this.ownerApp = ownerApp;
+		this.playOption = new PlayController.PlayOption();
 		this.playSpeed = 0;
 		this.animationRunning = false;
 		
@@ -63,7 +64,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (needContinue) {
 				setTimeout(this.tickAnimationClosure, nextTime);
 			} else {
-				console.log("ToDo: implement animation controller");
 				this.animationRunning = false;
 			}
 		},
@@ -74,8 +74,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var cur_t = now_time();
 			var dt = cur_t - this.prevDrawTime;
 			
-			var realt_per_ms = 600.0 / 1000;
-			var dDataTime = Math.floor(dt * realt_per_ms + 0.5);
+			var realt_per_ms = this.playOption.realSecPerPlayerSec / 1000;
+			var dDataTime = Math.floor(this.playSpeed * dt * realt_per_ms + 0.5);
 			
 			var endTime = this.getEndOfVisibleTimeline();
 			var nextDataSec = curDataTime.getCurrentTime() + dDataTime;
