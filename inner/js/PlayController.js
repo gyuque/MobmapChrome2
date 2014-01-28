@@ -52,7 +52,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var needContinue = false;
 			var nextTime = 5;
 			
-			this.processAnimationFrame();
+			if ( this.playSpeed ) {
+				if ( this.processAnimationFrame() ) {
+					needContinue = true;
+				} else {
+					this.stop();
+				}
+			}
 			
 			if (needContinue) {
 				setTimeout(this.tickAnimationClosure, nextTime);
@@ -63,16 +69,24 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		processAnimationFrame: function() {
+			var curDataTime = this.ownerApp.getCurrentProjectDateTime();
+
 			var cur_t = now_time();
 			var dt = cur_t - this.prevDrawTime;
 			
-			var realt_per_ms = 600 * 1000;
+			var realt_per_ms = 600.0 / 1000;
 			var dDataTime = Math.floor(dt * realt_per_ms + 0.5);
 			
 			var endTime = this.getEndOfVisibleTimeline();
-			console.log(dDataTime, endTime);
+			var nextDataSec = curDataTime.getCurrentTime() + dDataTime;
+			
+			var nextTimeIsEnd = (nextDataSec >= endTime);
+			
+			// Set new time - - - - - -
+			curDataTime.setCurrentTime(nextDataSec);
 			
 			this.prevDrawTime = cur_t;
+			return !nextTimeIsEnd;
 		},
 		
 		getEndOfVisibleTimeline: function() {
