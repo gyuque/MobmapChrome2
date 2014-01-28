@@ -49,7 +49,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
-		isColumnHasName: function(idx, name) {
+		isColumnRegistered: function(idx) {
+			return this.colIndexMap.hasOwnProperty(idx);
+		},
+		
+		isColumnNamed: function(idx, name) {
 			if ( !this.colIndexMap.hasOwnProperty(idx) ) {
 				return false;
 			}
@@ -58,17 +62,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			return meta.name === name;
 		},
 		
+		getColumnName: function(idx) {
+			var meta = this.colIndexMap[idx];
+			return meta ? meta.name : null;
+		},
+		
 		// short-hand methods
-		isIDColumn:   function(idx) { return this.isColumnHasName(idx, 'id');   },
-		isTimeColumn: function(idx) { return this.isColumnHasName(idx, 'time'); },
-		isXColumn:    function(idx) { return this.isColumnHasName(idx, 'x');    },
-		isYColumn:    function(idx) { return this.isColumnHasName(idx, 'y');    }
+		isIDColumn:   function(idx) { return this.isColumnNamed(idx, 'id');   },
+		isTimeColumn: function(idx) { return this.isColumnNamed(idx, 'time'); },
+		isXColumn:    function(idx) { return this.isColumnNamed(idx, 'x');    },
+		isYColumn:    function(idx) { return this.isColumnNamed(idx, 'y');    },
+		
+		convertToColumnType: function(colIndex, rawStr) {
+			var meta = this.colIndexMap[colIndex] || null;
+			if (meta) {
+				switch(meta.dataType) {
+				case AttributeType.INTEGER:
+					return parseInt(rawStr, 10); break;
+
+				case AttributeType.FLOAT:
+				case AttributeType.CFLOAT:
+					return parseFloat(rawStr); break;
+				}
+			}
+			
+			return rawStr;
+		}
 	};
 
 
 	function RecordAttributeMeta(name) {
 		this.name = name;
-		this.dataType = AttributeType.string;
+		this.dataType = AttributeType.STRING;
 		this.csvColumnIndex = -1;
 	}
 	

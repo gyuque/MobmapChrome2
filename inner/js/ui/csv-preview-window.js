@@ -414,7 +414,6 @@ if (!window.mobmap) { window.mobmap={}; }
 				var meta = targetAttrMap.addAttribute(colObj.valName);
 				meta.csvColumnIndex = index;
 				meta.dataType = colObj.valType;
-				console.log(colObj.valName,"=>",index);
 			});
 		},
 

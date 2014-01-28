@@ -59,7 +59,12 @@ if (!window.mobmap) { window.mobmap={}; }
 					absTime = parseFieldTime(val);
 				} else {
 					// Extra attributes
-					
+					if (attrMap.isColumnRegistered(i)) {
+						var convertedValue = attrMap.convertToColumnType(i, val);
+						var attrName = attrMap.getColumnName(i);
+						
+						outRecord[attrName] = convertedValue;
+					}
 				}
 			}
 			
