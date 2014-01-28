@@ -18,7 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setApp: function(a) {
 			this.ownerApp = a;
 			this.observeApp();
-			this.observePeoject();
+			this.observeProject();
 		},
 		
 		observeApp: function() {
@@ -26,8 +26,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			ed.bind(mobmap.Mobmap2App.PROJECT_SET_EVENT, this.onAppProjectSet.bind(this));
 		},
 		
-		observePeoject: function() {
-			var prj = this.ownerApp.getCurrentPeoject();
+		observeProject: function() {
+			var prj = this.ownerApp.getCurrentProject();
 			if (prj) {
 				var ed = prj.eventDispatcher();
 				ed.bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this));
@@ -35,7 +35,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onAppProjectSet: function() {
-			this.observePeoject();
+			this.observeProject();
 		},
 		
 		onLayerListChange: function() {
@@ -84,7 +84,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		updateLayerViews: function() {
 			var nextInView = null;
 			
-			var prj = this.ownerApp.getCurrentPeoject();
+			var prj = this.ownerApp.getCurrentProject();
 			var ls = prj.layerList;
 			var len = ls.getCount();
 			for (var i = 0;i < len;++i) {

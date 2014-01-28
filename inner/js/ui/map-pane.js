@@ -104,7 +104,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		redraw: function() {
-			var targetProject = this.ownerApp.getCurrentPeoject();
+			var targetProject = this.ownerApp.getCurrentProject();
 			if (!targetProject) {return;}
 			
 			var targetTime = targetProject.currentDateTime;

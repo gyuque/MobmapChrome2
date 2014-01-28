@@ -41,10 +41,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
-		getCurrentPeoject: function() {
+
+		getCurrentProject: function() {
 			return this.currentProject;
 		},
-		
+
+		// (shortcut method)
+		getCurrentProjectDateTime: function() {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+			
+			return prj.currentDateTime;
+		},
+
 		observeProjectEvents: function(prj) {
 			prj.eventDispatcher().
 			 bind(
