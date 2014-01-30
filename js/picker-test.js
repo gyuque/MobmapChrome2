@@ -13,7 +13,7 @@
 		var src_len = src.length;
 
 		var TEST_NEW = false;
-		TEST_NEW = true;
+		//TEST_NEW = true;
 		
 		document.body.appendChild( document.createTextNode( !TEST_NEW ? "-OLD Impl" : "*NEW Impl" ));
 		var mdat = TEST_NEW ? (new mobmap.MovingData2()) : (new mobmap.MovingData());
@@ -50,7 +50,8 @@
 		
 		var tStart = new Date();
 		for (var i = 0;i < 10;++i) {
-			var pickTime = dataMinSec + 60 * i + 600;
+			var pickTime = dataMinSec + 60 * i + 1800;
+			//var pickTime = dataMinSec + 6;
 			
 			mdPickPool.clear();
 			mdat.pickAt(mdPickPool, pickTime);

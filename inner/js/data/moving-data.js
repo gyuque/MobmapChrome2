@@ -6,6 +6,8 @@ if (!window.mobmap) window.mobmap={};
 
 	function MovingData() {
 		this.idMap = createCleanHash();
+		this.tlList = null;
+
 		this.extraProps = createCleanHash();
 	}
 	
@@ -73,13 +75,15 @@ if (!window.mobmap) window.mobmap={};
 		},
 
 		// Pick API -------------------------------------
-		pickAt: function(pickPool, seconds, pickIndex) {
+		pickAt: function(pickPool, timeInSec, pickIndex) {
 			if (!pickIndex) {pickIndex=0;}
 			
-			var m = this.idMap;
-			for (var objId in m) {
-				var tl = m[objId];
-				tl.pickAt(pickPool, null, seconds, this.extraProps, pickIndex);
+			var i;
+			var ls = this.tlList;
+			var len = ls.length;
+			for (i = 0;i < len;++i) {
+				var t_l = ls[i];
+				t_l.pickAt(pickPool, null, timeInSec, this.extraProps, pickIndex);
 			}
 		},
 		
@@ -135,10 +139,8 @@ if (!window.mobmap) window.mobmap={};
 		},
 		
 		close: function() {
-			var m = this.idMap;
-			for (var objId in m) {
-				m[objId].close();
-			}
+			this.buildList();
+			this.closeInList(this.tlList);
 		},
 		
 		createPickPool: function() {
@@ -153,6 +155,24 @@ if (!window.mobmap) window.mobmap={};
 			for (var objId in m) { ++i; }
 			
 			return i;
+		},
+
+		// Build array from hash for quick access
+		buildList: function() {
+			this.tlList = [];
+			var ls = this.tlList;
+			
+			var m = this.idMap;
+			for (var objId in m) {
+				ls.push(m[objId]);
+			}
+		},
+
+		closeInList: function(ls) {
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				ls[i].close();
+			}
 		}
 	};
 
@@ -371,16 +391,18 @@ if (!window.mobmap) window.mobmap={};
 		var r1 = tls[li1];
 		var r2 = tls[li2];
 		
-		var t1 = r1._time;
-		var dt = r2._time - r1._time;
+		var r1_t = r1._time;
+		var r2_t = r2._time;
+		
+		var dt = r2_t - r1_t;
 
 		// Calc ratio for interpolation
-		var ratio = (targetTime - t1) / dt;
+		var ratio = (targetTime - r1_t) / dt;
 		var _r = 1.0 - ratio;
 
 		outRec._time = targetTime;
-		outRec._backKeyTime = t1;
-		outRec._fwdKeyTime  = r2._time;
+		outRec._backKeyTime = r1_t;
+		outRec._fwdKeyTime  = r2_t;
 		outRec._id = r1._id; // Copy ID
 		outRec.y = _r * r1.y + ratio * r2.y;
 		outRec.x = _r * r1.x + ratio * r2.x;
