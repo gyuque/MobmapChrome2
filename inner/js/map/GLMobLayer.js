@@ -4,11 +4,14 @@ if (!window.mobmap) { window.mobmap={}; }
 function installMobLayer(pkg) {
 	'use strict';
 	var kZeroPt = null;
+	var tempPt1 = {x:0,y:0};
+	var tempPt2 = {x:0,y:0};
 
 	function GLMobLayer() {
 		// Initiazlize
 
 		if (!kZeroPt) { kZeroPt = new google.maps.Point(0, 0); }
+		this.tempBounds = new mobmap.MapBounds();
 		this.canvas = null;
 		this.cachedDiv = null;
 		this.jCachedDiv = null;
@@ -187,6 +190,30 @@ function installMobLayer(pkg) {
 		}
 	};
 
+	GLMobLayer.prototype.calcCurrnetBounds = function(outBounds, marginPixels) {
+		var mgn = marginPixels || 0;
+
+		//var ox = this.canvasOffset.x;
+		//var oy = this.canvasOffset.y;
+		
+		var prj = this.getProjection();
+		if (!prj) {return false;}
+		
+		var p1 = tempPt1;
+		p1.x = 0;
+		p1.y = this.canvasSize.h;
+
+		var p2 = tempPt2;
+		p2.x = this.canvasSize.w;
+		p2.y = 0;
+
+		var ll1 = prj.fromContainerPixelToLatLng(p1);
+		var ll2 = prj.fromContainerPixelToLatLng(p2);
+		//console.log(ll1.lat(), ll1.lng(), ll2.lat(), ll2.lng())
+		
+		return true;
+	};
+
 	// Rendering
 	GLMobLayer.prototype.renderGL = function() {		
 		var gl = this.gl;
@@ -281,6 +308,9 @@ function installMobLayer(pkg) {
 		
 		var texWidth = this.markerTextureConf.originalWidth;
 		var u_width = this.markerTextureConf.chipWidth / texWidth;
+
+		var tempBounds = this.tempBounds;
+		this.calcCurrnetBounds(tempBounds, 16);
 
 		for (var i = 0;i < len;++i) {
 			var mk = m_arr[i];
@@ -640,6 +670,13 @@ function installMobLayer(pkg) {
 		" gl_FragColor  = texel;",
 		"}"
 	].join("\n");
+	
+	pkg.MapBounds = function() {
+		this.lngMin = 0;
+		this.latMin = 0;
+		this.lngMax = 0;
+		this.latMax = 0;
+	};
 	
 	var _tempM4 = mat4.create();
 	pkg.GLMobLayer = GLMobLayer;

@@ -7,7 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.ownerApp = ownerApp;
 		this.mapOverlayList = [];
 	}
-	
+
 	LayerController.prototype = {
 		observeProject: function(prj) {
 			prj.eventDispatcher().
