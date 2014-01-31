@@ -423,17 +423,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		
 		showDataColCursor: function(attrMap) {
-			this.jTable.find('td[' +DATAATTR_ISSAMPLE+ ']').css('background-color', '');
+			this.jTable.find('td[' +DATAATTR_ISSAMPLE+ ']').css('background-color', '').css('color', '');
 			
 			var ls = this.dataRows;
 			var len = ls.length;
 			for (var i = 0;i < len;++i) {
 				var dataRow = ls[i];
-				attrMap.forEachAttribute(this.showDataColCursorOfAttribute.bind(this, dataRow));
+				attrMap.forEachAttribute(this.showDataColCursorOfAttribute.bind(this, dataRow, attrMap));
 			}
 		},
 		
-		showDataColCursorOfAttribute: function(row, attrName, attrMeta) {
+		showDataColCursorOfAttribute: function(row, attrMap, attrName, attrMeta) {
 			var acolor = CSVPreviewTable.AttrColors[attrName];
 			
 			var ls = row.childNodes;
@@ -442,7 +442,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				var col = ls[i];
 				if (col.getAttribute(DATAATTR_ISSAMPLE)) {
 					var colIndex = parseInt( col.getAttribute(DATAATTR_COLI) , 10);
-					if (attrMeta.csvColumnIndex === colIndex) {
+					var collid = attrMap.isColumnCollided(colIndex);
+					
+					if (collid) {
+						col.style.backgroundColor = '#900';
+						col.style.color = '#fff';
+					} else if (attrMeta.csvColumnIndex === colIndex) {
 						col.style.backgroundColor = makeStyleSheetRGB_BlendWhite2(acolor[0], acolor[1], acolor[2]);
 					}
 				}

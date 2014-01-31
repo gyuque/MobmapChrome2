@@ -34,6 +34,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		isColumnCollided: function(colIndex) {
+			var count = 0;
+			
+			for (var name in this.nameMap) {
+				var a = this.nameMap[name];
+				if (colIndex === a.csvColumnIndex) {
+					++count;
+				}
+			}
+			
+			return (count >= 2);
+		},
+		
 		generateColIndexMap: function() {
 			this.clearColIndexMap();
 			
