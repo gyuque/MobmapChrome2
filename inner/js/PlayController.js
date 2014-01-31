@@ -58,6 +58,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					needContinue = true;
 				} else {
 					this.stop();
+					this.pushStopButton();
 				}
 			}
 			
@@ -66,6 +67,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else {
 				this.animationRunning = false;
 			}
+		},
+		
+		pushStopButton: function() {
+			var tpane = this.ownerApp.getToolPane();
+			tpane.pushStopButton();
 		},
 		
 		processAnimationFrame: function() {

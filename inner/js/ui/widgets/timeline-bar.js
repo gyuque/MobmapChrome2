@@ -49,11 +49,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.longSpanBar.setTimeRange(startTime, endTime);
 			this.redrawBar();
 		},
-		
+
 		getViewportEnd: function() {
 			return this.longSpanBar.viewportEndTime;
 		},
-		
+
 		bindDateTime: function(d) {
 			this.boundData = d;
 			d.eventDispatcher().bind(mobmap.DateTime.CURRENT_TIME_CHANGE_EVENT, this.onBoundDateTimeChange.bind(this));

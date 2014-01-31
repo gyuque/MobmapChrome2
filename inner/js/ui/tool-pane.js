@@ -125,6 +125,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getTimelineBar: function() {
 			return this.timelineBar;
+		},
+		
+		pushStopButton: function() {
+			this.controlPanel.pushStopButton();
 		}
 	};
 	
@@ -148,7 +152,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		setApp: function(a) {
 			this.ownerApp = a;
 		},
-		
+
+		pushStopButton: function() {
+			
+		},
+
 		buildInnerContainers: function() {
 			var bc = document.createElement('div');
 			bc.setAttribute('class', 'mm-tl-buttons-container');
