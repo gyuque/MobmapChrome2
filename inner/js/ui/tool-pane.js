@@ -154,7 +154,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		pushStopButton: function() {
-			
+			this.groupPlayStates.selectByName('stop');
 		},
 
 		buildInnerContainers: function() {
