@@ -49,8 +49,8 @@
 		var mdat = testMovingData;
 		
 		var tStart = new Date();
-		for (var i = 0;i < 10;++i) {
-			var pickTime = dataMinSec + 3600 * i + 1800;
+		for (var i = 0;i < 19;++i) {
+			var pickTime = dataMinSec + 1800 * i + 1800;
 			//var pickTime = dataMinSec + 6;
 			
 			mdPickPool.clear();

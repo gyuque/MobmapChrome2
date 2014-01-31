@@ -175,13 +175,17 @@ if (!window.mobmap) window.mobmap={};
 		pickAt: function(pickPool, pickedRec, seconds, extraProps, pickIndex) {
 			var ls = this.recordList;
 			var len = ls.length;
-			var prevTime = -1;
+			var startIndex = 0;
+			
+			// Forward pick optimization
+			if (this.cahcedIndex >= 0 && this.cahcedTime < seconds) {
+				startIndex = this.cahcedIndex;
+			}
 			
 			var i, previ = -1;
-			for (i = 0;i < len;++i) {
+			for (i = startIndex;i < len;++i) {
 				var rec = ls[i];
-				prevTime = rec._time;
-				if (prevTime > seconds) {
+				if (rec._time > seconds) {
 					break;
 				}
 			}
@@ -190,6 +194,10 @@ if (!window.mobmap) window.mobmap={};
 			if (len > 0) {
 				if (i > 0) {
 					previ = i - 1;
+					
+					// Update fwd-pick cache
+					this.cahcedIndex = previ;
+					this.cahcedTime  = ls[previ]._time;
 				}
 
 				// Set output record object if null
