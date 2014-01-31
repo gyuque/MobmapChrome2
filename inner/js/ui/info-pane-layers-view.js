@@ -125,7 +125,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		willStartLayerLoad: function(e, layer) {
 			if (layer.hasPrimaryView()) {
-				layer.primaryView.setSubCaption(layer.getSourceFileName());
+				layer.primaryView.setSubCaption(layer.getShortDescription());
 			}
 		},
 		
@@ -138,6 +138,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerLoadFinish: function(e, layer) {
 			if (layer.hasPrimaryView()) {
 				layer.primaryView.setLayerReady(true);
+				layer.primaryView.setSubCaption(layer.getShortDescription());
 			}
 		}
 	};

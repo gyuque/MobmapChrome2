@@ -69,6 +69,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.sourceLoader.fileName;
 		},
 		
+		getShortDescription: function() {
+			var name = this.getSourceFileName();
+			if (this.dataReady) {
+				return name + " ("+ (this.movingData.countIds()) +" IDs)";
+			} else {
+				return name + " (? IDs)";
+			}
+		},
+		
 		// CSV Loader Listener functions <<<<<<<<<<<<<<<<<
 		
 		csvloaderReadLine: function(fields, lineno) {
