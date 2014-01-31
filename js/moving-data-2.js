@@ -158,6 +158,9 @@ if (!window.mobmap) window.mobmap={};
 	function TimeList(objId) {
 		this.id = objId;
 		this.recordList = [];
+		
+		this.cahcedIndex = -1;
+		this.cahcedTime  = -1;
 	}
 	
 	TimeList.prototype = {
@@ -172,14 +175,17 @@ if (!window.mobmap) window.mobmap={};
 		pickAt: function(pickPool, pickedRec, seconds, extraProps, pickIndex) {
 			var ls = this.recordList;
 			var len = ls.length;
+			var prevTime = -1;
 			
 			var i, previ = -1;
 			for (i = 0;i < len;++i) {
 				var rec = ls[i];
-				if (rec._time > seconds) {
+				prevTime = rec._time;
+				if (prevTime > seconds) {
 					break;
 				}
 			}
+			
 
 			if (len > 0) {
 				if (i > 0) {
