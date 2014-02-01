@@ -9,6 +9,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.element = this.expandablePanel.element;
 		this.expandablePanel.setTitle("Marker");
 		
+		this.varyingRadios = {};
+		
 		this.configurePanelContent();
 	}
 	
@@ -33,15 +35,29 @@ if (!window.mobmap) { window.mobmap={}; }
 			var rl_attr = generateRadioInLabel('By attribute', 'MarkerVaryType', 'varytypeopt');
 			var rl_day  = generateRadioInLabel('By day',       'MarkerVaryType', 'varytypeopt');
 
+			this.varyingRadios.none = rl_none;
+			this.varyingRadios.attr = rl_attr;
+			this.varyingRadios.day = rl_day;
+
 			fs.appendChild( rl_none.label );
 			fs.appendChild( rl_attr.label );
 			fs.appendChild( rl_day.label );
+
+			// Observe
+			var v_handler = this.onVaryingRadioChange.bind(this);
+			$(rl_none.input).click(v_handler);
+			$(rl_attr.input).click(v_handler);
+			$(rl_day.input).click(v_handler);
 
 			lg.appendChild( document.createTextNode('Varying') );
 			fs.appendChild(lg);
 			containerElement.appendChild(fs);
 		},
 		
+		onVaryingRadioChange: function() {
+			console.log("vchange");
+		},
+
 		show: function() { this.expandablePanel.show(); },
 		hide: function() { this.expandablePanel.hide(); }
 	};
