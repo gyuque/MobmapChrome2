@@ -53,6 +53,10 @@
 	padding: 3px;
 }
 
+.mm-layer-view-item-box .mm-expandable-panel-expanded {
+	padding: 3px;
+}
+
 .mm-layer-loading-label {
 	font-size: 10px;
 	margin: 0;
@@ -74,4 +78,13 @@
 .mm-marker-preview-canvas {
 	background-color: #444;
 	border: 1px solid #ccc;
+}
+
+.mm-marker-result-canvas {
+	background-color: #444;
+	border: 1px solid #ccc;
+}
+
+label.varytypeopt {
+	display: block;
 }

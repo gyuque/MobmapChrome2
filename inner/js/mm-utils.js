@@ -93,6 +93,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		return el;
 	};
 	
+	aGlobal.generateRadioInLabel = function(labelText, radio_name, label_class) {
+		var le = $H('label');
+		var r = $H('input');
+		r.type = 'radio';
+		r.name = radio_name;
+		
+		if (label_class) {
+			le.setAttribute('class', label_class);
+		}
+		
+		le.appendChild(r);
+		le.appendChild( document.createTextNode(labelText) );
+		return {label:le, input:r};
+	};
+	
 	aGlobal.RGBColor = function(r,g,b) {
 		this.r = r || 0;
 		this.g = g || 0;
