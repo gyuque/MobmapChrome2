@@ -116,10 +116,25 @@ if (!window.mobmap) { window.mobmap={}; }
 		csvloaderLoadFinish: function() {
 			this.dataReady = true;
 			this.movingData.close();
+			registerAdditionalAttributes(this.movingData, this.sourceLoader.attrMap);
+			
 			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
 			//console.log(this.movingData)
 		}
 	};
+
+	function registerAdditionalAttributes(targetMD, sourceAttrMap) {
+		sourceAttrMap.forEachAttribute(function(attrName, meta){
+			if (!isRequiredAttribute(attrName)) {
+				var intp = (meta.dataType === AttributeType.CFLOAT);
+				targetMD.addExtraProperty(attrName, intp);
+			}
+		});
+	}
+	
+	function isRequiredAttribute(name) {
+		return (kRequiredAttributes.indexOf(name) >= 0);
+	}
 	
 	aGlobal.mobmap.LayerEvent = LayerEvent;
 	aGlobal.mobmap.MovingObjectLayer = MovingObjectLayer;
