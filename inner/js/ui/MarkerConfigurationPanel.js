@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.expandablePanel.setTitle("Marker");
 		
 		this.varyingRadios = {};
+		this.attrBindComboElement = null;
 		
 		this.configurePanelContent();
 	}
@@ -29,8 +30,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		buildMarkerVaryOptions: function(containerElement) {
-			var fs = $H('fieldset');
-			var lg = $H('legend');
+			var fs = makeFieldSetWithLegend('Varying');
 			
 			var rl_none = generateRadioInLabel('None',         'MarkerVaryType', 'varytypeopt');
 			var rl_attr = generateRadioInLabel('By attribute', 'MarkerVaryType', 'varytypeopt');
@@ -50,13 +50,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(rl_attr.input).click(v_handler);
 			$(rl_day.input).click(v_handler);
 
-			lg.appendChild( document.createTextNode('Varying') );
-			fs.appendChild(lg);
 			containerElement.appendChild(fs);
 		},
 		
 		buildMarkerAttrBindOptions: function(containerElement) {
+			var fs = makeFieldSetWithLegend('Vary by attribute');
 			
+			this.attrBindComboElement = makeComboWithLabel(fs, 'Attribute', 'mm-bind-attr-combo');
+
+			containerElement.appendChild(fs);
 		},
 
 
@@ -69,13 +71,37 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Additional properties
 		clearAdditionalPropertyList: function() {
-			
+			this.attrBindComboElement.innerHTML = '';
 		},
 		
 		addAdditionalPropertyName: function(attrName) {
+			var opt = $H('option');
+			opt.appendChild( $T(attrName) );
+			opt.value = attrName;
 			
+			this.attrBindComboElement.appendChild(opt);
 		}
 	};
+	
+	function makeFieldSetWithLegend(legendText) {
+		var fs = $H('fieldset');
+		var lg = $H('legend');
+
+		lg.appendChild( document.createTextNode(legendText) );
+		fs.appendChild(lg);
+
+		return fs;
+	}
+	
+	function makeComboWithLabel(container, labelText, labelClass) {
+		var cb = $H('select');
+		var lb = $H('label', labelClass);
+		
+		lb.appendChild( $T(labelText) );
+		lb.appendChild(cb);
+		container.appendChild(lb);
+		return cb;
+	}
 	
 	aGlobal.mobmap.MarkerConfigurationPanel = MarkerConfigurationPanel;
 })(window);
