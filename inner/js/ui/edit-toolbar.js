@@ -49,7 +49,14 @@ if (!window.mobmap) { window.mobmap={}; }
 				generatedButtonMap[bname] = btnObj;
 				
 				targetCol.appendChild(btnObj.element);
+				this.observeSelectionButton(btnObj);
 			}
+		},
+		
+		observeSelectionButton: function (btnObj) {
+			btnObj.eventDispatcher().
+			 click(this.onSelectionButtonClick.bind(this, btnObj)).
+			 mousedown(this.onSelectionButtonMousedown.bind(this, btnObj));
 		},
 		
 		addGroupColumn: function(name, initialText) {
@@ -64,6 +71,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.tableRow.appendChild(tdBodyCol);
 			
 			this.groupColumnMap[name] = tdBodyCol;
+		},
+		
+		// Handling
+
+		onSelectionButtonClick: function(e, btnObj) {
+			console.log(e, btnObj);
+		},
+
+		onSelectionButtonMousedown: function(e, btnObj) {
+			console.log(e, btnObj);
 		}
 	};
 	
