@@ -93,7 +93,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onSelectionClearButtonClick: function() {
 			if (this.ownerApp) {
-				console.log("Call sel clear", this.ownerApp);
+				this.ownerApp.clearSelection();
 			}
 		}
 	};

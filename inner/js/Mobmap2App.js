@@ -141,6 +141,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			newLayer.loadFromLoader(csvLoader);
 		},
 		
+		// Selection operations
+		clearSelection: function() {
+			console.log("CL");
+		},
+		
 		// -----------------------------------------------------
 		// Screen builder
 		setupScreen: function() {
