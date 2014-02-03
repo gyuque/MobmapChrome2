@@ -143,7 +143,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Selection operations
 		clearSelection: function() {
-			console.log("CL");
+			this.selectionController.clear();
 		},
 		
 		// -----------------------------------------------------

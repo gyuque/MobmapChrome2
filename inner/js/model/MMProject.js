@@ -42,6 +42,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				start: start_t,
 				end: end_t
 			};
+		},
+		
+		forEachLayer: function(proc) {
+			var len = this.layerList.getCount();
+			for (var i = 0;i < len;++i) {
+				proc(i, this.layerList.getLayerAt(i) );
+			}
 		}
 	};
 	
