@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.movingData = null;
+		this.localSelectionPool = new mobmap.SelectionPool();
 		this.dataReady = false;
 		
 		this.shouldRenderAsPoints = true;
