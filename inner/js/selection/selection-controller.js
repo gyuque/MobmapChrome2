@@ -3,8 +3,8 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	
-	function SelectionController() {
-		
+	function SelectionController(ownerApp) {
+		this.ownerApp = ownerApp;
 	}
 	
 	SelectionController.prototype = {
