@@ -125,17 +125,13 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function registerAdditionalAttributes(targetMD, sourceAttrMap) {
 		sourceAttrMap.forEachAttribute(function(attrName, meta){
-			if (!isRequiredAttribute(attrName)) {
+			if (!isMMRequiredAttribute(attrName)) {
 				var intp = (meta.dataType === AttributeType.CFLOAT);
 				targetMD.addExtraProperty(attrName, intp);
 			}
 		});
 	}
-	
-	function isRequiredAttribute(name) {
-		return (kRequiredAttributes.indexOf(name) >= 0);
-	}
-	
+
 	aGlobal.mobmap.LayerEvent = LayerEvent;
 	aGlobal.mobmap.MovingObjectLayer = MovingObjectLayer;
 })(window);

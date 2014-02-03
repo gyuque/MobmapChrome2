@@ -137,8 +137,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerLoadFinish: function(e, layer) {
 			if (layer.hasPrimaryView()) {
-				layer.primaryView.setLayerReady(true);
-				layer.primaryView.setSubCaption(layer.getShortDescription());
+				var lv = layer.primaryView;
+				lv.setLayerReady(true);
+				lv.setSubCaption(layer.getShortDescription());
+				lv.updateAdditionalPropertyList();
 			}
 		}
 	};
@@ -213,6 +215,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.hideProgress();
 				this.markerPanel.show();
 			}
+		},
+		
+		updateAdditionalPropertyList: function() {
+			var mp = this.markerPanel;
+			mp.clearAdditionalPropertyList();
+			
+			var lyr = this.boundLayer;
+			if (!lyr) {return;}
+			if (!lyr.dataReady) {return;}
+			
+			var mdat = lyr.movingData;
+			mdat.forEachExtraProperty(function(attrName, flags){
+				mp.addAdditionalPropertyName(attrName);
+			});
 		}
 	};
 	

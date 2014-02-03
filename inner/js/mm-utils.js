@@ -3,6 +3,9 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 
+	aGlobal.isMMRequiredAttribute = function(name)
+		{ return (kRequiredAttributes.indexOf(name) >= 0); };
+
 	aGlobal.createCleanHash = function() {
 		var o = {__proto__:null};
 		delete o.__proto__;

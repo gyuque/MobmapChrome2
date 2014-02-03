@@ -57,7 +57,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			return true;
 		},
 		
-		onLayerLoadFinish: function() {
+		onLayerLoadFinish: function(e, sourceLayer) {
 			if (this.ownerApp) { this.ownerApp.redrawMap();}
 		},
 		

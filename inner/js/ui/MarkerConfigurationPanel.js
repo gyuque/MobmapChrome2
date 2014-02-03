@@ -25,6 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			ec.appendChild( this.markerGenerator.resultCanvas );
 			
 			this.buildMarkerVaryOptions(ec);
+			this.buildMarkerAttrBindOptions(ec);
 		},
 		
 		buildMarkerVaryOptions: function(containerElement) {
@@ -54,12 +55,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			containerElement.appendChild(fs);
 		},
 		
+		buildMarkerAttrBindOptions: function(containerElement) {
+			
+		},
+
+
 		onVaryingRadioChange: function() {
 			console.log("vchange");
 		},
 
 		show: function() { this.expandablePanel.show(); },
-		hide: function() { this.expandablePanel.hide(); }
+		hide: function() { this.expandablePanel.hide(); },
+		
+		// Additional properties
+		clearAdditionalPropertyList: function() {
+			
+		},
+		
+		addAdditionalPropertyName: function(attrName) {
+			
+		}
 	};
 	
 	aGlobal.mobmap.MarkerConfigurationPanel = MarkerConfigurationPanel;

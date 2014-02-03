@@ -45,6 +45,12 @@ if (!window.mobmap) window.mobmap={};
 				delete this.extraProps[i];
 			}
 		},
+		
+		forEachExtraProperty: function(proc) {
+			for (var i in this.extraProps) {
+				proc(i, this.extraProps[i]);
+			}
+		},
 
 		cropEarlierDays: function(minDayIndex, maxLimit) {
 			var m = this.idMap;
