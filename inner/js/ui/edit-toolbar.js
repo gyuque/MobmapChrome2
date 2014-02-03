@@ -8,7 +8,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		if (!editbuttonsSpriteManager) {
 			editbuttonsSpriteManager = new mobmap.ToolButtonSpriteManager('images/editbuttons-combined.png');
 		}
-		
+
+		this.ownerApp = null;
+
 		this.element = document.createElement("table");
 		this.tableRow = document.createElement("tr");
 		this.element.appendChild(this.tableRow);
@@ -19,6 +21,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MobmapEditToolBar.prototype = {
+		setApp: function(a) {
+			this.ownerApp = a;
+		},
+
 		addPresetColumns: function() {
 			var list = [
 			// Internal name | Label text
@@ -75,12 +81,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Handling
 
-		onSelectionButtonClick: function(e, btnObj) {
-			console.log(e, btnObj);
+		onSelectionButtonClick: function(btnObj, e) {
+			switch(btnObj.name) {
+			case 'sel_clear': this.onSelectionClearButtonClick(); break;
+			}
 		},
 
-		onSelectionButtonMousedown: function(e, btnObj) {
+		onSelectionButtonMousedown: function(btnObj, e) {
 			console.log(e, btnObj);
+		},
+		
+		onSelectionClearButtonClick: function() {
+			if (this.ownerApp) {
+				console.log("Call sel clear", this.ownerApp);
+			}
 		}
 	};
 	

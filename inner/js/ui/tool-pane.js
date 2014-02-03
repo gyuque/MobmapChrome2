@@ -36,6 +36,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setApp: function(a) {
 			this.ownerApp = a;
 			this.controlPanel.setApp(a);
+			this.editToolBar.setApp(a);
 		},
 
 		observeContainerEvents: function(app3PanesView) {
