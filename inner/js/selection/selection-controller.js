@@ -24,12 +24,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.responders.push(r);
 			return true;
+		},
+		
+		startRectSelectionSession: function() {
+			
+		},
+		
+		fireNewSession: function() { this.callResponders('selWillStartNewSession'); },
+		
+		callResponders: function(methodName, arg1, arg2) {
+			var required = SelectionControllerResponderMethodList[methodName] || false;
+			var ls = this.responders;
+			var len = ls.length;
+			
+			for (var i = 0;i < len;++i) {
+				var recv = ls[i];
+				var hasMethod = !!recv[methodName];
+				
+				if (!hasMethod && required) {
+					throw "Responder must implement " + methodName;
+				}
+				
+				if (hasMethod) {
+					recv[methodName](arg1, arg2);
+				}
+			}
 		}
 	};
 	
 	var SelectionControllerResponderMethodList = {
-		// name          | required
-		selWillStart     : false
+		// name                       | required
+		selWillDisposeCurrentSession  : false,
+		selWillStartNewSession        : false
 	};
 
 	aGlobal.mobmap.SelectionController = SelectionController;

@@ -38,6 +38,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.controlPanel.setApp(a);
 			this.editToolBar.setApp(a);
 		},
+		
+		connectToSelectionController: function(selcon) {
+			selcon.addResponder(this.editToolBar);
+		},
 
 		observeContainerEvents: function(app3PanesView) {
 			app3PanesView.eventDispatcher().bind(mobmap.Mobmap3PanesScreen.RESIZE_EVENT,

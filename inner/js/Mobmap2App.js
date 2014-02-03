@@ -146,6 +146,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.selectionController.clear();
 		},
 		
+		getSelectionController: function() {
+			return this.selectionController;
+		},
+		
 		// -----------------------------------------------------
 		// Screen builder
 		setupScreen: function() {
@@ -160,6 +164,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetPaneElement = this.appScreen.getToolsPaneElement();
 			this.toolPane = new mobmap.ToolPane(targetPaneElement);
 			this.toolPane.observeContainerEvents(this.appScreen);
+			this.toolPane.connectToSelectionController(this.selectionController);
 		},
 		
 		setupMapPane: function() {
