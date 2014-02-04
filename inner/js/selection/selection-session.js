@@ -24,6 +24,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return SelectionSessionType.Rect;
 		},
 		
+		isDraggingSelectionRecommended: function() {
+			return true;
+		},
+		
 		// - - - - - - - - - -
 		
 		setStartPos: function(lat, lng) {

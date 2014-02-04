@@ -4,10 +4,15 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	var DARKMAP_ID = 'dark';
 
+	var PMODE_DEFAULT  = 0;
+	var PMODE_DRAG_SEL = 1;
+
 	function MapPane(containerElement) {
 		this.gmap = null;
 		this.ownerApp = null;
 		this.darkMapType = null;
+		
+		this.pointingMode = PMODE_DEFAULT;
 		
 		this.initialLocation = {
 			zoom: 8,
@@ -19,6 +24,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jContainerElement = $(containerElement);
 		
 		this.setupGoogleMaps();
+		this.setupCaptureEvents();
 	}
 	
 	MapPane.NEED_OVERLAYS_RENDER_EVENT = "mappane-needs-overalys-render";
@@ -47,7 +53,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.onCurrentDateTimeChange.bind(this)
 			);
 		},
-		
+
+		connectToSelectionController: function(selcon) {
+			selcon.addResponder(this);
+		},
+
 		onContainerResize: function() {
 			if (this.gmap) {
 				google.maps.event.trigger(this.gmap, 'resize');
@@ -78,7 +88,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.mobLayer.setMap(this.gmap);
 			*/
 		},
-		
+
+		setupCaptureEvents: function() {
+			var el = this.containerElement;
+			el.addEventListener('mousedown', this.captureMouseDown.bind(this), true);
+			el.addEventListener('mousemove', this.captureMouseMove.bind(this), true);
+			el.addEventListener('mouseup',   this.captureMouseUp.bind(this),   true);
+		},
+
 		setupDarkMap: function(gmap, typeName) {
 			if (this.darkMapType) {return;}
 			
@@ -115,6 +132,58 @@ if (!window.mobmap) { window.mobmap={}; }
 			//  Event observer will render overlays.
 			this.eventDispatcher().trigger(MapPane.NEED_OVERLAYS_RENDER_EVENT, [this, sec]);
 			// ----------------------------------------------------------------------------
+		},
+		
+		enterDragSelectionMode: function() {
+			this.pointingMode = PMODE_DRAG_SEL;
+			this.changePointerStyle();
+		},
+		
+		leaveSpecialPointingMode: function() {
+			this.pointingMode = PMODE_DEFAULT;
+			this.changePointerStyle();
+		},
+		
+		changePointerStyle: function() {
+			var j = this.jContainerElement;
+			if (this.pointingMode === PMODE_DRAG_SEL) {
+				j.addClass('on-selection');
+			} else {
+				j.removeClass('on-selection');
+			}
+		},
+		
+		// capture events
+		captureMouseDown: function(e) {
+			this.blockMouseEventIfNeeded(e);
+		},
+
+		captureMouseMove: function(e) {
+			this.blockMouseEventIfNeeded(e);
+		},
+
+		captureMouseUp: function(e) {
+			this.blockMouseEventIfNeeded(e);
+		},
+		
+		blockMouseEventIfNeeded: function(e) {
+			if (this.pointingMode === PMODE_DRAG_SEL) {
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		},
+
+		// - - - - - - - - - - - - - - - -
+		// Selection Controller Responders
+		
+		selDidStartNewSession: function(selController) {
+			var sess = selController.getCurrentSession();
+			if (sess) {
+				var drg_mode = sess.isDraggingSelectionRecommended();
+				if (drg_mode) {
+					this.enterDragSelectionMode();
+				}
+			}
 		}
 	};
 

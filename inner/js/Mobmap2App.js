@@ -171,6 +171,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetPaneElement = this.appScreen.getContentPaneElement();
 			this.mapPane = new mobmap.MapPane(targetPaneElement);
 			this.mapPane.observeContainerEvents(this.appScreen);
+			this.mapPane.connectToSelectionController(this.selectionController);
 			
 			this.layerController.observeMapPane(this.mapPane);
 		},
