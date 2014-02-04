@@ -45,8 +45,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.fireAfterNewSession();
 		},
 		
+		cancelSessionIfType: function(stype, fireAfter) {
+			if (this.currentSelectionSession) {
+				if (this.currentSelectionSession.getType() === stype) {
+					this.disposeCurrentSession();
+				
+					if (fireAfter) {
+						this.fireAfterDisposeSession();
+					}
+					return true;
+				}
+			}
+			
+			return false;
+		},
+		
 		fireSessionDispose: function() { this.callResponders('selWillDisposeCurrentSession'); },
 		fireNewSession: function() { this.callResponders('selWillStartNewSession'); },
+		fireAfterDisposeSession: function() { this.callResponders('selDidDisposeSession'); },
 		fireAfterNewSession: function() { this.callResponders('selDidStartNewSession'); },
 		
 		callResponders: function(methodName, arg1, arg2) {
@@ -73,6 +89,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		// name                       | required
 		selWillDisposeCurrentSession  : false,
 		selWillStartNewSession        : false,
+		selDidDisposeSession          : false,
 		selDidStartNewSession         : false
 	};
 

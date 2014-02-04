@@ -86,13 +86,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		onSelectionButtonClick: function(btnObj, e) {
 			switch(btnObj.name) {
 			case 'sel_clear': this.onSelectionClearButtonClick(); break;
+			case 'sel_rect':
+				if (!this.deselectSelectionRectButton()) {
+					this.onSelectionRectButtonDown();
+				}
+				break;
 			}
 		},
 
 		onSelectionButtonMousedown: function(btnObj, e) {
-			switch(btnObj.name) {
-			case 'sel_rect': this.onSelectionRectButtonDown(); break;
-			}
 		},
 		
 		onSelectionClearButtonClick: function() {
@@ -108,6 +110,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		deselectSelectionRectButton: function() {
+			var c = this.getOwnerSelectionController();
+			if (c) { return c.cancelSessionIfType(mobmap.SelectionSessionType.Rect, true); }
+			return false;
+		},
+		
 		getOwnerSelectionController: function() {
 			if (!this.ownerApp) {return null;}
 			return this.ownerApp.getSelectionController() || null;
@@ -120,8 +128,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (sess) {
 				currentType = sess.getType();
 			}
-			
+
 			this.updateSelectionButtonsState(currentType);
+		},
+		
+		selDidDisposeSession: function(selController) {
+			this.updateSelectionButtonsState(mobmap.SelectionSessionType.Unknown);
 		},
 		
 		updateSelectionButtonsState: function(currentSessionType) {
@@ -135,7 +147,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < len;++i) {
 				var targetName = setButtonNames[i];
 				var btn = this.selectionButtonNameMap[targetName];
-				console.log(targetName , sel_name)
 				btn.setSelectedStyle(targetName === sel_name);
 			}
 		}
