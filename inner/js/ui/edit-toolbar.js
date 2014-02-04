@@ -17,7 +17,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.groupColumnMap = {};
 		this.addPresetColumns();
-		this.addSelectionButtons('sel');
+		this.selectionButtonNameMap = this.addSelectionButtons('sel');
 	}
 	
 	MobmapEditToolBar.prototype = {
@@ -57,6 +57,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				targetCol.appendChild(btnObj.element);
 				this.observeSelectionButton(btnObj);
 			}
+			
+			return generatedButtonMap;
 		},
 		
 		observeSelectionButton: function (btnObj) {
@@ -112,8 +114,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		// Responder methods for controller
-		selWillStartNewSession: function(selController) {
-			var currentType = SelectionSessionType.Unknown;
+		selDidStartNewSession: function(selController) {
+			var currentType = mobmap.SelectionSessionType.Unknown;
 			var sess = selController.getCurrentSession();
 			if (sess) {
 				currentType = sess.getType();
@@ -123,7 +125,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		updateSelectionButtonsState: function(currentSessionType) {
+			var sel_name = null;
+			switch(currentSessionType) {
+				case mobmap.SelectionSessionType.Rect:  sel_name = 'sel_rect'; break;
+			}
 			
+			var setButtonNames = ['sel_rect'];
+			var len = setButtonNames.length;
+			for (var i = 0;i < len;++i) {
+				var targetName = setButtonNames[i];
+				var btn = this.selectionButtonNameMap[targetName];
+				console.log(targetName , sel_name)
+				btn.setSelectedStyle(targetName === sel_name);
+			}
 		}
 	};
 	

@@ -42,10 +42,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.fireNewSession();
 			this.currentSelectionSession = new mobmap.RectSelectionSession();
+			this.fireAfterNewSession();
 		},
 		
 		fireSessionDispose: function() { this.callResponders('selWillDisposeCurrentSession'); },
 		fireNewSession: function() { this.callResponders('selWillStartNewSession'); },
+		fireAfterNewSession: function() { this.callResponders('selDidStartNewSession'); },
 		
 		callResponders: function(methodName, arg1, arg2) {
 			var required = SelectionControllerResponderMethodList[methodName] || false;
@@ -70,7 +72,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	var SelectionControllerResponderMethodList = {
 		// name                       | required
 		selWillDisposeCurrentSession  : false,
-		selWillStartNewSession        : false
+		selWillStartNewSession        : false,
+		selDidStartNewSession         : false
 	};
 
 	aGlobal.mobmap.SelectionController = SelectionController;
