@@ -7,6 +7,10 @@ body,html {
 	border: none;
 }
 
+#content-pane {
+	position: relative;
+}
+
 .k-overlay {
 	background-color: #fff;
 }

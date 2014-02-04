@@ -46,6 +46,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		getCurrentProject: function() {
 			return this.currentProject;
 		},
+		
+		getLayerController: function() {
+			return this.layerController;
+		},
 
 		// (shortcut method)
 		getCurrentProjectDateTime: function() {

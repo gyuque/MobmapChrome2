@@ -140,6 +140,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (targetLayer.setMarkerImage(textureSourceImage)) { // Success?
 				mg.dirty = false;
 			}
+		},
+		
+		getTopLayerOverlay: function() {
+			var ls = this.mapOverlayList;
+			var len = ls.length;
+			if (len < 1) { return null; }
+
+			return ls[len - 1];
 		}
 	};
 

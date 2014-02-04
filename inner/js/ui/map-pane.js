@@ -159,6 +159,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// capture events
 		captureMouseDown: function(e) {
+			this.sendFirstSelectionPoint(e);
 			this.blockMouseEventIfNeeded(e);
 		},
 
@@ -174,6 +175,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.pointingMode === PMODE_DRAG_SEL) {
 				e.stopPropagation();
 				e.preventDefault();
+			}
+		},
+		
+		sendFirstSelectionPoint: function(e) {
+			if (this.pointingMode === PMODE_DRAG_SEL) {
+				var pos = this.latLngFromClick(e);
+				console.log(pos);
 			}
 		},
 
@@ -205,6 +213,28 @@ if (!window.mobmap) { window.mobmap={}; }
 				fillColor: "#0000dd",
 				fillOpacity: 0.3
 			});
+		},
+		
+		updateSelectionFeedback: function() {
+			
+		},
+		
+		// Utility functions
+		elementX: function(e){ return e.pageX - this.jContainerElement.offset().left; },
+		elementY: function(e){ return e.pageY - this.jContainerElement.offset().top;  },
+		latLngFromClick: function(e) {
+			if (!this.ownerApp) { return null; }
+			var lc = this.ownerApp.getLayerController();
+			var overlay = lc.getTopLayerOverlay();
+			if (!overlay) { return null; }
+			
+			var sx = this.elementX(e);
+			var sy = this.elementY(e);
+			var pt = overlay.getProjection().fromContainerPixelToLatLng(new google.maps.Point(sx , sy));
+			
+			pt.screenX = sx;
+			pt.screenY = sy;
+			return pt;
 		}
 	};
 
