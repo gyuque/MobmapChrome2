@@ -11,9 +11,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.gmap = null;
 		this.ownerApp = null;
 		this.darkMapType = null;
-		
 		this.pointingMode = PMODE_DEFAULT;
-		
+
+		// Preview overlays
+		this.selectionPolygonpath = null;
+		this.selectionPreviewPolygon = null;
+
 		this.initialLocation = {
 			zoom: 8,
 			lat: 36.7,
@@ -25,6 +28,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.setupGoogleMaps();
 		this.setupCaptureEvents();
+		this.setupSelectionPolygon();
 	}
 	
 	MapPane.NEED_OVERLAYS_RENDER_EVENT = "mappane-needs-overalys-render";
@@ -188,6 +192,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		selDidDisposeSession: function(selController) {
 			this.leaveSpecialPointingMode();
+		},
+		
+		// Selection feedback views = = =
+
+		setupSelectionPolygon: function() {
+			this.selectionPolygonpath = [];
+			this.selectionPreviewPolygon = new google.maps.Polygon({
+				strokeColor: "#0000dd",
+				strokeOpacity: 0.8,
+				strokeWeight: 0.5,
+				fillColor: "#0000dd",
+				fillOpacity: 0.3
+			});
 		}
 	};
 
