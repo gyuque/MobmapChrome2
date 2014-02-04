@@ -184,6 +184,10 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.enterDragSelectionMode();
 				}
 			}
+		},
+		
+		selDidDisposeSession: function(selController) {
+			this.leaveSpecialPointingMode();
 		}
 	};
 
