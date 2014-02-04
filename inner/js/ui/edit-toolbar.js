@@ -88,13 +88,42 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onSelectionButtonMousedown: function(btnObj, e) {
-			console.log(e, btnObj);
+			switch(btnObj.name) {
+			case 'sel_rect': this.onSelectionRectButtonDown(); break;
+			}
 		},
 		
 		onSelectionClearButtonClick: function() {
 			if (this.ownerApp) {
 				this.ownerApp.clearSelection();
 			}
+		},
+		
+		onSelectionRectButtonDown: function() {
+			var c = this.getOwnerSelectionController();
+			if (c) {
+				c.startRectSelectionSession();
+			}
+		},
+		
+		getOwnerSelectionController: function() {
+			if (!this.ownerApp) {return null;}
+			return this.ownerApp.getSelectionController() || null;
+		},
+		
+		// Responder methods for controller
+		selWillStartNewSession: function(selController) {
+			var currentType = SelectionSessionType.Unknown;
+			var sess = selController.getCurrentSession();
+			if (sess) {
+				currentType = sess.getType();
+			}
+			
+			this.updateSelectionButtonsState(currentType);
+		},
+		
+		updateSelectionButtonsState: function(currentSessionType) {
+			
 		}
 	};
 	

@@ -19,6 +19,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	RectSelectionSession.prototype = {
+		// Common API
+		getType: function() {
+			return SelectionSessionType.Rect;
+		},
+		
+		// - - - - - - - - - -
+		
 		setStartPos: function(lat, lng) {
 			
 		},
@@ -28,5 +35,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 
+	aGlobal.mobmap.SelectionSessionType = SelectionSessionType;
 	aGlobal.mobmap.RectSelectionSession = RectSelectionSession;
 })(window);

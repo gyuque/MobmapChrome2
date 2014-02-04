@@ -10,6 +10,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	SelectionController.prototype = {
+		getCurrentSession: function() {
+			return this.currentSelectionSession;
+		},
+		
 		clear: function() {
 			var prj = this.ownerApp.getCurrentProject();
 			prj.forEachLayer(function(index, layer){
@@ -26,10 +30,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			return true;
 		},
 		
-		startRectSelectionSession: function() {
-			
+		disposeCurrentSession: function() {
+			if (this.currentSelectionSession) {
+				this.fireSessionDispose();
+				this.currentSelectionSession = null;
+			}
 		},
 		
+		startRectSelectionSession: function() {
+			this.disposeCurrentSession();
+			
+			this.fireNewSession();
+			this.currentSelectionSession = new mobmap.RectSelectionSession();
+		},
+		
+		fireSessionDispose: function() { this.callResponders('selWillDisposeCurrentSession'); },
 		fireNewSession: function() { this.callResponders('selWillStartNewSession'); },
 		
 		callResponders: function(methodName, arg1, arg2) {
@@ -46,7 +61,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 				
 				if (hasMethod) {
-					recv[methodName](arg1, arg2);
+					recv[methodName](this, arg1, arg2);
 				}
 			}
 		}
