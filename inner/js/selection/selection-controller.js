@@ -30,10 +30,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return true;
 		},
 		
-		disposeCurrentSession: function() {
+		disposeCurrentSession: function(fireAfter) {
 			if (this.currentSelectionSession) {
 				this.fireSessionDispose();
 				this.currentSelectionSession = null;
+				if (fireAfter) {
+					this.fireAfterDisposeSession();
+				}
 			}
 		},
 		
@@ -48,16 +51,24 @@ if (!window.mobmap) { window.mobmap={}; }
 		cancelSessionIfType: function(stype, fireAfter) {
 			if (this.currentSelectionSession) {
 				if (this.currentSelectionSession.getType() === stype) {
-					this.disposeCurrentSession();
-				
-					if (fireAfter) {
-						this.fireAfterDisposeSession();
-					}
+					this.disposeCurrentSession(fireAfter);
 					return true;
 				}
 			}
 			
 			return false;
+		},
+		
+		putSessionFirstPoint: function(lat, lng) {
+			console.log(lat, lng)
+		},
+		
+		putSessionDraggingPoint: function(lat, lng) {
+			console.log("D", lat, lng)
+		},
+		
+		commitDraggingSelection: function() {
+			this.disposeCurrentSession(true);
 		},
 		
 		fireSessionDispose: function() { this.callResponders('selWillDisposeCurrentSession'); },

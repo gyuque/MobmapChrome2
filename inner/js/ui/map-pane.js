@@ -12,6 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.ownerApp = null;
 		this.darkMapType = null;
 		this.pointingMode = PMODE_DEFAULT;
+		this.nowCapturingDrag = false;
 
 		// Preview overlays
 		this.selectionPolygonpath = null;
@@ -144,6 +145,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		leaveSpecialPointingMode: function() {
+			this.nowCapturingDrag = false;
 			this.pointingMode = PMODE_DEFAULT;
 			this.changePointerStyle();
 		},
@@ -161,14 +163,25 @@ if (!window.mobmap) { window.mobmap={}; }
 		captureMouseDown: function(e) {
 			this.sendFirstSelectionPoint(e);
 			this.blockMouseEventIfNeeded(e);
+			this.nowCapturingDrag = true;
 		},
 
 		captureMouseMove: function(e) {
+			if (this.nowCapturingDrag) {
+				this.sendDraggingSelectionPoint(e);
+			}
+			
 			this.blockMouseEventIfNeeded(e);
 		},
 
 		captureMouseUp: function(e) {
+			if (this.nowCapturingDrag) {
+				this.sendDraggingSelectionPoint(e);
+				this.sendDraggingSelectionEnd();
+			}
+			
 			this.blockMouseEventIfNeeded(e);
+			this.nowCapturingDrag = false;
 		},
 		
 		blockMouseEventIfNeeded: function(e) {
@@ -181,7 +194,27 @@ if (!window.mobmap) { window.mobmap={}; }
 		sendFirstSelectionPoint: function(e) {
 			if (this.pointingMode === PMODE_DRAG_SEL) {
 				var pos = this.latLngFromClick(e);
-				console.log(pos);
+				if (pos) {
+					var sc = this.ownerApp.getSelectionController();
+					sc.putSessionFirstPoint(pos.lat(), pos.lng());
+				}
+			}
+		},
+		
+		sendDraggingSelectionPoint: function(e) {
+			if (this.pointingMode === PMODE_DRAG_SEL) {
+				var pos = this.latLngFromClick(e);
+				if (pos) {
+					var sc = this.ownerApp.getSelectionController();
+					sc.putSessionDraggingPoint(pos.lat(), pos.lng());
+				}
+			}
+		},
+		
+		sendDraggingSelectionEnd: function() {
+			if (this.pointingMode === PMODE_DRAG_SEL) {
+				var sc = this.ownerApp.getSelectionController();
+				sc.commitDraggingSelection();
 			}
 		},
 
