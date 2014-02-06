@@ -18,9 +18,9 @@ h1 {
 	padding: 0.4em;
 	font-size: 22px;
 	color: #777;
-	background: linear-gradient(to bottom, #ccc, #e0e0e0, #e0e0e0);
+	background: #ddd url(../images/noise-bg.png);
 	border-bottom: 1px solid #f9f9f9;
-	box-shadow: 0 1px 1px #ddd, 0 1px 9px rgba(0,0,0,0.1) inset;
+	box-shadow: 0 1px 1px #ddd, 0 1px 7px rgba(0,0,0,0.2) inset;
 	text-shadow: 0 1px 0 #fff;
 }
 
@@ -61,4 +61,24 @@ h1 {
 
 #control-area button:active {
 	background: linear-gradient(to bottom, #55695f, #609070);
+}
+
+.area-subset {
+	border: 1px solid #aaa;
+	background: #ddd url(../images/noise-bg.png);
+	box-shadow: 0 0 1px 1px rgba(255,255,255,0.9) inset;
+	padding: 0.2em;
+	margin: 1px;
+}
+
+.area-subset h4 {
+	margin: 0;
+	padding: 2px;
+	font-size: 10px;
+	color: #666;
+}
+
+td fieldset {
+	color: #333;
+	font-size: 90%;
 }
