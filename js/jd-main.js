@@ -1,4 +1,5 @@
 (function(aGlobal) {
+	'use strict';
 	var gPrefPicker = null;
 	
 	// Launch
@@ -15,6 +16,8 @@
 
 
 	function PrefPicker(map_container_el) {
+		this.selectionSet = new SelectionSet();
+		
 		this.mapWidth  = 320;
 		this.mapHeight = 360;
 		
@@ -90,9 +93,20 @@
 			var g = this.mapG;
 			g.clearRect(0, 0, this.mapWidth, this.mapHeight);
 			
-			for (var nm in this.prefNameMap) {
-				var item = this.prefNameMap[nm];
-				this.renderPrefImage(g, item);
+			for (var phase = 0;phase < 2;++phase) {
+				var show_selected = (phase === 0);
+				for (var nm in this.prefNameMap) {
+					var item = this.prefNameMap[nm];
+					var item_sel = this.selectionSet.isNameSelected(nm);
+					if (show_selected === item_sel) {
+						this.renderPrefImage(g, item);
+					}
+					
+				}
+				
+				if (phase === 0) {
+					this.filterCanvas();
+				}
 			}
 		},
 		
@@ -100,6 +114,25 @@
 			g.drawImage(prefItem.image,
 				this.mapOffsetX + prefItem.originX,
 				this.mapOffsetY + prefItem.originY);
+		},
+		
+		filterCanvas: function() {
+			var w = this.mapWidth;
+			var h = this.mapHeight;
+
+			var g = this.mapG;
+			var imagedata = g.getImageData(0, 0, w, h);
+			var p = imagedata.data;
+			var len = w * h;
+			var pos = 0;
+			for (var i = 0;i < len;++i) {
+				p[pos] >>= 2;
+				p[pos+1] >>= 1;
+				pos += 4;
+			}
+			
+			g.clearRect(0, 0, w, h);
+			g.putImageData(imagedata, 0, 0);
 		}
 	};
 	
@@ -114,11 +147,22 @@
 	
 	function SelectionSet() {
 		this.jEventElement = $('body');
+		this.nameMap = {};
+		
+		
+		this.nameMap['TokyoTo'] = true;
+		this.nameMap['ChibaKen'] = true;
+		this.nameMap['KanagawaKen'] = true;
+		this.nameMap['SaitamaKen'] = true;
 	}
 	
 	SelectionSet.prototype = {
 		eventDispatcher: function() {
 			return this.jEventElement;
+		},
+		
+		isNameSelected: function(prefName) {
+			return this.nameMap.hasOwnProperty(prefName);
 		}
 	};
 	
