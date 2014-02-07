@@ -23,11 +23,11 @@
 		this.selectionSet.eventDispatcher().bind(SelectionSet.CHANGE_EVENT, this.onSelectionSetChange.bind(this));
 		this.boundCheckboxes = [];
 		
-		this.mapWidth  = 380;
-		this.mapHeight = 390;
+		this.mapWidth  = 590;
+		this.mapHeight = 690;
 		
-		this.mapOffsetX = -340;
-		this.mapOffsetY = -20;
+		this.mapOffsetX = -170;
+		this.mapOffsetY = -28;
 		
 		this.mapCanvas  = null;
 		this.mapG = null;
@@ -36,13 +36,46 @@
 		this.prefNameMap = {}
 		this.buildView();
 		
-		this.addCheckboxOnMap(222, 304, "Kanagawa", "KanagawaKen");
-		this.addCheckboxOnMap(222, 277, "Tokyo", "TokyoTo");
-		this.addCheckboxOnMap(289, 277, "Chiba", "ChibaKen");
-		this.addCheckboxOnMap(222, 250, "Saitama", "SaitamaKen");
+		this.initializeOnMapCheckboxes();
 	}
 	
 	PrefPicker.prototype = {
+		initializeOnMapCheckboxes: function() {
+			var xstep = 10;
+			var ystep = 27;
+			
+			var ox = 182;
+			var oy = 577;
+			
+			var addchk = (function(cx, cy, label, nm) {
+				this.addCheckboxOnMap(ox + xstep*cx, oy + ystep*cy, label, nm);
+			}).bind(this);
+			
+			addchk(11, -14, "Hokkaido", "HokkaiDo");
+			addchk(5, -9, "Aomori", "AomoriKen");
+			addchk(3, -7, "Akita", "AkitaKen");
+			addchk(9, -7, "Iwate", "IwateKen");
+			addchk(-1, -5, "Yamagata", "YamagataKen");
+			addchk(0, -4, "Niigata", "NiigataKen");
+			addchk(7, -5, "Miyagi", "MiyagiKen");
+			addchk(-7, -3, "Toyama", "ToyamaKen");
+			addchk(-11, -2, "Ishikawa", "IshikawaKen");
+			addchk(-13, -1, "Fukui", "FukuiKen");
+
+			addchk(2,  0, "Tokyo", "TokyoTo");
+			addchk(8,  0, "Chiba", "ChibaKen");
+			addchk(0,  1, "Kanagawa", "KanagawaKen");
+			addchk(0, -1, "Saitama", "SaitamaKen");
+			addchk(7, -1, "Ibaraki", "IbarakiKen");
+			addchk(5, -3, "Fukushima", "FukushimaKen");
+			addchk(5, -2, "Tochigi", "TochigiKen");
+			addchk(-2, -2, "Gumma", "GunmaKen");
+
+			addchk(-3,  2, "Shizuoka", "ShizuokaKen");
+			addchk(-7, -1, "Nagano", "NaganoKen");
+			addchk(-9, 0, "Gifu", "GifuKen");
+		},
+		
 		buildView: function() {
 			this.mapCanvas = document.createElement('canvas');
 			this.mapG = this.mapCanvas.getContext('2d');
@@ -52,10 +85,11 @@
 			this.mapContainerElement.appendChild(this.mapCanvas);
 		},
 		
-		addCheckboxOnMap: function(x, y, labelText, name) {
+		addCheckboxOnMap: function(x, y, labelText, selectionName) {
 			var label = document.createElement('label');
 			var input = document.createElement('input');
 			input.type = "checkbox";
+			input.value = selectionName;
 			label.setAttribute('class', 'jd-onmap-check');
 			
 			label.appendChild(input);
@@ -66,6 +100,9 @@
 			s.left = Math.floor(x) + "px";
 			s.top = Math.floor(y) + "px";
 			this.mapContainerElement.appendChild(label);
+			
+			this.bindCheckbox(input);
+			$(input).click(this.onPrefCheckClick.bind(this));
 		},
 
 		setMapSource: function(sourceData, callback) {
@@ -202,7 +239,10 @@
 		},
 		
 		onPrefCheckClick: function(e) {
-			this.sendCheckboxValues();
+			var pref_name = e.target.value;
+			var selected  = e.target.checked;
+			
+			this.selectionSet.setSelected(pref_name, selected);
 			this.selectionSet.fire();
 		},
 		

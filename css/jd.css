@@ -30,6 +30,17 @@ td h3 {
 	font-size: 18px;
 }
 
+#bundles-col {
+	position: relative;
+}
+
+#bundles-container {
+	width: 13em;
+	position: absolute;
+	top: 290px;
+	left: -220px;
+}
+
 #pref-selector-container {
 	margin-left: auto;
 	margin-right: auto;
