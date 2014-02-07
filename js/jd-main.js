@@ -8,8 +8,8 @@
 		gPrefPicker = new PrefPicker(map_container);
 		gPrefPicker.setMapSource(kMapData, afterImagesLoad);
 		
-		gPrefPicker.observeCheckbox('.pchk-tokyo-core', '#selall-tokyo-core');
-		gPrefPicker.observeCheckbox('.pchk-tokyo-around');
+		gPrefPicker.observeCheckbox('.pchk-tokyo-core', '#selall-tokyo-core', '#rmall-tokyo-core');
+		gPrefPicker.observeCheckbox('.pchk-tokyo-around', '#selall-tokyo-around', '#rmall-tokyo-around');
 	};
 	
 	function afterImagesLoad() {
@@ -140,7 +140,7 @@
 			g.putImageData(imagedata, 0, 0);
 		},
 		
-		observeCheckbox: function(chkSelector, selallSelector) {
+		observeCheckbox: function(chkSelector, selallSelector, removeallSelector) {
 			var ch = $(chkSelector);
 			ch.click(this.onPrefCheckClick.bind(this));
 			
@@ -151,10 +151,27 @@
 			if (selallSelector) {
 				this.setupBulkButton(selallSelector, ch, true);
 			}
+			
+			if (removeallSelector) {
+				this.setupBulkButton(removeallSelector, ch, false);
+			}
 		},
 		
 		setupBulkButton: function(buttonSelector, targetList, value) {
+			var nameList = [];
+			targetList.each(function(i,el) {
+				nameList.push(el.value);
+			});
 			
+			$(buttonSelector).click(this.bulkChangeSelection.bind(this, nameList, value));
+		},
+		
+		bulkChangeSelection: function(nameList, newValue) {
+			for (var i in nameList) {
+				this.selectionSet.setSelected(nameList[i], newValue);
+			}
+			
+			this.selectionSet.fire();
 		},
 		
 		bindCheckbox: function(inputElement) {
@@ -169,7 +186,23 @@
 		},
 		
 		onSelectionSetChange: function() {
+			this.updateCheckboxes();
 			this.render();
+		},
+		
+		updateCheckboxes: function() {
+			var ls = this.boundCheckboxes;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var el = ls[i];
+				var name = el.value;
+				var cur_val = el.checked;
+				
+				var newVal = this.selectionSet.isNameSelected(name);
+				if (newVal !== cur_val) {
+					el.checked = newVal;
+				}
+			}
 		},
 		
 		sendCheckboxValues: function() {
