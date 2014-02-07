@@ -1,7 +1,7 @@
 (function(aGlobal) {
 	'use strict';
 	var gPrefPicker = null;
-	
+
 	// Launch
 	window.onload = function() {
 		var map_container = document.getElementById('pref-map-area');
@@ -23,11 +23,11 @@
 		this.selectionSet.eventDispatcher().bind(SelectionSet.CHANGE_EVENT, this.onSelectionSetChange.bind(this));
 		this.boundCheckboxes = [];
 		
-		this.mapWidth  = 320;
-		this.mapHeight = 360;
+		this.mapWidth  = 380;
+		this.mapHeight = 390;
 		
-		this.mapOffsetX = -440;
-		this.mapOffsetY = -70;
+		this.mapOffsetX = -340;
+		this.mapOffsetY = -20;
 		
 		this.mapCanvas  = null;
 		this.mapG = null;
@@ -35,6 +35,11 @@
 		this.onImageReadyCallback = null;
 		this.prefNameMap = {}
 		this.buildView();
+		
+		this.addCheckboxOnMap(222, 304, "Kanagawa", "KanagawaKen");
+		this.addCheckboxOnMap(222, 277, "Tokyo", "TokyoTo");
+		this.addCheckboxOnMap(289, 277, "Chiba", "ChibaKen");
+		this.addCheckboxOnMap(222, 250, "Saitama", "SaitamaKen");
 	}
 	
 	PrefPicker.prototype = {
@@ -45,6 +50,22 @@
 			this.mapCanvas.width = this.mapWidth;
 			this.mapCanvas.height = this.mapHeight;
 			this.mapContainerElement.appendChild(this.mapCanvas);
+		},
+		
+		addCheckboxOnMap: function(x, y, labelText, name) {
+			var label = document.createElement('label');
+			var input = document.createElement('input');
+			input.type = "checkbox";
+			label.setAttribute('class', 'jd-onmap-check');
+			
+			label.appendChild(input);
+			label.appendChild( document.createTextNode(labelText) );
+			
+			var s = label.style;
+			s.position = "absolute";
+			s.left = Math.floor(x) + "px";
+			s.top = Math.floor(y) + "px";
+			this.mapContainerElement.appendChild(label);
 		},
 
 		setMapSource: function(sourceData, callback) {
