@@ -7,6 +7,9 @@
 		var map_container = document.getElementById('pref-map-area');
 		gPrefPicker = new PrefPicker(map_container);
 		gPrefPicker.setMapSource(kMapData, afterImagesLoad);
+		
+		gPrefPicker.observeCheckbox('.pchk-tokyo-core', '#selall-tokyo-core');
+		gPrefPicker.observeCheckbox('.pchk-tokyo-around');
 	};
 	
 	function afterImagesLoad() {
@@ -17,6 +20,8 @@
 
 	function PrefPicker(map_container_el) {
 		this.selectionSet = new SelectionSet();
+		this.selectionSet.eventDispatcher().bind(SelectionSet.CHANGE_EVENT, this.onSelectionSetChange.bind(this));
+		this.boundCheckboxes = [];
 		
 		this.mapWidth  = 320;
 		this.mapHeight = 360;
@@ -133,6 +138,50 @@
 			
 			g.clearRect(0, 0, w, h);
 			g.putImageData(imagedata, 0, 0);
+		},
+		
+		observeCheckbox: function(chkSelector, selallSelector) {
+			var ch = $(chkSelector);
+			ch.click(this.onPrefCheckClick.bind(this));
+			
+			ch.each( (function(i,el){
+				this.bindCheckbox(el);
+			}).bind(this) );
+			
+			if (selallSelector) {
+				this.setupBulkButton(selallSelector, ch, true);
+			}
+		},
+		
+		setupBulkButton: function(buttonSelector, targetList, value) {
+			
+		},
+		
+		bindCheckbox: function(inputElement) {
+			if (this.boundCheckboxes.indexOf(inputElement) >= 0) {return;}
+			
+			this.boundCheckboxes.push(inputElement);
+		},
+		
+		onPrefCheckClick: function(e) {
+			this.sendCheckboxValues();
+			this.selectionSet.fire();
+		},
+		
+		onSelectionSetChange: function() {
+			this.render();
+		},
+		
+		sendCheckboxValues: function() {
+			var ls = this.boundCheckboxes;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var el = ls[i];
+				var chk = el.checked;
+				var name = el.value;
+				
+				this.selectionSet.setSelected(name, chk);
+			}
 		}
 	};
 	
@@ -148,21 +197,33 @@
 	function SelectionSet() {
 		this.jEventElement = $('body');
 		this.nameMap = {};
-		
-		
-		this.nameMap['TokyoTo'] = true;
-		this.nameMap['ChibaKen'] = true;
-		this.nameMap['KanagawaKen'] = true;
-		this.nameMap['SaitamaKen'] = true;
 	}
+	
+	SelectionSet.CHANGE_EVENT = "selset-changed";
 	
 	SelectionSet.prototype = {
 		eventDispatcher: function() {
 			return this.jEventElement;
 		},
 		
+		setSelected: function(name, selected) {
+			if (this.isNameSelected(name)) {
+				if (!selected) {
+					delete this.nameMap[name];
+				}
+			} else {
+				if (selected) {
+					this.nameMap[name] = true;
+				}
+			}
+		},
+		
 		isNameSelected: function(prefName) {
 			return this.nameMap.hasOwnProperty(prefName);
+		},
+		
+		fire: function() {
+			this.eventDispatcher().trigger(SelectionSet.CHANGE_EVENT, this);
 		}
 	};
 	
