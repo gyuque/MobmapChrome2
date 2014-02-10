@@ -7,6 +7,10 @@ body {
 	background: #eee;
 }
 
+html {
+	overflow: auto;
+}
+
 hr {
 	border: none;
 	background-color: #bbb;
@@ -37,8 +41,8 @@ td h3 {
 #bundles-container {
 	width: 13em;
 	position: absolute;
-	top: 150px;
-	left: -150px;
+	top: 220px;
+	left: -220px;
 }
 
 #pref-selector-container {

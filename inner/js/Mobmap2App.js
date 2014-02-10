@@ -20,6 +20,14 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	Mobmap2App.PROJECT_SET_EVENT = 'mm-app-project-set';
+	Mobmap2App.sendOuterMessage = function(command, params) {
+		var msg = JSON.stringify({
+			command: command,
+			params: params
+		});
+		
+		window.parent.postMessage(msg, '*');
+	};
 	
 	Mobmap2App.prototype = {
 		eventDispatcher: function() {
@@ -40,6 +48,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.toolPane) {
 				this.toolPane.getTimelineBar().bindDateTime( prj.currentDateTime );
 			}
+		},
+		
+		openDataDownloadService: function() {
+			Mobmap2App.sendOuterMessage('openDownloadServiceWindow', null);
 		},
 
 

@@ -56,16 +56,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			var btnLocalCSV = $H('button');
 			$(btnLocalCSV).text('Local CSV').click( this.onWelcomeLocalCSVClick.bind(this) );
 			
+			var btnOpenService = this.setupDownloaderServiceButton();
+			
 			var src_h = $H('header', 'mm-welcome-heading');
 			src_h.appendChild($T('Select initial data.'));
 			box.appendChild(src_h);
 			
 			var sources = $H('div', 'mm-welcome-sources');
 			sources.appendChild(btnLocalCSV);
+			sources.appendChild(btnOpenService);
 			box.appendChild(sources);
 
 			this.containerElement.appendChild(box);
 			return $(box);
+		},
+		
+		setupDownloaderServiceButton: function() {
+			var btn = $H('button', 'mm-data-service-button');
+			btn.appendChild($T('Open Download Service'));
+			
+			$(btn).click( this.onDownloadServiceButtonClick.bind(this) );
+			
+			return btn;
+		},
+		
+		onDownloadServiceButtonClick: function() {
+			this.ownerApp.openDataDownloadService();
 		},
 		
 		hideWelcomeBox: function() {
