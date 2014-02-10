@@ -124,3 +124,7 @@ td fieldset {
 td:hover .jd-onmap-check {
 	opacity: 1;
 }
+
+.selall-container {
+	white-space: nowrap;
+}
