@@ -10,12 +10,19 @@
 		
 		gPrefPicker.observeCheckbox('.pchk-tokyo-core', '#selall-tokyo-core', '#rmall-tokyo-core');
 		gPrefPicker.observeCheckbox('.pchk-tokyo-around', '#selall-tokyo-around', '#rmall-tokyo-around');
+		gPrefPicker.observeCheckbox('.pchk-osaka-core', '#selall-osaka-core', '#rmall-osaka-core');
+		gPrefPicker.observeCheckbox('.pchk-osaka-around', '#selall-osaka-around', '#rmall-osaka-around');
+		
+		$('#request-trigger').click( sendDataRequest );
 	};
 	
 	function afterImagesLoad() {
 		gPrefPicker.render();
 	}
 
+	function sendDataRequest() {
+		console.log("Send");
+	}
 
 
 	function PrefPicker(map_container_el) {
@@ -23,11 +30,14 @@
 		this.selectionSet.eventDispatcher().bind(SelectionSet.CHANGE_EVENT, this.onSelectionSetChange.bind(this));
 		this.boundCheckboxes = [];
 		
-		this.mapWidth  = 590;
-		this.mapHeight = 690;
+		this.mapWidth  = 810;
+		this.mapHeight = 810;
 		
-		this.mapOffsetX = -170;
+		this.mapOffsetX = -190;
 		this.mapOffsetY = -28;
+		
+		this.specialOffsetX = -10;
+		this.specialOffsetY = -700;
 		
 		this.mapCanvas  = null;
 		this.mapG = null;
@@ -44,8 +54,8 @@
 			var xstep = 10;
 			var ystep = 27;
 			
-			var ox = 182;
-			var oy = 577;
+			var ox = 402;
+			var oy = 507;
 			
 			var addchk = (function(cx, cy, label, nm) {
 				this.addCheckboxOnMap(ox + xstep*cx, oy + ystep*cy, label, nm);
@@ -70,10 +80,41 @@
 			addchk(5, -3, "Fukushima", "FukushimaKen");
 			addchk(5, -2, "Tochigi", "TochigiKen");
 			addchk(-2, -2, "Gumma", "GunmaKen");
+			addchk(-6, 0, "Yamanashi", "YamanashiKen");
 
 			addchk(-3,  2, "Shizuoka", "ShizuokaKen");
 			addchk(-7, -1, "Nagano", "NaganoKen");
-			addchk(-9, 0, "Gifu", "GifuKen");
+			addchk(-11, 0, "Gifu", "GifuKen");
+			addchk(-7,  1, "Aichi", "AichiKen");
+			addchk(-9,  3, "Mie", "MieKen");
+
+			addchk(-19,  1, "Hyogo", "HyogoKen");
+			addchk(-13,  1, "Shiga", "ShigaKen");
+			addchk(-17,  0, "Kyoto", "KyotoFu");
+			addchk(-10,  2, "Nara", "NaraKen");
+			addchk(-16,  2, "Osaka", "OsakaFu");
+			addchk(-14,  4, "Wakayama", "WakayamaKen");
+
+			addchk(-19,  3, "Tokushima", "TokushimaKen");
+			addchk(-23,  2, "Kagawa", "KagawaKen");
+			addchk(-24,  4, "Kochi", "KochiKen");
+			addchk(-25,  3, "Ehime", "EhimeKen");
+
+			addchk(-23,  0, "Tottori", "TottoriKen");
+			addchk(-30,  0, "Shimane", "ShimaneKen");
+			addchk(-27,  1, "Okayama", "OkayamaKen");
+			addchk(-31,  2, "Hiroshima", "HiroshimaKen");
+			addchk(-33,  3, "Yamaguchi", "YamaguchiKen");
+
+			addchk(-33,  4, "Fukuoka", "FukuokaKen");
+			addchk(-30,  5, "Oita", "OitaKen");
+			addchk(-39,  5, "Nagasaki", "NagasakiKen");
+			addchk(-29,  6, "Miyazaki", "MiyazakiKen");
+			addchk(-38,  6, "Kumamoto", "KumamotoKen");
+			addchk(-36,  7, "Kagoshima", "KagoshimaKen");
+			addchk(-38,  4, "Saga", "SagaKen");
+
+			addchk(-30,  -5, "Okinawa", "OkinawaKen");
 		},
 		
 		buildView: function() {
@@ -125,6 +166,10 @@
 			item.image.onload = this.onItemImageLoadComplete.bind(this, item);
 			item.sourceURL = imageURL;
 			this.prefNameMap[name] = item;
+			
+			if (name === 'OkinawaKen') {
+				item.applySpecialOffset = true;
+			}
 		},
 		
 		onItemImageLoadComplete: function(prefItem) {
@@ -174,9 +219,32 @@
 		},
 		
 		renderPrefImage: function(g, prefItem) {
+			var ox = this.mapOffsetX;
+			var oy = this.mapOffsetY;
+			
+			if (prefItem.applySpecialOffset) {
+				ox = this.specialOffsetX;
+				oy = this.specialOffsetY;
+			}
+			
 			g.drawImage(prefItem.image,
-				this.mapOffsetX + prefItem.originX,
-				this.mapOffsetY + prefItem.originY);
+				ox + prefItem.originX,
+				oy + prefItem.originY);
+				
+			if (prefItem.applySpecialOffset) {
+				g.beginPath();
+				g.strokeStyle = "#aaa";
+				g.lineWidth = 1;
+				
+				g.moveTo(ox + prefItem.originX,
+					oy + prefItem.originY + 200);
+				g.lineTo(ox + prefItem.originX + 200,
+					oy + prefItem.originY + 200);
+					g.lineTo(ox + prefItem.originX + 300,
+						oy + prefItem.originY + 100);
+					
+				g.stroke();
+			}
 		},
 		
 		filterCanvas: function() {
@@ -285,6 +353,8 @@
 		this.loadComplete = false;
 		this.originX = 0;
 		this.originY = 0;
+		
+		this.applySpecialOffset = false;
 	}
 	
 	

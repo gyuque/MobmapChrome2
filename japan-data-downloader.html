@@ -21,7 +21,6 @@
 				
 				<td id="bundles-col">
 					<div id="bundles-container">
-						<h3>Bundles</h3>
 						<fieldset><legend>Tokyo Metropolitan Area</legend>
 							<div class="area-subset">
 								<h4>Core prefectures</h4>
@@ -42,6 +41,26 @@
 								<button id="selall-tokyo-around">Select All</button>  <button id="rmall-tokyo-around">Deselect All</button>
 							</div>
 						</fieldset>
+
+						<fieldset><legend>Osaka Metropolitan Area</legend>
+							<div class="area-subset">
+								<h4>Core prefectures</h4>
+								<label><input type="checkbox" class="pchk-osaka-core" value="OsakaFu">Osaka</label><br>
+								<label><input type="checkbox" class="pchk-osaka-core" value="KyotoFu">Kyoto</label><br>
+								<label><input type="checkbox" class="pchk-osaka-core" value="HyogoKen">Hyogo</label><br>
+								<button id="selall-osaka-core">Select All</button>  <button id="rmall-osaka-core">Deselect All</button>
+							</div>
+							<div class="area-subset">
+								<h4>Include more prefectures</h4>
+								<label><input type="checkbox" class="pchk-osaka-around" value="NaraKen">Nara</label><br>
+								<label><input type="checkbox" class="pchk-osaka-around" value="WakayamaKen">Wakayama</label><br>
+								<label><input type="checkbox" class="pchk-osaka-around" value="ShigaKen">Shiga</label><br>
+								<label><input type="checkbox" class="pchk-osaka-around" value="MieKen">Mie</label><br>
+								<label><input type="checkbox" class="pchk-osaka-around" value="FukuiKen">Fukui</label><br>
+								<label><input type="checkbox" class="pchk-osaka-around" value="TokushimaKen">Tokushima</label><br>
+								<button id="selall-osaka-around">Select All</button>  <button id="rmall-osaka-around">Deselect All</button>
+							</div>
+						</fieldset>
 					</div>
 				</td>
 			</tr>
@@ -60,7 +79,7 @@
 		</table>
 
 		<div id="control-area">
-			<button>Send Request</button>
+			<button id="request-trigger">Send Request</button>
 		<div>
 	</body>
 </html>
