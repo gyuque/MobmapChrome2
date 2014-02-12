@@ -333,4 +333,5 @@ if (!window.mobmap) { window.mobmap={}; }
 	// +++ Export +++
 	GeoCSVLoader.parseFieldTime = parseFieldTime;
 	aGlobal.mobmap.GeoCSVLoader = GeoCSVLoader;
+	aGlobal.mobmap.HugeCSVLoader = HugeCSVLoader;
 })(window);
