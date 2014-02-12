@@ -5,7 +5,7 @@
 
 	// Launch
 	window.onload = function() {
-		gTimeRangeForm = new TimeRangeForm('tx-start-date', 'input[name=q-time-to]');
+		gTimeRangeForm = new TimeRangeForm('tx-start-date', 'input[name=q-time-to]', 'tx-end-date');
 
 		var map_container = document.getElementById('pref-map-area');
 		gPrefPicker = new PrefPicker(map_container);
@@ -18,6 +18,7 @@
 		gPrefPicker.observeCheckbox('.pchk-osaka-around', '#selall-osaka-around', '#rmall-osaka-around');
 		
 		$('#request-trigger').click( sendDataRequest );
+		$('#sel-reset-button').click( resetSelection );
 	};
 	
 	function afterImagesLoad() {
@@ -26,6 +27,10 @@
 	
 	function onQueryChange() {
 		makeSelectedPrefecturesSummary(gPrefPicker.selectionSet);
+	}
+	
+	function resetSelection() {
+		gPrefPicker.selectionSet.clear();
 	}
 	
 	var _temp_prefs_list = [];
@@ -48,13 +53,13 @@
 		this.selectionSet.eventDispatcher().bind(SelectionSet.CHANGE_EVENT, this.onSelectionSetChange.bind(this));
 		this.boundCheckboxes = [];
 		
-		this.mapWidth  = 810;
+		this.mapWidth  = 794;
 		this.mapHeight = 810;
 		
-		this.mapOffsetX = -190;
+		this.mapOffsetX = -198;
 		this.mapOffsetY = -28;
 		
-		this.specialOffsetX = -10;
+		this.specialOffsetX = -2;
 		this.specialOffsetY = -700;
 		
 		this.mapCanvas  = null;
@@ -72,7 +77,7 @@
 			var xstep = 10;
 			var ystep = 27;
 			
-			var ox = 402;
+			var ox = 395;
 			var oy = 507;
 			
 			var addchk = (function(cx, cy, label, nm) {
@@ -390,6 +395,11 @@
 			return this.jEventElement;
 		},
 		
+		clear: function() {
+			for (var i in this.nameMap) { delete this.nameMap[i]; }
+			this.fire();
+		},
+		
 		addSelectedPrefecturesToArray: function(outArray) {
 			for (var i in this.nameMap) {
 				outArray.push(i);
@@ -418,17 +428,33 @@
 	};
 	
 	
-	function TimeRangeForm(start_text_id, range_option_selector) {
+	function TimeRangeForm(start_text_id, range_option_selector, end_specify_text_id) {
 		this.textStartDate = document.getElementById(start_text_id);
 		this.jTextStartDate = $(this.textStartDate);
 		this.jRangeOptions = $(range_option_selector);
+		this.textSpecifyEnd = document.getElementById(end_specify_text_id);
+		this.jTextSpecifyEnd = $(this.textSpecifyEnd);
 		
 		this.observeDateText(this.jTextStartDate);
+		this.observeDateText(this.jTextSpecifyEnd);
+		this.toggleReadonly();
+		
+		this.jRangeOptions.click( this.toggleReadonly.bind(this) );
 	}
 	
 	TimeRangeForm.DatePattern = /^ *([0-9]+)[\/-]([0-9]+)[\/-]([0-9]+)/ ;
 	
 	TimeRangeForm.prototype = {
+		toggleReadonly: function() {
+			var h = this.getSelectedRangeOption();
+
+			if (h !== 0) {
+				this.textSpecifyEnd.disabled = true;
+			} else {
+				this.textSpecifyEnd.disabled = false;
+			}
+		},
+		
 		observeDateText: function(j) {
 			var _this = this;
 			var callback = function() {
@@ -437,6 +463,19 @@
 			};
 			
 			j.keyup(callback).blur(callback).click(callback);
+		},
+		
+		getSelectedRangeOption: function() {
+			var specified_hours = 0;
+			var len = this.jRangeOptions.length;
+			for (var i = 0;i < len;++i) {
+				if (this.jRangeOptions[i].checked) {
+					specified_hours = parseInt( this.jRangeOptions[i].value, 10 );
+					break;
+				}
+			}
+			
+			return specified_hours;
 		},
 		
 		checkDateFormat: function(val) {

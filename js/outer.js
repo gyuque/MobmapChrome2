@@ -21,7 +21,7 @@
 		openDownloadServiceWindow: function() {
 
 			chrome.app.window.create('japan-data-downloader.html', {
-				 minWidth: 810,
+				 minWidth: 816,
 				 minHeight: 520,
 
 				}, function(){

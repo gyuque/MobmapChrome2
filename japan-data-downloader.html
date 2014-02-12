@@ -21,6 +21,7 @@
 				
 				<td id="bundles-col">
 					<div id="bundles-container">
+						<button id="sel-reset-button">Clear All</button>
 						<fieldset><legend>Tokyo Metropolitan Area</legend>
 							<div class="area-subset">
 								<h4>Core prefectures</h4>
@@ -70,10 +71,10 @@
 			<tr>
 				<td id="time-q-col-from"><span class="time-q-heading">Start Date</span> <input id="tx-start-date" type="text" size="13" value="2011-03-11"></td>
 				<td id="time-q-col-to"><span class="time-q-heading">To</span>
-					<label><input type="radio" name="q-time-to" checked="checked">24 hours</label>
-					&nbsp;<label><input type="radio" name="q-time-to">36 hours</label>
-					&nbsp;<label><input type="radio" name="q-time-to">48 hours</label>
-					&nbsp;<label><input type="radio" name="q-time-to">End of this day:</label><input type="text" size="13" value="2011-03-11">
+					<label><input type="radio" name="q-time-to" checked="checked" value="24">24 hours</label>
+					&nbsp;<label><input type="radio" name="q-time-to" value="36">36 hours</label>
+					&nbsp;<label><input type="radio" name="q-time-to" value="48">48 hours</label>
+					&nbsp;<label><input type="radio" name="q-time-to" value="0">End of this day:</label><input id="tx-end-date" type="text" size="13" value="2011-03-11">
 				</td>
 			</tr>
 		</table>

@@ -36,13 +36,28 @@ td h3 {
 
 #bundles-col {
 	position: relative;
+	font-size: 13px;
 }
 
 #bundles-container {
-	width: 13em;
+	min-width: 190px;
 	position: absolute;
-	top: 220px;
-	left: -220px;
+	top: 160px;
+	left: -191px;
+}
+
+#sel-reset-button {
+	margin-left: 5em;
+	margin-bottom: 2em;
+	background: linear-gradient(to bottom, #b20, #710);
+	box-shadow: 0 0 1px rgba(255,200,200,0.6) inset, 0 2px 9px rgba(0,0,0,0.4);
+	border: 1px solid #710;
+	border-radius: 4px;
+	color: #fff;
+}
+
+#sel-reset-button:active {
+	background: linear-gradient(to bottom, #510, #610);
 }
 
 #pref-selector-container {
@@ -62,6 +77,8 @@ td h3 {
 	font-size: 90%;
 	color: #666;
 }
+
+#tx-end-date[disabled] { opacity: 0.5; }
 
 #control-area {
 	text-align: center;
