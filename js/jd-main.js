@@ -1,13 +1,17 @@
 (function(aGlobal) {
 	'use strict';
 	var gPrefPicker = null;
+	var gTimeRangeForm = null;
 
 	// Launch
 	window.onload = function() {
+		gTimeRangeForm = new TimeRangeForm('tx-start-date', 'input[name=q-time-to]');
+
 		var map_container = document.getElementById('pref-map-area');
 		gPrefPicker = new PrefPicker(map_container);
 		gPrefPicker.setMapSource(kMapData, afterImagesLoad);
-		
+		gPrefPicker.selectionSet.eventDispatcher().bind(SelectionSet.CHANGE_EVENT, onQueryChange);
+
 		gPrefPicker.observeCheckbox('.pchk-tokyo-core', '#selall-tokyo-core', '#rmall-tokyo-core');
 		gPrefPicker.observeCheckbox('.pchk-tokyo-around', '#selall-tokyo-around', '#rmall-tokyo-around');
 		gPrefPicker.observeCheckbox('.pchk-osaka-core', '#selall-osaka-core', '#rmall-osaka-core');
@@ -19,7 +23,21 @@
 	function afterImagesLoad() {
 		gPrefPicker.render();
 	}
-
+	
+	function onQueryChange() {
+		makeSelectedPrefecturesSummary(gPrefPicker.selectionSet);
+	}
+	
+	var _temp_prefs_list = [];
+	function makeSelectedPrefecturesSummary(sels) {
+		_temp_prefs_list.length = 0;
+		sels.addSelectedPrefecturesToArray(_temp_prefs_list);
+		
+		var outArea = document.getElementById('query-summary-content');
+		outArea.innerHTML = '';
+		outArea.appendChild( document.createTextNode( 'prefs=' + _temp_prefs_list.join(', ') ) );
+	}
+	
 	function sendDataRequest() {
 		console.log("Send");
 	}
@@ -356,7 +374,9 @@
 		
 		this.applySpecialOffset = false;
 	}
-	
+
+	PrefItem.prototype.load = function() { this.image.src = this.sourceURL; };
+
 	
 	function SelectionSet() {
 		this.jEventElement = $('body');
@@ -368,6 +388,12 @@
 	SelectionSet.prototype = {
 		eventDispatcher: function() {
 			return this.jEventElement;
+		},
+		
+		addSelectedPrefecturesToArray: function(outArray) {
+			for (var i in this.nameMap) {
+				outArray.push(i);
+			}
 		},
 		
 		setSelected: function(name, selected) {
@@ -391,5 +417,69 @@
 		}
 	};
 	
-	PrefItem.prototype.load = function() { this.image.src = this.sourceURL; };
+	
+	function TimeRangeForm(start_text_id, range_option_selector) {
+		this.textStartDate = document.getElementById(start_text_id);
+		this.jTextStartDate = $(this.textStartDate);
+		this.jRangeOptions = $(range_option_selector);
+		
+		this.observeDateText(this.jTextStartDate);
+	}
+	
+	TimeRangeForm.DatePattern = /^ *([0-9]+)[\/-]([0-9]+)[\/-]([0-9]+)/ ;
+	
+	TimeRangeForm.prototype = {
+		observeDateText: function(j) {
+			var _this = this;
+			var callback = function() {
+				var formed_ok = _this.checkDateFormat(j.val());
+				_this.showWarningColor(j, formed_ok);
+			};
+			
+			j.keyup(callback).blur(callback).click(callback);
+		},
+		
+		checkDateFormat: function(val) {
+			var parsed = this.parseDate(val);
+			if (parsed) {
+				var vd = this.checkValidDate(parsed.year, parsed.mon, parsed.day);
+				if (!vd) { return false; }
+			}
+
+			return !!parsed;
+		},
+		
+		checkValidDate: function(yr, mn, dy) {
+			var dObj = new Date(yr, mn - 1, dy);
+			
+			return ( dObj.getFullYear() === yr &&
+			         dObj.getMonth()    === (mn-1) &&
+			         dObj.getDate()     === dy );
+		},
+		
+		showWarningColor: function(j, formed_ok) {
+			if (formed_ok) {
+				j.css('background-color', ''); 
+			} else {
+				j.css('background-color', '#fe6'); 
+			}
+		},
+		
+		parseDate: function(str) {
+			if (!TimeRangeForm.DatePattern.test(str)) {
+				return null;
+			}
+			
+			var yy = parseInt( RegExp['$1'] , 10);
+			var mm = parseInt( RegExp['$2'] , 10);
+			var dd = parseInt( RegExp['$3'] , 10);
+			
+			return {
+				year: yy,
+				mon: mm,
+				day: dd
+			};
+		}
+	};
+	
 })(window);

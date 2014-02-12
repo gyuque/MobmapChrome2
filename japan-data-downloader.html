@@ -68,7 +68,7 @@
 		<hr>
 		<table>
 			<tr>
-				<td id="time-q-col-from"><span class="time-q-heading">Start Date</span> <input type="text" size="13" value="2011-03-11"></td>
+				<td id="time-q-col-from"><span class="time-q-heading">Start Date</span> <input id="tx-start-date" type="text" size="13" value="2011-03-11"></td>
 				<td id="time-q-col-to"><span class="time-q-heading">To</span>
 					<label><input type="radio" name="q-time-to" checked="checked">24 hours</label>
 					&nbsp;<label><input type="radio" name="q-time-to">36 hours</label>
@@ -79,6 +79,7 @@
 		</table>
 
 		<div id="control-area">
+			<div id="query-summary"><h3>Query</h3><span id="query-summary-content"></span></div>
 			<button id="request-trigger">Send Request</button>
 		</div>
 	</body>

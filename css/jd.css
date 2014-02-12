@@ -132,3 +132,21 @@ td:hover .jd-onmap-check {
 .selall-container {
 	white-space: nowrap;
 }
+
+
+#query-summary {
+	border: solid #fff 1px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4) inset;
+	margin: 1px 10% 9px 10%;
+	padding: 0.5em;
+	text-align: left;
+	background: #ddd url(../images/noise-bg.png);
+	color: #666;
+}
+
+#query-summary h3 {
+	margin: 2px;
+	padding: 0;
+	font-size: 13px;
+	color: #999;
+}
