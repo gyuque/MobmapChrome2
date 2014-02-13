@@ -306,9 +306,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.advance();
 		},
 		
-		startFullLoad: function(listenerObject) {
+		startFullLoad: function(listenerObject, from_current_pos) {
 			this.loadJob.listenerObject = listenerObject;
-			this.rewind();
+			if (!from_current_pos) {
+				this.rewind();
+			}
 			this.advance(true);
 		},
 		

@@ -34,6 +34,7 @@
 		csvloaderAfterPreloadFinish: function(loader) {
 			console.log("+ Preload finished, lc=",loader.countLines());
 			gMeshLoader.readMetadata();
+			gMeshLoader.readRestContentAsync();
 		},
 		
 		csvloaderPreloadError: function(e) {
