@@ -55,6 +55,7 @@
 			console.log("+ Finish", this.data);
 			
 			checkTestdataRange(this.data);
+			testPicker(this.data);
 		}
 	};
 	
@@ -65,6 +66,22 @@
 		console.log("XCount=",x_count, "  YCount="+y_count);
 		if (x_count !== 4) {
 			console.log("  * BAD");
+		}
+	}
+	
+	function testPicker(mdat) {
+		console.log("-------- testing picker --------");
+		
+		var r = mdat.indexRange;
+		var x_count = r.maxX - r.minX + 1;
+		var y_count = r.maxY - r.minY + 1;
+		for (var j = 0;j < y_count;++j) {
+			for (var i = 0;i < x_count;++i) {
+				var cx = r.minX + i;
+				var cy = r.minY + j;
+				
+				mdat.pick(cy, cx, 0);
+			}
 		}
 	}
 })(window);

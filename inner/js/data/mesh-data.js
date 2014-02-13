@@ -19,6 +19,10 @@ if (!window.mobmap) window.mobmap={};
 			cell.addRecord(tSeconds, value);
 		},
 		
+		pick: function(latIndex, lngIndex, tSeconds) {
+			
+		},
+		
 		ensureCell: function(x, y) {
 			var k = makeMeshKey(x, y);
 			var m = this.meshMap;
