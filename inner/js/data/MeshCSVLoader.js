@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function MeshCSVLoader(inFile) {
+		this.meshDataListener = null;
 		this.baseLoader = new mobmap.HugeCSVLoader(inFile);
 		this.readMode = MeshCSVLoader.RMODE_META;
 		this.dataType = MeshCSVLoader.DTYPE_STATIC;
@@ -32,7 +33,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.baseLoader.loadOneLine(this);
 		},
 
-		readRestContentAsync: function() {
+		readRestContentAsync: function(listener) {
+			this.meshDataListener = listener;
 			this.readMode = MeshCSVLoader.RMODE_BODY;
 			this.baseLoader.startFullLoad(this, true);
 		},
@@ -91,7 +93,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var lngI = parseInt( fields[lngIndexCol] , 10);
 			var val  = parseFloat( fields[valueCol] );
 			
-			console.log("Data:", latI, lngI, "=>", val, "at", seconds);
+			if (this.meshDataListener &&
+				this.meshDataListener.meshloaderNewRecordLoaded) {
+				
+				this.
+				 meshDataListener.
+				 meshloaderNewRecordLoaded(seconds, latI, lngI, val);
+			}
 		},
 
 		// callbacks - - - - - - - - - - - - -

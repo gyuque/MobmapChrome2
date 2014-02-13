@@ -34,11 +34,20 @@
 		csvloaderAfterPreloadFinish: function(loader) {
 			console.log("+ Preload finished, lc=",loader.countLines());
 			gMeshLoader.readMetadata();
-			gMeshLoader.readRestContentAsync();
+			MeshDataSink.data = new mobmap.MeshData();
+			gMeshLoader.readRestContentAsync(MeshDataSink);
 		},
 		
 		csvloaderPreloadError: function(e) {
 			console.log(e);
+		}
+	};
+	
+	var MeshDataSink = {
+		data: null,
+		meshloaderNewRecordLoaded: function(tSeconds, latIndex, lngIndex, value) {
+			this.data.register(tSeconds, latIndex, lngIndex, value);
+			console.log("New Record:", latIndex, lngIndex, "=>", value, "at", tSeconds);
 		}
 	};
 })(window);
