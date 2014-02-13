@@ -25,6 +25,19 @@
 		console.log("Starting test", gSourceFile);
 		
 		gMeshLoader = new mobmap.MeshCSVLoader(gSourceFile);
-		console.log("generated loader");
+		console.log("+ Generated loader");
+		
+		gMeshLoader.preload(PreloadListener);
 	}
+	
+	var PreloadListener = {
+		csvloaderAfterPreloadFinish: function(loader) {
+			console.log("+ Preload finished, lc=",loader.countLines());
+			gMeshLoader.readMetadata();
+		},
+		
+		csvloaderPreloadError: function(e) {
+			console.log(e);
+		}
+	};
 })(window);

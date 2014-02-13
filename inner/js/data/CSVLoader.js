@@ -265,7 +265,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 				if (k === DELM || k === 0x0a || k === 0x0d || pos === eofPos) {
 					if (pos === eofPos) {
-						temp_chars.push(k);
+						if (k !== 0x0a && k !== 0x0d) {
+							temp_chars.push(k);
+						}
 					}
 
 					temp_fields.push(this.bytesToString(temp_chars));
@@ -308,6 +310,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.loadJob.listenerObject = listenerObject;
 			this.rewind();
 			this.advance(true);
+		},
+		
+		loadOneLine: function(listenerObject) {
+			this.loadJob.listenerObject = listenerObject;
+			var hasMore = this.readLine();
+			return hasMore;
 		},
 		
 		rewind: function() {
