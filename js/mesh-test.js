@@ -53,6 +53,18 @@
 		meshloaderLoadFinish: function() {
 			this.data.close();
 			console.log("+ Finish", this.data);
+			
+			checkTestdataRange(this.data);
 		}
 	};
+	
+	function checkTestdataRange(mdat) {
+		var r = mdat.indexRange;
+		var x_count = r.maxX - r.minX + 1;
+		var y_count = r.maxY - r.minY + 1;
+		console.log("XCount=",x_count, "  YCount="+y_count);
+		if (x_count !== 4) {
+			console.log("  * BAD");
+		}
+	}
 })(window);
