@@ -121,7 +121,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		csvloaderLoadFinish: function() {
-			
+			if (this.meshDataListener &&
+				this.meshDataListener.meshloaderLoadFinish) {
+				this.meshDataListener.meshloaderLoadFinish();
+			}
 		}
 	};
 	

@@ -48,6 +48,11 @@
 		meshloaderNewRecordLoaded: function(tSeconds, latIndex, lngIndex, value) {
 			this.data.register(tSeconds, latIndex, lngIndex, value);
 			console.log("New Record:", latIndex, lngIndex, "=>", value, "at", tSeconds);
+		},
+		
+		meshloaderLoadFinish: function() {
+			this.data.close();
+			console.log("+ Finish", this.data);
 		}
 	};
 })(window);
