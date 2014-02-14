@@ -43,6 +43,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		setProject: function(prj) {
 			this.currentProject = prj;
+			this.meshLoaderCtrl.setTargetProject(prj);
 			this.eventDispatcher().trigger(Mobmap2App.PROJECT_SET_EVENT, prj);
 			this.observeProjectEvents(prj);
 			this.mapPane.observeProjectEvents(prj);
