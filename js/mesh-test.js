@@ -35,6 +35,13 @@
 			console.log("+ Preload finished, lc=",loader.countLines());
 			gMeshLoader.readMetadata();
 			MeshDataSink.data = new mobmap.MeshData();
+			
+			if (!gMeshLoader.isValidType()) {
+				console.log("**** Bad file format ****");
+			} else {
+				console.log("+ File format: good");
+			}
+			
 			gMeshLoader.readRestContentAsync(MeshDataSink);
 		},
 		

@@ -26,6 +26,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		csvloaderPreloadError: function(e) {
 			console.log(e);
+			
 		}
 	};
 

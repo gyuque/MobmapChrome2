@@ -19,8 +19,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	MeshCSVLoader.RMODE_META = 0;
 	MeshCSVLoader.RMODE_BODY = 1;
 
-	MeshCSVLoader.DTYPE_STATIC  = 0;
-	MeshCSVLoader.DTYPE_DYNAMIC = 1;
+	MeshCSVLoader.DTYPE_UNKNOWN = -1;
+	MeshCSVLoader.DTYPE_STATIC  =  0;
+	MeshCSVLoader.DTYPE_DYNAMIC =  1;
 
 	MeshCSVLoader.prototype = {
 		preload: function(listenerObject) {
@@ -29,6 +30,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		readMetadata: function() {
 			this.readMode = MeshCSVLoader.RMODE_META;
+			this.dataType = MeshCSVLoader.DTYPE_UNKNOWN;
 			this.baseLoader.loadOneLine(this);
 			this.baseLoader.loadOneLine(this);
 		},
@@ -37,6 +39,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.meshDataListener = listener;
 			this.readMode = MeshCSVLoader.RMODE_BODY;
 			this.baseLoader.startFullLoad(this, true);
+		},
+		
+		isValidType: function() {
+			return (this.dataType === MeshCSVLoader.DTYPE_DYNAMIC ||
+				    this.dataType === MeshCSVLoader.DTYPE_STATIC) ;
 		},
 
 		// Metadata lines - - - - - - - -
@@ -61,6 +68,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else if (lw.indexOf('static-mesh') >= 0) {
 				this.dataType = MeshCSVLoader.DTYPE_STATIC;
 				// console.log("Type: Static mesh");
+			} else {
+				this.dataType = MeshCSVLoader.DTYPE_UNKNOWN;
 			}
 		},
 
