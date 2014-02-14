@@ -20,13 +20,27 @@ if (!window.mobmap) { window.mobmap={}; }
 		csvloaderAfterPreloadFinish: function(loader) {
 			console.log("+ Preload finished, lc=",loader.countLines());
 			this.meshLoader.readMetadata();
-			//MeshDataSink.data = new mobmap.MeshData();
-			//gMeshLoader.readRestContentAsync(MeshDataSink);
+			
+			if (this.meshLoader.isValidType()) {
+				this.meshLoader.readRestContentAsync(this);
+			}
 		},
 		
 		csvloaderPreloadError: function(e) {
 			console.log(e);
 			
+		},
+		
+		// Content loader callbacks
+		
+		meshloaderNewRecordLoaded: function(tSeconds, latIndex, lngIndex, value) {
+			this.meshData.register(tSeconds, latIndex, lngIndex, value);
+			console.log("New Record:", latIndex, lngIndex, "=>", value, "at", tSeconds);
+		},
+		
+		meshloaderLoadFinish: function() {
+			this.meshData.close();
+			console.log("+ Finish", this.meshData);
 		}
 	};
 
