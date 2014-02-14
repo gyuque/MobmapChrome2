@@ -57,6 +57,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(btnLocalCSV).text('Local CSV').click( this.onWelcomeLocalCSVClick.bind(this) );
 			
 			var btnOpenService = this.setupDownloaderServiceButton();
+			var btnLoadMesh = this.setupMeshLoadButton();
 			
 			var src_h = $H('header', 'mm-welcome-heading');
 			src_h.appendChild($T('Select initial data.'));
@@ -65,6 +66,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var sources = $H('div', 'mm-welcome-sources');
 			sources.appendChild(btnLocalCSV);
 			sources.appendChild(btnOpenService);
+			sources.appendChild(btnLoadMesh);
 			box.appendChild(sources);
 
 			this.containerElement.appendChild(box);
@@ -80,8 +82,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			return btn;
 		},
 		
+		setupMeshLoadButton: function() {
+			var btn = $H('button', 'mm-initial-mesh-load-button');
+			btn.appendChild($T('Local Mesh'));
+			
+			$(btn).click( this.onLoadMeshButtonClick.bind(this) );
+			
+			return btn;
+		},
+		
 		onDownloadServiceButtonClick: function() {
 			this.ownerApp.openDataDownloadService();
+		},
+		
+		onLoadMeshButtonClick: function() {
+			this.ownerApp.loadLocalCSVMeshData();
 		},
 		
 		hideWelcomeBox: function() {

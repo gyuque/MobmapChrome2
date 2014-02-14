@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.playController = new mobmap.PlayController(this);
 		this.jEventDispatcherElement = $(document.body);
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
+		this.localMeshFilePicker = new mobmap.LocalFilePicker( this.afterLocalMeshCSVPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
 		
 		this.appScreen = appScreen;
@@ -139,10 +140,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.localfilePicker.open();
 		},
 		
+		loadLocalCSVMeshData: function() {
+			this.localMeshFilePicker.open();
+		},
+		
 		afterLocalCSVPick: function(pickedFile) {
 			if (pickedFile) {
 				this.csvPreview.open();
 				this.csvPreview.generatePreview(pickedFile);
+			}
+		},
+		
+		afterLocalMeshCSVPick: function(pickedFile) {
+			if (pickedFile) {
+				console.log("mesh", pickedFile);
 			}
 		},
 		
