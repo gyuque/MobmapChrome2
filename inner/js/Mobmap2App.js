@@ -12,6 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
 		this.localMeshFilePicker = new mobmap.LocalFilePicker( this.afterLocalMeshCSVPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
+		this.meshLoaderCtrl = new mobmap.MeshLoaderController();
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
@@ -153,7 +154,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		afterLocalMeshCSVPick: function(pickedFile) {
 			if (pickedFile) {
-				console.log("mesh", pickedFile);
+				this.meshLoaderCtrl.loadFile(pickedFile);
 			}
 		},
 		
