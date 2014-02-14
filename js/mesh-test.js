@@ -73,6 +73,9 @@
 		console.log("-------- testing picker --------");
 		
 		var r = mdat.indexRange;
+		var mint = mdat.timeRange.min;
+		console.log("t=", mint, " -> ", mdat.timeRange.max);
+		
 		var x_count = r.maxX - r.minX + 1;
 		var y_count = r.maxY - r.minY + 1;
 		for (var j = 0;j < y_count;++j) {
@@ -80,8 +83,29 @@
 				var cx = r.minX + i;
 				var cy = r.minY + j;
 				
-				mdat.pick(cy, cx, 0);
+				mdat.pick(cy, cx, mint);
 			}
 		}
+		
+		pickAndCheck(mdat, 0, 0, mint - 5, 200);
+		pickAndCheck(mdat, 0, 0, mint    , 200);
+		pickAndCheck(mdat, 0, 0, mint + 5, 200);
+		pickAndCheck(mdat, 0, 0, mint + 25*60 +  9, 200);
+		pickAndCheck(mdat, 0, 0, mint + 25*60 + 10, 300);
+		pickAndCheck(mdat, 0, 0, mint + 26*60, 300);
+		pickAndCheck(mdat, 0, 0, mint + 60*60, 400);
+
+		pickAndCheck(mdat, 1, 3, mint + -60, 360);
+		pickAndCheck(mdat, 1, 3, mint      , 360);
+		pickAndCheck(mdat, 1, 3, mint + 60*60, 360);
+	}
+	
+	function pickAndCheck(mdat, lati, lngi, t,  should_be) {
+		var testRec = mdat.pick(lati, lngi, t);
+		var testVal = testRec.val;
+		
+		var res = (should_be === testVal) ? "+ OK +" : "**NG**" ;
+		
+		console.log("Picked: latIndex=" ,lati, ", lngIndex=",lngi, ", t=",t, " ==val==>", testVal, " : ", res);
 	}
 })(window);

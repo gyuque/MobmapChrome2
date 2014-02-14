@@ -11,6 +11,10 @@ if (!window.mobmap) window.mobmap={};
 			minY: 0,
 			maxY: 0
 		};
+		
+		this.timeRange = {
+			min:0, max:0
+		};
 	}
 	
 	MeshData.prototype = {
@@ -20,7 +24,15 @@ if (!window.mobmap) window.mobmap={};
 		},
 		
 		pick: function(latIndex, lngIndex, tSeconds) {
+			var k = makeMeshKey(lngIndex, latIndex);
+			var m = this.meshMap;
 			
+			if (m.hasOwnProperty(k)) {
+				var cell = m[k];
+				return cell.pickAtTime(tSeconds);
+			} else {
+				return 0;
+			}
 		},
 		
 		ensureCell: function(x, y) {
@@ -34,19 +46,25 @@ if (!window.mobmap) window.mobmap={};
 		},
 		
 		close: function() {
-			this.checkRange();
-			
 			var m = this.meshMap;
 			for (var i in m) {
 				m[i].sortByTime();
 			}
+
+			this.checkRange();
 		},
 		
 		checkRange: function() {
-			var minX =  9999999;
-			var maxX = -9999999;
-			var minY =  9999999;
-			var maxY = -9999999;
+			var bignum = 2147483648;
+			
+			var tr = this.timeRange;
+			tr.min = bignum;
+			tr.max = -bignum;
+			
+			var minX =  bignum;
+			var maxX = -bignum;
+			var minY =  bignum;
+			var maxY = -bignum;
 			
 			var m = this.meshMap;
 			for (var i in m) {
@@ -56,6 +74,9 @@ if (!window.mobmap) window.mobmap={};
 				
 				minY = Math.min(minY, c.cellIndexY);
 				maxY = Math.max(maxY, c.cellIndexY);
+				
+				tr.min = Math.min(c.getFirstTime(), tr.min);
+				tr.max = Math.max(c.getLastTime(), tr.max);
 			}
 			
 			this.indexRange.minX = minX;
@@ -81,6 +102,51 @@ if (!window.mobmap) window.mobmap={};
 		
 		sortByTime: function() {
 			this.timedList.sort( meshrecSortFunc );
+		},
+		
+		pickAtTime: function(tSeconds) {
+			var ls  = this.timedList;
+			var len = ls.length;
+			if (len < 1) { return 0; }
+			
+			var nextT = 0;
+			
+			for (var i = 0;i < len;++i) {
+				var rec = ls[i];
+				if (rec.t > tSeconds) {
+					nextT = i;
+					break;
+				}
+			}
+			
+			// [t] is after end
+			if (i === len) {
+				return ls[len-1];
+			}
+			
+			// [t] is before start 
+			if (nextT === 0) {
+				return ls[0];
+			}
+			
+			return ls[nextT - 1];
+		},
+		
+		getFirstTime: function() {
+			if (this.timedList.length > 0) {
+				return this.timedList[0].t;
+			}
+			
+			return 0;
+		},
+		
+		getLastTime: function() {
+			var len = this.timedList.length;
+			if (len > 0) {
+				return this.timedList[len-1].t;
+			}
+			
+			return 0;
 		}
 	};
 	

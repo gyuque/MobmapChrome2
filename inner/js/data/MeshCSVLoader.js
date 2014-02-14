@@ -52,15 +52,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		readDataType: function(typeStr) {
-			console.log("typeStr=", typeStr);
+			// console.log("typeStr=", typeStr);
 			var lw = typeStr.toLowerCase();
 			
 			if (lw.indexOf('dynamic-mesh') >= 0) {
 				this.dataType = MeshCSVLoader.DTYPE_DYNAMIC;
-				console.log("Type: Dynamic mesh");
+				// console.log("Type: Dynamic mesh");
 			} else if (lw.indexOf('static-mesh') >= 0) {
 				this.dataType = MeshCSVLoader.DTYPE_STATIC;
-				console.log("Type: Static mesh");
+				// console.log("Type: Static mesh");
 			}
 		},
 
@@ -71,7 +71,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			df.originLng = parseFloat( fields[1] );
 			df.stepLat   = parseFloat( fields[2] );
 			df.stepLng   = parseFloat( fields[3] );
-			console.log(this.meshDefinition)
+			// console.log(this.meshDefinition)
 		},
 
 		readContentFields: function(fields) {
