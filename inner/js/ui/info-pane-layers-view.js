@@ -118,6 +118,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var prj = this.ownerApp.getCurrentProject();
 			var ls = prj.layerList;
 			var len = ls.getCount();
+
 			for (var i = 0;i < len;++i) {
 				if (i > 0) {
 					nextInView = ls.getLayerAt(i - 1);
@@ -194,9 +195,11 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	LayerItemView.prototype = {
 		build: function() {
+			var use_marker = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable);
+			
 			// Caption ---------------------
 			var caption = $H('h3');
-			caption.appendChild($T('Moving objects'));
+			caption.appendChild($T( this.makeLayerTypeString() ));
 			this.element.appendChild(caption);
 
 			var sub_caption = $H('h4');
@@ -214,7 +217,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.appendChild(this.progressLabel);
 			this.element.appendChild(this.progressBar.element);
 			
-			this.buildMarkerConfigurationPanel();
+			if (use_marker) {
+				this.buildMarkerConfigurationPanel();
+			}
+		},
+		
+		makeLayerTypeString: function() {
+			if (this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+				return "Moving objects";
+			} else {
+				return "Mesh";
+			}
 		},
 		
 		buildMarkerConfigurationPanel: function() {
@@ -244,14 +257,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		toggleVisibilities: function() {
 			if (this.layerReady) {
 				this.hideProgress();
-				this.markerPanel.show();
+				if (this.markerPanel) {
+					this.markerPanel.show();
+				}
 			}
 		},
 		
 		updateAdditionalPropertyList: function() {
 			var mp = this.markerPanel;
+			if (!mp) {return;}
+
 			mp.clearAdditionalPropertyList();
-			
+
 			var lyr = this.boundLayer;
 			if (!lyr) {return;}
 			if (!lyr.dataReady) {return;}

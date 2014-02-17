@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function MeshCSVLoader(inFile) {
+		this.fileName = inFile.name;
 		this.meshDataListener = null;
 		this.baseLoader = new mobmap.HugeCSVLoader(inFile);
 		this.readMode = MeshCSVLoader.RMODE_META;

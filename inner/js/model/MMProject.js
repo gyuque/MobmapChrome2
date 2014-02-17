@@ -17,8 +17,18 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		addMovingObjectLayer: function() {
 			var lyr = new mobmap.MovingObjectLayer();
+			this.appendLayerAndNotify(lyr);
+			return lyr;
+		},
+		
+		addMeshLayer: function() {
+			var lyr = new mobmap.MMMeshLayer();
+			this.appendLayerAndNotify(lyr);
+			return lyr;
+		},
+		
+		appendLayerAndNotify: function(lyr) {
 			this.layerList.appendOnTop(lyr);
-			
 			this.triggerEvent(MMProject.LAYERLIST_CHANGE);
 			return lyr;
 		},

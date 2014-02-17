@@ -3,9 +3,11 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 
-	function MeshLoaderController() {
+	function MeshLoaderController(listener) {
+		this.listener = listener;
 		this.meshLoader = null;
 		this.meshData = null;
+		this.meshLayer = null;
 		
 		this.targetProject = null;
 	}
@@ -15,11 +17,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.targetProject = pj;
 		},
 		
+		setLayer: function(lyr) {
+			this.meshLayer = lyr;
+		},
+		
 		loadFile: function(targetFile) {
 			this.meshLoader = new mobmap.MeshCSVLoader(targetFile);
 			this.meshData = new mobmap.MeshData();
-			
+
+			if (this.meshLayer) {
+				this.meshLayer.sourceLoader = this.meshLoader;
+				this.meshLayer.setMeshData(this.meshData);
+			}
+
 			this.meshLoader.preload(this);
+			return this.meshData;
 		},
 		
 		// Preload callbacks
@@ -45,8 +57,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		meshloaderLoadFinish: function() {
-			this.meshData.close();
-			console.log("+ Finish", this.meshData);
+			if (this.listener && this.listener.meshldrctrl_AfterLoadFinish) {
+				this.listener.meshldrctrl_AfterLoadFinish(this);
+			}
+			
+			if (this.meshLayer) {
+				this.meshLayer.afterLoadFinish();
+			}
 		}
 	};
 

@@ -8,19 +8,25 @@ if (!window.mobmap) { window.mobmap={}; }
 		LoadProgressChange: 'mm-layer-model-event-load-progress-change',
 		LoadFinish: 'mm-layer-model-event-load-progress-finish'
 	};
+	
+	var LayerCapability = {
+		MarkerRenderable: 0x01
+	};
 
 	function MovingObjectLayer() {
-		this.ownerList = null;
-		this.sourceLoader = null;
-		this.primaryView = null;
-		this._lvObserved = false;
-		this._lctrlObserved = false;
 		this.jElement = $(document.createElement('span'));
+		this.ownerList = null;
+		this.primaryView = null;
+		this.capabilities = LayerCapability.MarkerRenderable;
 		this.dataTimeRange = {
 			start: 0,
 			end: 0
 		};
+
+		this._lvObserved = false;
+		this._lctrlObserved = false;
 		
+		this.sourceLoader = null;
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.movingData = null;
 		this.localSelectionPool = new mobmap.SelectionPool();
@@ -28,28 +34,37 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.shouldRenderAsPoints = true;
 	}
+
+
+	// Base functions - - - - - - -
+	function layerbase_setParentEventElement(parentEventElement) {
+		var selfElem = this.jElement[0];
+		var cur = selfElem.parentNode;
+		if (cur === parentEventElement) { return; }
+		if (cur) { cur.removeChild(selfElem); }
+		
+		parentEventElement.appendChild(selfElem);
+	}
+
+	function layerbase_eventDispatcher() {
+		return this.jElement;
+	}
 	
+	function layerbase_setOwnerList(ls) {
+		this.ownerList = ls;
+	}
+	
+	function layerbase_hasPrimaryView() {
+		return !!this.primaryView;
+	}
+
 	MovingObjectLayer.prototype = {
-		eventDispatcher: function() {
-			return this.jElement;
-		},
-		
-		setOwnerList: function(ls) {
-			this.ownerList = ls;
-		},
-		
-		setParentEventElement: function(parentEventElement) {
-			var selfElem = this.jElement[0];
-			var cur = selfElem.parentNode;
-			if (cur === parentEventElement) { return; }
-			if (cur) { cur.removeChild(selfElem); }
-			
-			parentEventElement.appendChild(selfElem);
-		},
-		
-		hasPrimaryView: function() {
-			return !!this.primaryView;
-		},
+		// Common methods
+		// Delegate to base functions
+		eventDispatcher: layerbase_eventDispatcher,
+		setOwnerList: layerbase_setOwnerList,
+		setParentEventElement: layerbase_setParentEventElement,
+		hasPrimaryView: layerbase_hasPrimaryView,
 		
 		initTimeRange: function() {
 			this.dataTimeRange.start = Number.MAX_VALUE;
@@ -133,6 +148,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		});
 	}
 
+	aGlobal.mobmap.MMLayerBase = {
+		eventDispatcher: layerbase_eventDispatcher,
+		setOwnerList: layerbase_setOwnerList,
+		setParentEventElement: layerbase_setParentEventElement,
+		hasPrimaryView: layerbase_hasPrimaryView
+	};
+	
+	aGlobal.mobmap.LayerCapability = LayerCapability;
 	aGlobal.mobmap.LayerEvent = LayerEvent;
 	aGlobal.mobmap.MovingObjectLayer = MovingObjectLayer;
 })(window);
