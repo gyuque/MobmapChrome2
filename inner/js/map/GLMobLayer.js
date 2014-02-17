@@ -174,12 +174,13 @@ function installMobLayer(pkg) {
 		this.renderGL();
 	};
 	
-	GLMobLayer.prototype.changeCanvasSize = function(w, h) {
+	GLMobLayer.overlaybase_changeCanvasSize = function(w, h) {
 		this.canvas.width  = w - 0;
 		this.canvas.height = h - 0;
 	};
-	
-	GLMobLayer.prototype.getJQDiv = function() {
+	GLMobLayer.prototype.changeCanvasSize = GLMobLayer.overlaybase_changeCanvasSize;
+
+	GLMobLayer.overlaybase_getCechedJQueryDiv = function() {
 		var mapDiv = this.getMap().getDiv();
 		if (this.cachedDiv === mapDiv) {
 			return this.jCachedDiv;
@@ -189,6 +190,7 @@ function installMobLayer(pkg) {
 			return this.jCachedDiv;
 		}
 	};
+	GLMobLayer.prototype.getJQDiv = GLMobLayer.overlaybase_getCechedJQueryDiv;
 
 	GLMobLayer.prototype.calcCurrnetBounds = function(outBounds, marginPixels) {
 		var mgn = marginPixels || 0;

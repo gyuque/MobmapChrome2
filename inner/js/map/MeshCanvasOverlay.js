@@ -5,6 +5,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	function installMeshOverlay(pkg) {
 		function MeshCanvasOverlay() {
 			this.canvas = null;
+			this.cachedDiv = null;
+			this.jCachedDiv = null;
+			
+			// Default values
+			this.targetPane = 'overlayShadow';
+			this.canvasOffset = {x: 0, y:0};
+			this.canvasSize = {w: 0, h:0};
 		}
 		
 		// Inherit
@@ -14,7 +21,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!this.canvas) {
 				this.canvas = $H('canvas');
 			}
+			this.locateCanvas();
 		};
+		
+		MeshCanvasOverlay.prototype.locateCanvas = function() {
+			
+		};
+		
+		MeshCanvasOverlay.prototype.getJQDiv = mobmap.GLMobLayer.overlaybase_getCechedJQueryDiv;
 
 		pkg.MeshCanvasOverlay = MeshCanvasOverlay;
 	}
