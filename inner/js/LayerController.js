@@ -34,19 +34,48 @@ if (!window.mobmap) { window.mobmap={}; }
 				var mapOverlay = this.findMapOverlayFor(lyr);
 				if (!mapOverlay) {
 					// Create and connect map overlay
-					mapOverlay = new mobmap.GLMobLayer();
-					mapOverlay.canvasReadyCallback = this.onGLLayerReady.bind(this);
-					var mapPane = this.ownerApp.getMapPane();
-					var gmap = mapPane.getGoogleMaps();
-					mapOverlay.preapareDefaultMarkerPool();
-					
-					mapOverlay.setMap(gmap);
-					mapOverlay.ownerObject = lyr;
-					this.mapOverlayList.push(mapOverlay);
+					mapOverlay = this.createNewOverlayForLayer(lyr);
 				}
 			}
 		},
+
+
+		// OVERLAY FACTORY ==============================
+
+		createNewOverlayForLayer: function(lyr) {
+			if (lyr.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+				return this.createMovingObjectsOverlay(lyr);
+			} else {
+				return this.createMeshOverlay(lyr);
+			}
+		},
 		
+		createMovingObjectsOverlay: function(lyr) {
+			var mapOverlay = new mobmap.GLMobLayer();
+			mapOverlay.canvasReadyCallback = this.onGLLayerReady.bind(this);
+			var mapPane = this.ownerApp.getMapPane();
+			var gmap = mapPane.getGoogleMaps();
+			mapOverlay.preapareDefaultMarkerPool();
+			
+			mapOverlay.setMap(gmap);
+			mapOverlay.ownerObject = lyr;
+			this.mapOverlayList.push(mapOverlay);
+			return mapOverlay;
+		},
+
+		createMeshOverlay: function(lyr) {
+			var mapOverlay = new mobmap.MeshCanvasOverlay();
+			var mapPane = this.ownerApp.getMapPane();
+			var gmap = mapPane.getGoogleMaps();
+
+			mapOverlay.setMap(gmap);
+			mapOverlay.ownerObject = lyr;
+			this.mapOverlayList.push(mapOverlay);
+			return mapOverlay;
+		},
+
+		// ==============================================
+
 		observeLayerIfNot: function(lyr) {
 			if (lyr._lctrlObserved) {
 				return false;

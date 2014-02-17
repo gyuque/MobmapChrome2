@@ -21,6 +21,7 @@ var theApp = null;
 	
 	function startApp() {
 		mobmap.installMobLayer();
+		mobmap.installMeshOverlay();
 		$('#content-pane').empty();
 		
 		var appScreen = new mobmap.Mobmap3PanesScreen(
