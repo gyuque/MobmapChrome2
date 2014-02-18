@@ -7,15 +7,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.canvas = null;
 			this.cachedDiv = null;
 			this.jCachedDiv = null;
+			this.boundData = null;
 			
 			// Default values
 			this.targetPane = 'overlayShadow';
 			this.canvasOffset = {x: 0, y:0};
 			this.canvasSize = {w: 0, h:0};
+			
+			this.projectionGrid = new mobmap.FastProjectionGrid(9);
 		}
 		
 		// Inherit
 		MeshCanvasOverlay.prototype = new google.maps.OverlayView();
+
+		MeshCanvasOverlay.prototype.bindData = function(meshData) {
+			this.boundData = meshData;
+			this.render();
+		};
 
 		MeshCanvasOverlay.prototype.draw = function() {
 			if (!this.canvas) {
@@ -40,8 +48,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			mobmap.GLMobLayer.adjustOverlayCanvasPosition(this, this.canvasOffset);
+			this.render();
 		};
 		
+		MeshCanvasOverlay.prototype.render = function() {
+			if (!this.boundData) { return; }
+			
+			
+		};
+
 		MeshCanvasOverlay.prototype.getJQDiv = mobmap.GLMobLayer.overlaybase_getCechedJQueryDiv;
 		MeshCanvasOverlay.prototype.changeCanvasSize = mobmap.GLMobLayer.overlaybase_changeCanvasSize;
 

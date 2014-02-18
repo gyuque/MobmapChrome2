@@ -222,7 +222,7 @@ function installMobLayer(pkg) {
 		if (!gl) {return;}
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
 	
-		this.updateProjectionGrid();
+		this.updateProjectionGrid(this.projectionGrid);
 //		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.enable(gl.BLEND);
@@ -408,19 +408,20 @@ function installMobLayer(pkg) {
 		gl.uniformMatrix4fv(this.shaderParams.transform, false, _tempM4);
 	};
 
-	GLMobLayer.prototype.updateProjectionGrid = function() {
-		var gr = this.projectionGrid;
-		
+
+	GLMobLayer.overlaybase_updateProjectionGrid = function(grid) {
 		// Fetch map status
 		var map = this.getMap();
 		var pj = this.getProjection();
 		var mapNE = map.getBounds().getNorthEast();
 		var mapSW = map.getBounds().getSouthWest();
 
-		gr.setOffset(-this.canvasOffset.x, -this.canvasOffset.y);
-		gr.update(pj, mapSW.lat(), mapSW.lng(), mapNE.lat(), mapNE.lng());
+		grid.setOffset(-this.canvasOffset.x, -this.canvasOffset.y);
+		grid.update(pj, mapSW.lat(), mapSW.lng(), mapNE.lat(), mapNE.lng());
 	};
-	
+	GLMobLayer.prototype.updateProjectionGrid = GLMobLayer.overlaybase_updateProjectionGrid;
+
+
 	GLMobLayer.prototype.setMarkerTextureCoords = function(array, basePos, u1, v1, us, vs) {
 		array[basePos    ] = u1;
 		array[basePos + 1] = v1;
