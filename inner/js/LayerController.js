@@ -87,6 +87,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerLoadFinish: function(e, sourceLayer) {
+			var ov = this.findMapOverlayFor(sourceLayer);
+			if (ov && sourceLayer.bindOverlay) {
+				sourceLayer.bindOverlay(ov);
+			}
+			
 			if (this.ownerApp) { this.ownerApp.redrawMap();}
 		},
 		

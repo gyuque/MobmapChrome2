@@ -12,6 +12,8 @@ if (!window.mobmap) window.mobmap={};
 			maxY: 0
 		};
 		
+		this.meshDefinition = null;
+		
 		this.timeRange = {
 			min:0, max:0
 		};

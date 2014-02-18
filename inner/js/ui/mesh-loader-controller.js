@@ -38,6 +38,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		csvloaderAfterPreloadFinish: function(loader) {
 			console.log("+ Preload finished, lc=",loader.countLines());
 			this.meshLoader.readMetadata();
+			this.meshData.meshDefinition = this.meshLoader.meshDefinition;
 			
 			if (this.meshLoader.isValidType()) {
 				this.meshLoader.readRestContentAsync(this);

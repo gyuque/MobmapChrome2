@@ -413,11 +413,14 @@ function installMobLayer(pkg) {
 		// Fetch map status
 		var map = this.getMap();
 		var pj = this.getProjection();
+		if (!pj) {return false;}
+		
 		var mapNE = map.getBounds().getNorthEast();
 		var mapSW = map.getBounds().getSouthWest();
 
 		grid.setOffset(-this.canvasOffset.x, -this.canvasOffset.y);
 		grid.update(pj, mapSW.lat(), mapSW.lng(), mapNE.lat(), mapNE.lng());
+		return true;
 	};
 	GLMobLayer.prototype.updateProjectionGrid = GLMobLayer.overlaybase_updateProjectionGrid;
 

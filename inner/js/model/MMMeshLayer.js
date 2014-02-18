@@ -45,6 +45,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		getShortDescription: function() {
 			var name = this.getSourceFileName();
 			return name;
+		},
+		
+		bindOverlay: function(mapOverlay) {
+			mapOverlay.bindData(this.meshData);
 		}
 	};
 	
