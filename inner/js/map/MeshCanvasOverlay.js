@@ -8,6 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function installMeshOverlay(pkg) {
 		function MeshCanvasOverlay() {
 			this.canvas = null;
+			this.g = null;
 			this.cachedDiv = null;
 			this.jCachedDiv = null;
 			this.boundData = null;
@@ -31,7 +32,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		MeshCanvasOverlay.prototype.draw = function() {
 			if (!this.canvas) {
 				this.canvas = $H('canvas');
-				this.canvas.style.backgroundColor = "rgba(255,0,0,0.4)";
+				this.canvas.style.backgroundColor = "rgba(255,0,0,0.2)";
+				this.g = this.canvas.getContext('2d');
 
 				var panes = this.getPanes();
 				panes[this.targetPane].appendChild( this.canvas );
@@ -64,7 +66,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var nX = (md.indexRange.maxX - md.indexRange.minX) + 1;
 			var nY = (md.indexRange.maxY - md.indexRange.minY) + 1;
-			
+
 			var sx = md.indexRange.minX;
 			var sy = md.indexRange.minY;
 			
@@ -74,12 +76,40 @@ if (!window.mobmap) { window.mobmap={}; }
 			var dlat = md.meshDefinition.stepLat;
 			var pt = _tempProjPt;
 			
+			var g = this.g;
+			g.clearRect(0,0, this.canvasSize.w, this.canvasSize.h);
+			g.fillStyle = "rgba(255,0,90,0.3)";
+			var oldSY = null;
 			for (var y = sy;y < nY;++y) {
-				for (var x = sx;x < nX;++x) {
-					var lat = o_lat + y * dlat;
-					var lng = o_lng + x * dlng;
 
+				var oldSX= null;
+				for (var x = sx;x < nX;++x) {
+					var sx1, sy1;
+					if (oldSX === null || oldSY === null) {
+						pt.lat = o_lat + y * dlat;
+						pt.lng = o_lng + x * dlng;
+
+						this.projectionGrid.calc(pt);
+						sx1 = Math.floor(pt.screenX);
+						sy1 = Math.floor(pt.screenY);
+					} else {
+						sx1 = oldSX;
+						sy1 = oldSY;
+					}
+
+					pt.lat = o_lat + (y + 1) * dlat;
+					pt.lng = o_lng + (x + 1) * dlng;
 					this.projectionGrid.calc(pt);
+					var sx2 = Math.floor(pt.screenX);
+					var sy2 = Math.floor(pt.screenY);
+					
+					oldSX = sx2;
+					if (x === (nX-1)) {
+						oldSY = sy2;
+					}
+					
+					g.fillRect(sx1, sy2, (sx2-sx1), (sy1-sy2));
+					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
 				}
 			}
 		};
