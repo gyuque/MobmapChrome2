@@ -536,6 +536,8 @@ function installMobLayer(pkg) {
 	};
 
 	GLMobLayer.adjustOverlayCanvasPosition = function(lyr, canvasOffset) {
+		if (!kZeroPt) { kZeroPt = new google.maps.Point(0, 0); }
+
 		var pj = lyr.getProjection();
 		var ll = pj.fromDivPixelToLatLng(kZeroPt);
 		var pt = pj.fromLatLngToContainerPixel(ll);
