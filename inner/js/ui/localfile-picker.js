@@ -19,6 +19,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return input;
 		},
 		
+		reset: function() {
+			this.inputElement.value = null;
+		},
+		
 		open: function() {
 			this.jInputElement.click();
 		},

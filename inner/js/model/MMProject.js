@@ -86,6 +86,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			newLayer.setOwnerList(this);
 			newLayer.setParentEventElement(this.parentEventElement);
 			this.array.push(newLayer);
+			
+			console.log("Number of layers: ", this.array.length);
 		},
 		
 		alreadyExists: function(lyr) {

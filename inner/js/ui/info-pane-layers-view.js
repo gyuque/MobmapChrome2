@@ -95,9 +95,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerMenuAddMovingObjectsCSVSelect: function() {
+			this.requestAddLocalCSVLayer();
 		},
 		
 		onLayerMenuAddMeshCSVSelect: function() {
+			this.ownerApp.loadLocalCSVMeshData();
 		},
 		
 		// - - - - - - - - - - - - - - - - - - - - -
@@ -255,6 +257,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var caption = $H('h3');
 			caption.appendChild($T( this.makeLayerTypeString() ));
 			this.element.appendChild(caption);
+			var delbtn = this.addCaptionButtons(caption);
+			$(delbtn).click(this.onLayerDeleteButtonClick.bind(this));
 
 			var sub_caption = $H('h4');
 			sub_caption.appendChild($T('CSV File'));
@@ -276,6 +280,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		addCaptionButtons: function(containerElement) {
+			var img = $H('img', 'mm-layer-delete-button');
+			img.src = 'images/delete-symbol.png';
+			containerElement.appendChild(img);
+
+			return img;
+		},
+
 		makeLayerTypeString: function() {
 			if (this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable) {
 				return "Moving objects";
@@ -331,6 +343,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			mdat.forEachExtraProperty(function(attrName, flags){
 				mp.addAdditionalPropertyName(attrName);
 			});
+		},
+		
+		onLayerDeleteButtonClick: function() {
+			this.boundLayer.requestDelete();
 		}
 	};
 	

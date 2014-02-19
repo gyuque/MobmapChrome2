@@ -150,6 +150,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (pickedFile) {
 				this.csvPreview.open();
 				this.csvPreview.generatePreview(pickedFile);
+				
+				this.localfilePicker.reset();
 			}
 		},
 		
@@ -159,6 +161,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				var newLayer = this.currentProject.addMeshLayer();
 				this.meshLoaderCtrl.setLayer(newLayer);
 				this.meshLoaderCtrl.loadFile(pickedFile);
+				
+				this.localMeshFilePicker.reset();
 			}
 		},
 		
@@ -174,6 +178,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		meshldrctrl_AfterLoadFinish: function(controller) {
+		},
+		
+		confirmLayerDelete: function(targetLayer) {
+			console.log("DEL", targetLayer)
 		},
 		
 		// Selection operations

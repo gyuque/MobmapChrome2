@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.canvasOffset = {x: 0, y:0};
 			this.canvasSize = {w: 0, h:0};
 			
+			this.ownerObject = null;
 			this.projectionGrid = new mobmap.FastProjectionGrid(9);
 		}
 		
@@ -62,8 +63,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 		
 		MeshCanvasOverlay.prototype.render = function() {
+			var g = this.g;
 			var md = this.boundData;
-			if (!md) { return; }
+			if (!md || !g) { return; }
 			
 			if (!this.updateProjectionGrid(this.projectionGrid)) {
 				return;
@@ -81,7 +83,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			var dlat = md.meshDefinition.stepLat;
 			var pt = _tempProjPt;
 			
-			var g = this.g;
 			g.clearRect(0,0, this.canvasSize.w, this.canvasSize.h);
 			var oldSY = null;
 			for (var y = sy;y < nY;++y) {

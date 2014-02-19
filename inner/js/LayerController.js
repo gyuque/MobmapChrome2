@@ -82,7 +82,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			lyr._lctrlObserved = true;
-			lyr.eventDispatcher().bind(mobmap.LayerEvent.LoadFinish, this.onLayerLoadFinish.bind(this));
+			lyr.eventDispatcher().
+			 bind(mobmap.LayerEvent.LoadFinish, this.onLayerLoadFinish.bind(this)).
+			 bind(mobmap.LayerEvent.RequestDelete, this.onLayerRequestDelete.bind(this));
+
 			return true;
 		},
 		
@@ -93,6 +96,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			if (this.ownerApp) { this.ownerApp.redrawMap();}
+		},
+		
+		onLayerRequestDelete: function(e, sourceLayer) {
+			if (this.ownerApp) {
+				this.ownerApp.confirmLayerDelete(sourceLayer);
+			}
 		},
 		
 		onGLLayerReady: function() {
