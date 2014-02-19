@@ -30,9 +30,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		setMeshData: function(md) {
 			this.meshData = md;
 		},
-		
+
 		afterLoadFinish: function() {
 			this.meshData.close();
+			this.updateDataTimeRange();
 			this.dataReady = true;
 			this.eventDispatcher().trigger(mobmap.LayerEvent.LoadFinish, this);
 		},
@@ -49,6 +50,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		bindOverlay: function(mapOverlay) {
 			mapOverlay.bindData(this.meshData);
+		},
+		
+		updateDataTimeRange: function() {
+			this.dataTimeRange.start = this.meshData.timeRange.min;
+			this.dataTimeRange.end = this.meshData.timeRange.max;
 		}
 	};
 	

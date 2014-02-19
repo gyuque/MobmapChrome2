@@ -12,6 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.cachedDiv = null;
 			this.jCachedDiv = null;
 			this.boundData = null;
+			this.pickTime = 0;
 			
 			// Default values
 			this.targetPane = 'overlayShadow';
@@ -29,10 +30,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.render();
 		};
 
+		MeshCanvasOverlay.prototype.setPickTime = function(t) {
+			this.pickTime = t;
+		};
+
 		MeshCanvasOverlay.prototype.draw = function() {
 			if (!this.canvas) {
 				this.canvas = $H('canvas');
-				this.canvas.style.backgroundColor = "rgba(255,0,0,0.2)";
+				// this.canvas.style.backgroundColor = "rgba(255,0,0,0.2)";
 				this.g = this.canvas.getContext('2d');
 
 				var panes = this.getPanes();
@@ -78,7 +83,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var g = this.g;
 			g.clearRect(0,0, this.canvasSize.w, this.canvasSize.h);
-			g.fillStyle = "rgba(255,0,90,0.3)";
 			var oldSY = null;
 			for (var y = sy;y < nY;++y) {
 
@@ -108,10 +112,23 @@ if (!window.mobmap) { window.mobmap={}; }
 						oldSY = sy2;
 					}
 					
+					var cellVal = md.pick(y, x, this.pickTime);
+					var cellColor = this.mapValueToCellColor(cellVal.val);
+					g.fillStyle = cellColor;
+					
 					g.fillRect(sx1, sy2, (sx2-sx1), (sy1-sy2));
-					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
+//					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
 				}
 			}
+		};
+
+		MeshCanvasOverlay.prototype.mapValueToCellColor = function(val) {
+			var components = [255, 0, 0, 1];
+			var a = val / 300.0;
+			if (a < 0) {a=0;} else if (a > 1) {a=1;}
+			
+			components[3] = a;
+			return "rgba(" + components.join(',') + ")";
 		};
 
 		MeshCanvasOverlay.prototype.getJQDiv = mobmap.GLMobLayer.overlaybase_getCechedJQueryDiv;

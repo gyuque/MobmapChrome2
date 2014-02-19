@@ -126,6 +126,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				if (layer.shouldRenderAsPoints) {
 					this.fillMarkerPool(overlay, layer, targetTimeSec);
+				} else if (overlay.setPickTime) {
+					overlay.setPickTime(targetTimeSec);
+					overlay.render();
 				}
 			}
 		},
