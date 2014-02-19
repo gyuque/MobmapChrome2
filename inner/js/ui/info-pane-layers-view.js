@@ -2,6 +2,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	
+	var kMenuNameAttr = "data-menuitem-name";
+	var kMenuItemNameMOCSV = "add-movobjs-csv";
+	var kMenuItemNameMeshCSV = "add-mesh-csv";
 
 	function LayersView(containerElement) {
 		this.ownerApp = null;
@@ -9,6 +13,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		// -----------------
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
+		
+		this.layerListMenuElement = this.generateLayerListMenuElement();
+		this.jLayerListMenuElement = $(this.layerListMenuElement);
+		this.jLayerListMenuElement.kendoMenu({ select: this.onLayerMenuSelect.bind(this) });
 		
 		this.jWelcomeBox = this.generateWelcomeBox();
 		this.itemsContainerElement = this.generateItemsContainer();
@@ -47,6 +55,52 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.containerElement.appendChild(el);
 			return el;
 		},
+		
+		generateLayerListMenuElement: function() {
+			var el = $H('ul', 'mm-layer-list-menu');
+
+			var li_add = $H('li');
+			li_add.appendChild( $T('Add') );
+			
+			// Sub menu
+			var ls_newLayers = $H('ul');
+			li_add.appendChild(ls_newLayers);
+			var li_mov = $H('li');
+			li_mov.setAttribute(kMenuNameAttr, kMenuItemNameMOCSV);
+			li_mov.appendChild( $T('Moving objects CSV') );
+			ls_newLayers.appendChild(li_mov);
+			var li_mesh = $H('li');
+			li_mesh.setAttribute(kMenuNameAttr, kMenuItemNameMeshCSV);
+			li_mesh.appendChild( $T('Mesh CSV') );
+			ls_newLayers.appendChild(li_mesh);
+
+			el.appendChild(li_add);
+			this.containerElement.appendChild(el);
+			return el;
+		},
+		
+		// Layer menu handlers - - - - - - - - - - -
+		
+		onLayerMenuSelect: function(e) {
+			var selectedElement = e.item;
+			if (!selectedElement) {return;}
+			
+			var itemName = selectedElement.getAttribute(kMenuNameAttr) || null;
+			if (!itemName) { return; }
+			
+			switch(itemName) {
+			case kMenuItemNameMOCSV: return this.onLayerMenuAddMovingObjectsCSVSelect();
+			case kMenuItemNameMeshCSV: return this.onLayerMenuAddMeshCSVSelect();
+			}
+		},
+		
+		onLayerMenuAddMovingObjectsCSVSelect: function() {
+		},
+		
+		onLayerMenuAddMeshCSVSelect: function() {
+		},
+		
+		// - - - - - - - - - - - - - - - - - - - - -
 
 		generateWelcomeBox: function() {
 			var box = $H('div');
