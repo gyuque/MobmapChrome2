@@ -101,3 +101,13 @@
 label.varytypeopt {
 	display: block;
 }
+
+
+.mm-layer-delete-dialog-buttons {
+	margin: 0.8em 0 0 0;
+	text-align: center;
+}
+
+.mm-layer-delete-dialog-buttons button {
+	margin: 0 9px;
+}

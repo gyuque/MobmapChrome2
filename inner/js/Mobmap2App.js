@@ -182,7 +182,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		confirmLayerDelete: function(targetLayer) {
-			this.layerDeleteDialog.openWithLayer(targetLayer);
+			this.layerDeleteDialog.openWithLayer(
+				targetLayer,
+				this.onLayerDeleteOK.bind(this, targetLayer) );
+		},
+		
+		onLayerDeleteOK: function(targetLayer) {
+			console.log("DEL:", targetLayer);
 		},
 		
 		// Selection operations
