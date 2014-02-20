@@ -235,6 +235,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.leaveSpecialPointingMode();
 		},
 		
+		selDidUpdateSession: function(selController, selSession) {
+			console.log("U", selSession);
+		},
+		
 		// Selection feedback views = = =
 
 		setupSelectionPolygon: function() {

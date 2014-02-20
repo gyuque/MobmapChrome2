@@ -60,11 +60,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		putSessionFirstPoint: function(lat, lng) {
-			console.log(lat, lng)
+			var s = this.currentSelectionSession;
+			if (s && s.setStartPos) {
+				s.setStartPos(lat, lng);
+			}
 		},
 		
 		putSessionDraggingPoint: function(lat, lng) {
-			console.log("D", lat, lng)
+			var s = this.currentSelectionSession;
+			if (s && s.setEndPos) {
+				s.setEndPos(lat, lng);
+				this.fireAfterSessionStateUpdate(s);
+			}
 		},
 		
 		commitDraggingSelection: function() {
@@ -75,6 +82,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		fireNewSession: function() { this.callResponders('selWillStartNewSession'); },
 		fireAfterDisposeSession: function() { this.callResponders('selDidDisposeSession'); },
 		fireAfterNewSession: function() { this.callResponders('selDidStartNewSession'); },
+		fireAfterSessionStateUpdate: function(s) { this.callResponders('selDidUpdateSession',s); },
 		
 		callResponders: function(methodName, arg1, arg2) {
 			var required = SelectionControllerResponderMethodList[methodName] || false;
@@ -101,7 +109,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		selWillDisposeCurrentSession  : false,
 		selWillStartNewSession        : false,
 		selDidDisposeSession          : false,
-		selDidStartNewSession         : false
+		selDidStartNewSession         : false,
+		selDidUpdateSession           : false
 	};
 
 	aGlobal.mobmap.SelectionController = SelectionController;

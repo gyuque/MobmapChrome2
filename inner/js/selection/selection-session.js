@@ -28,6 +28,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return true;
 		},
 		
+		isRectangleFeedbackRecommended: function() {
+			return true;
+		},
+		
 		// - - - - - - - - - -
 		
 		setStartPos: function(lat, lng) {
