@@ -81,10 +81,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				return false;
 			}
 
+			var LE = mobmap.LayerEvent;
 			lyr._lctrlObserved = true;
 			lyr.eventDispatcher().
-			 bind(mobmap.LayerEvent.LoadFinish, this.onLayerLoadFinish.bind(this)).
-			 bind(mobmap.LayerEvent.RequestDelete, this.onLayerRequestDelete.bind(this));
+			 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
+			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
+			 bind(LE.Destroy, this.onLayerDestroy.bind(this));
 
 			return true;
 		},
@@ -102,6 +104,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.ownerApp) {
 				this.ownerApp.confirmLayerDelete(sourceLayer);
 			}
+		},
+		
+		onLayerDestroy: function(e, sourceLayer) {
+			if (this.ownerApp) {
+				this.destroyOverlayForLayer(sourceLayer);
+			}
+		},
+		
+		destroyOverlayForLayer: function(layer) {
+			var overlay = this.findMapOverlayFor(layer);
+			if (overlay) {
+				overlay.willRemove();
+				overlay.setMap(null);
+				overlay.ownerObject = null;
+
+				this.removeOverlayFromList(overlay);
+			}
+		},
+		
+		removeOverlayFromList: function(overlay) {
+			var ls = this.mapOverlayList;
+			var i = ls.indexOf(overlay);
+			if (i < 0) { return false; }
+			
+			ls.splice(i, 1);
+			return true;
 		},
 		
 		onGLLayerReady: function() {

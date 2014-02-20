@@ -188,7 +188,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerDeleteOK: function(targetLayer) {
-			console.log("DEL:", targetLayer);
+			var pj = this.getCurrentProject();
+			if (pj) {
+				pj.removeLayerAndNotify(targetLayer);
+			}
+//			targetLayer.destroy();
 		},
 		
 		// Selection operations

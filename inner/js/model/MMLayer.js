@@ -7,7 +7,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		LoadWillStart: 'mm-layer-model-event-load-will-start',
 		LoadProgressChange: 'mm-layer-model-event-load-progress-change',
 		LoadFinish: 'mm-layer-model-event-load-progress-finish',
-		RequestDelete: 'mm-layer-model-event-request-delete'
+		RequestDelete: 'mm-layer-model-event-request-delete',
+		Destroy: 'mm-layer-model-event-destroy'
 	};
 	
 	var LayerCapability = {
@@ -62,6 +63,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	function layerbase_requestDelete() {
 		this.eventDispatcher().trigger(LayerEvent.RequestDelete, this);
 	}
+	
+	function layerbase_destroy() {
+		this.eventDispatcher().trigger(LayerEvent.Destroy, this);
+	}
 
 	MovingObjectLayer.prototype = {
 		// Common methods
@@ -71,6 +76,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setParentEventElement: layerbase_setParentEventElement,
 		hasPrimaryView: layerbase_hasPrimaryView,
 		requestDelete: layerbase_requestDelete,
+		destroy: layerbase_destroy,
 		
 		initTimeRange: function() {
 			this.dataTimeRange.start = Number.MAX_VALUE;
@@ -159,7 +165,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		setOwnerList: layerbase_setOwnerList,
 		setParentEventElement: layerbase_setParentEventElement,
 		hasPrimaryView: layerbase_hasPrimaryView,
-		requestDelete: layerbase_requestDelete
+		requestDelete: layerbase_requestDelete,
+		destroy: layerbase_destroy
 	};
 	
 	aGlobal.mobmap.LayerCapability = LayerCapability;

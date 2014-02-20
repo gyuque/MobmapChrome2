@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.pickTime = 0;
 			
 			// Default values
+			this.generatedListeners = [];
 			this.targetPane = 'overlayShadow';
 			this.canvasOffset = {x: 0, y:0};
 			this.canvasSize = {w: 0, h:0};
@@ -47,6 +48,14 @@ if (!window.mobmap) { window.mobmap={}; }
 				mobmap.GLMobLayer.setupOverlayMapEvents(this);
 			}
 			this.locateCanvas();
+		};
+
+		MeshCanvasOverlay.prototype.willRemove = function() {
+			mobmap.GLMobLayer.clearOverlayMapEvents(this);
+		};
+		
+		MeshCanvasOverlay.prototype.onRemove = function() {
+			this.canvas.parentNode.removeChild(this.canvas);
 		};
 		
 		MeshCanvasOverlay.prototype.locateCanvas = function() {

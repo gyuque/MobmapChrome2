@@ -33,6 +33,7 @@ function installMobLayer(pkg) {
 		// WebGL objects ------------------------------
 		
 		// Default values
+		this.generatedListeners = [];
 		this.targetPane = 'overlayShadow';
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
@@ -74,6 +75,14 @@ function installMobLayer(pkg) {
 		}
 		
 		this.locateCanvas();
+	};
+
+	GLMobLayer.prototype.willRemove = function() {
+		GLMobLayer.clearOverlayMapEvents(this);
+	};
+	
+	GLMobLayer.prototype.onRemove = function() {
+		this.canvas.parentNode.removeChild(this.canvas);
 	};
 
 	GLMobLayer.prototype.preapareDefaultMarkerPool = function() {
@@ -522,9 +531,21 @@ function installMobLayer(pkg) {
 		lyr.zoomListener = google.maps.event.addListener(m, 'zoom_changed', lyr.onMapZoomChanged.bind(lyr) );
 		lyr.dragListener = google.maps.event.addListener(m, 'drag', lyr.onMapZoomDragged.bind(lyr) );
 		lyr.sizeListener = google.maps.event.addListener(m, 'resize', lyr.onMapSized.bind(lyr));
+
+		lyr.generatedListeners.push(lyr.zoomListener);
+		lyr.generatedListeners.push(lyr.dragListener);
+		lyr.generatedListeners.push(lyr.sizeListener);
 		
 		if (lyr.onMapCenterChanged) {
 			lyr.centerListener = google.maps.event.addListener(m, 'center_changed', lyr.onMapCenterChanged.bind(lyr) );
+			lyr.generatedListeners.push(lyr.centerListener);
+		}
+	};
+	
+	GLMobLayer.clearOverlayMapEvents = function(lyr) {
+		for (var i in lyr.generatedListeners) {
+			var l = lyr.generatedListeners[i];
+			google.maps.event.removeListener(l);
 		}
 	};
 	

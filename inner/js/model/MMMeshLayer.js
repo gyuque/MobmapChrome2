@@ -27,7 +27,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		setParentEventElement: mobmap.MMLayerBase.setParentEventElement,
 		hasPrimaryView: mobmap.MMLayerBase.hasPrimaryView,
 		requestDelete: mobmap.MMLayerBase.requestDelete,
-		
+		destroy: mobmap.MMLayerBase.destroy,
+
 		setMeshData: function(md) {
 			this.meshData = md;
 		},

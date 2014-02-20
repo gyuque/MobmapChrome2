@@ -195,10 +195,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (!layer._lvObserved) {
 					layer._lvObserved = true;
 					
+					var LE = mobmap.LayerEvent;
 					layer.eventDispatcher().
-					 bind(mobmap.LayerEvent.LoadWillStart, this.willStartLayerLoad.bind(this)).
-					 bind(mobmap.LayerEvent.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
-					 bind(mobmap.LayerEvent.LoadFinish, this.onLayerLoadFinish.bind(this));
+					 bind(LE.LoadWillStart, this.willStartLayerLoad.bind(this)).
+					 bind(LE.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
+					 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
+					 bind(LE.Destroy, this.onLayerDestroy.bind(this));
 				}
 			}
 		},
@@ -229,6 +231,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				lv.setLayerReady(true);
 				lv.setSubCaption(layer.getShortDescription());
 				lv.updateAdditionalPropertyList();
+			}
+		},
+		
+		onLayerDestroy: function(e, layer) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.removeSelf();
+				layer.primaryView = null;
 			}
 		}
 	};
@@ -277,6 +286,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (use_marker) {
 				this.buildMarkerConfigurationPanel();
+			}
+		},
+		
+		removeSelf: function() {
+			var parent = this.element.parentNode;
+			if (parent) {
+				parent.removeChild(this.element);
 			}
 		},
 		

@@ -33,6 +33,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return lyr;
 		},
 		
+		removeLayerAndNotify: function(lyr) {
+			if (this.layerList.removeLayer(lyr)) {
+				lyr.destroy();
+				this.triggerEvent(MMProject.LAYERLIST_CHANGE);
+			}
+		},
+		
 		triggerEvent: function(eventType) {
 			this.eventDispatcher().trigger(eventType, this);
 		},
@@ -98,6 +105,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return false;
+		},
+		
+		removeLayer: function(targetLayer) {
+			var i = this.array.indexOf(targetLayer);
+			if (i < 0) {return false;}
+			
+			this.array.splice(i, 1);
+			
+			return true;
 		}
 	};
 	// ----------------------------
