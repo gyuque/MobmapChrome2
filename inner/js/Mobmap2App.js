@@ -13,6 +13,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.localMeshFilePicker = new mobmap.LocalFilePicker( this.afterLocalMeshCSVPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
 		this.meshLoaderCtrl = new mobmap.MeshLoaderController(this);
+		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
@@ -181,7 +182,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		confirmLayerDelete: function(targetLayer) {
-			console.log("DEL", targetLayer)
+			this.layerDeleteDialog.openWithLayer(targetLayer);
 		},
 		
 		// Selection operations
