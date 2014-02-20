@@ -6,6 +6,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	var PMODE_DEFAULT  = 0;
 	var PMODE_DRAG_SEL = 1;
+	
+	var SEL_FEEDBACK_RECT = 0;
 
 	function MapPane(containerElement) {
 		this.gmap = null;
@@ -236,7 +238,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		selDidUpdateSession: function(selController, selSession) {
-			console.log("U", selSession);
+			if (selSession.isRectangleFeedbackRecommended()) {
+				this.updateSelectionFeedback(SEL_FEEDBACK_RECT, selSession.getStartPos(), selSession.getEndPos());
+			}
 		},
 		
 		// Selection feedback views = = =
@@ -252,8 +256,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			});
 		},
 		
-		updateSelectionFeedback: function() {
-			
+		updateSelectionFeedback: function(feedbackType, location1, location2) {
+			console.log("U", feedbackType);
 		},
 		
 		// Utility functions

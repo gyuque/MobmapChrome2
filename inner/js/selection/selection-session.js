@@ -35,11 +35,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		// - - - - - - - - - -
 		
 		setStartPos: function(lat, lng) {
-			
+			this.startPos.lat = lat;
+			this.startPos.lng = lng;
 		},
 		
 		setEndPos: function(lat, lng) {
-			
+			this.endPos.lat = lat;
+			this.endPos.lng = lng;
+		},
+		
+		getStartPos: function() {
+			return this.startPos;
+		},
+		
+		getEndPos: function() {
+			return this.endPos;
 		}
 	};
 
