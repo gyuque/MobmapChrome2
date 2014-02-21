@@ -75,6 +75,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		commitDraggingSelection: function() {
+			if (this.currentSelectionSession) {
+				this.fireBeforeCommitSession(this.currentSelectionSession);
+			}
+
 			this.disposeCurrentSession(true);
 		},
 		
@@ -83,6 +87,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		fireAfterDisposeSession: function() { this.callResponders('selDidDisposeSession'); },
 		fireAfterNewSession: function() { this.callResponders('selDidStartNewSession'); },
 		fireAfterSessionStateUpdate: function(s) { this.callResponders('selDidUpdateSession',s); },
+		fireBeforeCommitSession: function(s) { this.callResponders('selWillCommitSession',s); },
 		
 		callResponders: function(methodName, arg1, arg2) {
 			var required = SelectionControllerResponderMethodList[methodName] || false;
@@ -110,7 +115,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		selWillStartNewSession        : false,
 		selDidDisposeSession          : false,
 		selDidStartNewSession         : false,
-		selDidUpdateSession           : false
+		selDidUpdateSession           : false,
+		selWillCommitSession          : false
 	};
 
 	aGlobal.mobmap.SelectionController = SelectionController;

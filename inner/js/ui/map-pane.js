@@ -247,6 +247,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		selWillCommitSession: function(selController, selSession) {
+			this.clearSelectionFeedbackRect();
+		},
+		
 		// Selection feedback views = = =
 
 		setupSelectionPolygon: function() {
