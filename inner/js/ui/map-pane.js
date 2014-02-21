@@ -173,7 +173,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.sendDraggingSelectionPoint(e);
 			}
 			
-			this.blockMouseEventIfNeeded(e);
+			// this.blockMouseEventIfNeeded(e);
 		},
 
 		captureMouseUp: function(e) {
@@ -231,6 +231,10 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.enterDragSelectionMode();
 				}
 			}
+			
+			if (sess.isRectangleFeedbackRecommended()) {
+				this.updateSelectionFeedback(SEL_FEEDBACK_RECT, sess.getStartPos(), sess.getStartPos());
+			}
 		},
 		
 		selDidDisposeSession: function(selController) {
@@ -254,10 +258,29 @@ if (!window.mobmap) { window.mobmap={}; }
 				fillColor: "#0000dd",
 				fillOpacity: 0.3
 			});
+			
+			this.selectionPreviewPolygon.setMap(this.gmap);
+			this.selectionPreviewPolygon.setVisible(false);
 		},
 		
 		updateSelectionFeedback: function(feedbackType, location1, location2) {
-			console.log("U", feedbackType);
+			if (feedbackType === SEL_FEEDBACK_RECT) {
+				this.selectionPolygonpath.length = 0;
+				this.selectionPolygonpath.push(new google.maps.LatLng( location1.lat, location1.lng ));
+				this.selectionPolygonpath.push(new google.maps.LatLng( location2.lat, location1.lng ));
+				this.selectionPolygonpath.push(new google.maps.LatLng( location2.lat, location2.lng ));
+				this.selectionPolygonpath.push(new google.maps.LatLng( location1.lat, location2.lng ));
+				
+				this.selectionPreviewPolygon.setPath(this.selectionPolygonpath);
+				this.selectionPreviewPolygon.setVisible(true);
+
+				// XXX: Force redraw polygon
+				this.onContainerResize();
+			}
+		},
+		
+		clearSelectionFeedbackRect: function() {
+			this.selectionPreviewPolygon.setVisible(false);
 		},
 		
 		// Utility functions
