@@ -85,6 +85,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			md.originLng = 100;
 
 			switch(meshLevel) {
+			case 3:
+			// 3-ji (1/10 of 2-ji)
+				md.stepLat = (1.0 / 1.5) / 80.0;
+				md.stepLng = (1.0      ) / 80.0;
+				break;
+				
 			case 2:
 			// 2-ji (1/8 of 1-ji)
 				md.stepLat = (1.0 / 1.5) / 8.0;
@@ -164,10 +170,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		calcLatIndexFromMeshCode: function(meshCode) {
 			var index = 0;
 			switch (this.usingMeshCode.level) {
+			case 3:
+				var i1 = Math.floor(meshCode / 1000000);
+				var yx2 = Math.floor(meshCode / 100) % 100;
+				var i2  = Math.floor(yx2 / 10);
+				var yx3 = meshCode % 100;
+				var i3  = Math.floor(yx3 / 10);
+			
+				index = i1 * 80 + i2 * 10 + i3;
+				break;
+					
 			case 2:
 				var i1 = Math.floor(meshCode / 10000);
 				var yx2 = meshCode % 100;
-				var i2 = Math.floor(yx2 / 10);
+				var i2  = Math.floor(yx2 / 10);
 				
 				index = i1 * 8 + i2;
 				
@@ -183,6 +199,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		calcLngIndexFromMeshCode: function(meshCode) {
 			var index = 0;
 			switch (this.usingMeshCode.level) {
+			case 3:
+				var i1 = Math.floor(meshCode / 10000) % 100;
+				var i2 = Math.floor(meshCode / 100) % 10;
+				var i3 = meshCode % 10;
+
+				index = i1 * 80 + i2 * 10 + i3;
+				break;
+				
 			case 2:
 				var i1 = Math.floor(meshCode / 100) % 100;
 				var i2 = meshCode % 10;
