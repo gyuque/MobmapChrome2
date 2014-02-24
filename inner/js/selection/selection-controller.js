@@ -76,7 +76,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		commitDraggingSelection: function() {
 			if (this.currentSelectionSession) {
+				var prj = this.ownerApp.getCurrentProject();
+				
 				this.fireBeforeCommitSession(this.currentSelectionSession);
+				this.currentSelectionSession.makeIDCollection(prj);
 			}
 
 			this.disposeCurrentSession(true);

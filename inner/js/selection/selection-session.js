@@ -31,7 +31,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		isRectangleFeedbackRecommended: function() {
 			return true;
 		},
-		
+
+		makeIDCollection: function(targetProject) {
+			
+		},
+
 		// - - - - - - - - - -
 		
 		setStartPos: function(lat, lng) {

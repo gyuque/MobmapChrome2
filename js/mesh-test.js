@@ -23,6 +23,9 @@
 	
 	function doTest() {
 		console.log("Starting test", gSourceFile);
+		if ( (/japanmesh/i).test(gSourceFile.name) ) {
+			console.log("japanmesh");
+		}
 		
 		gMeshLoader = new mobmap.MeshCSVLoader(gSourceFile);
 		console.log("+ Generated loader");

@@ -91,13 +91,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var dlng = md.meshDefinition.stepLng;
 			var dlat = md.meshDefinition.stepLat;
 			var pt = _tempProjPt;
-			
+
 			g.clearRect(0,0, this.canvasSize.w, this.canvasSize.h);
 			var oldSY = null;
-			for (var y = sy;y < nY;++y) {
+			for (var y = sy;y < (sy+nY);++y) {
 
 				var oldSX= null;
-				for (var x = sx;x < nX;++x) {
+				for (var x = sx;x < (sx+nX);++x) {
 					var sx1, sy1;
 					if (oldSX === null || oldSY === null) {
 						pt.lat = o_lat + y * dlat;
@@ -121,7 +121,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					if (x === (nX-1)) {
 						oldSY = sy2;
 					}
-					
+
 					var cellVal = md.pick(y, x, this.pickTime);
 					var cellColor = this.mapValueToCellColor(cellVal.val);
 					g.fillStyle = cellColor;

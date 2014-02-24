@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.baseLoader = new mobmap.HugeCSVLoader(inFile);
 		this.readMode = MeshCSVLoader.RMODE_META;
 		this.dataType = MeshCSVLoader.DTYPE_STATIC;
+		this.usingMeshCode = null;
 		this.meshDefinition = {
 			originLat: 30,
 			originLng: 130,
@@ -53,9 +54,42 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var firstCol = fields[0];
 			if (firstCol.indexOf('@') === 0) {
-				this.readDataType(firstCol);
+				if (this.isMetaUseMeshCode(firstCol)) {
+					var level = fields[1] ? parseInt(fields[1], 10) : 1;
+					this.setupMeshCodeMode( level );
+				} else {
+					this.readDataType(firstCol);
+				}
 			} else {
 				this.readMeshDefinitionFields(fields);
+			}
+		},
+
+		isMetaUseMeshCode: function(metaStr) {
+			var lw = metaStr.toLowerCase();
+			if (lw.indexOf('use-mesh-code') >= 0) {
+				return true;
+			}
+			
+			return false;
+		},
+		
+		setupMeshCodeMode: function(meshLevel) {
+			// Japanese mesh code mode
+			this.usingMeshCode = {
+				level: meshLevel
+			};
+
+			var md = this.meshDefinition;
+			md.originLat = 0;
+			md.originLng = 100;
+
+			switch(meshLevel) {
+			default:
+			// 1-ji
+				md.stepLat = 1.0 / 1.5;
+				md.stepLng = 1.0;
+				break;
 			}
 		},
 
@@ -99,8 +133,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				++valueCol;
 			}
 			
-			var latI = parseInt( fields[latIndexCol] , 10);
-			var lngI = parseInt( fields[lngIndexCol] , 10);
+			var latI, lngI;
+			if (!this.usingMeshCode) {
+				latI = parseInt( fields[latIndexCol] , 10);
+				lngI = parseInt( fields[lngIndexCol] , 10);
+			} else {
+				// Mesh-code mode
+				var meshCode = parseInt( fields[latIndexCol] , 10);
+				latI = this.calcLatIndexFromMeshCode(meshCode);
+				lngI = this.calcLngIndexFromMeshCode(meshCode);
+				--valueCol;
+			}
 			var val  = parseFloat( fields[valueCol] );
 			
 			if (this.meshDataListener &&
@@ -112,8 +155,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
+		calcLatIndexFromMeshCode: function(meshCode) {
+			return Math.floor(meshCode / 100);
+		},
+		
+		calcLngIndexFromMeshCode: function(meshCode) {
+			return meshCode % 100 ;
+		},
+
 		// callbacks - - - - - - - - - - - - -
 		csvloaderReadLine: function(fields, lineno) {
+			if (fields.length < 1) {
+				return;
+			}
+			
 			if (this.readMode === MeshCSVLoader.RMODE_META) {
 				this.readMetaFields(fields);
 			} else {
