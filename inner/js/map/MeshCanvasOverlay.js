@@ -123,11 +123,14 @@ if (!window.mobmap) { window.mobmap={}; }
 					}
 
 					var cellVal = md.pick(y, x, this.pickTime);
-					var cellColor = this.mapValueToCellColor(cellVal.val);
-					g.fillStyle = cellColor;
+					if (cellVal) {
+						var cellColor = this.mapValueToCellColor(cellVal.val);
+						g.fillStyle = cellColor;
 					
-					g.fillRect(sx1, sy2, (sx2-sx1), (sy1-sy2));
-//					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
+						g.fillRect(sx1, sy2, (sx2-sx1), (sy1-sy2));
+	//					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
+					}
+
 				}
 			}
 		};

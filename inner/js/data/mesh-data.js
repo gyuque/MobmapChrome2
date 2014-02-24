@@ -33,7 +33,7 @@ if (!window.mobmap) window.mobmap={};
 				var cell = m[k];
 				return cell.pickAtTime(tSeconds);
 			} else {
-				return 0;
+				return null;
 			}
 		},
 		

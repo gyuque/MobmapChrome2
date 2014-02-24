@@ -85,6 +85,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			md.originLng = 100;
 
 			switch(meshLevel) {
+			case 2:
+			// 2-ji (1/8 of 1-ji)
+				md.stepLat = (1.0 / 1.5) / 8.0;
+				md.stepLng = (1.0      ) / 8.0;
+				break;
+				
 			default:
 			// 1-ji
 				md.stepLat = 1.0 / 1.5;
@@ -156,11 +162,40 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		calcLatIndexFromMeshCode: function(meshCode) {
-			return Math.floor(meshCode / 100);
+			var index = 0;
+			switch (this.usingMeshCode.level) {
+			case 2:
+				var i1 = Math.floor(meshCode / 10000);
+				var yx2 = meshCode % 100;
+				var i2 = Math.floor(yx2 / 10);
+				
+				index = i1 * 8 + i2;
+				
+				break;
+
+			default:
+				index = Math.floor(meshCode / 100); break;
+			}
+			
+			return index;
 		},
 		
 		calcLngIndexFromMeshCode: function(meshCode) {
-			return meshCode % 100 ;
+			var index = 0;
+			switch (this.usingMeshCode.level) {
+			case 2:
+				var i1 = Math.floor(meshCode / 100) % 100;
+				var i2 = meshCode % 10;
+				
+				index = i1 * 8 + i2;
+				
+				break;
+
+			default:
+				index = meshCode % 100; break;
+			}
+
+			return index;
 		},
 
 		// callbacks - - - - - - - - - - - - -
