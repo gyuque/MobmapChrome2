@@ -18,6 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this._lctrlObserved = false;
 		this.dataReady = false;
 		this.sourceLoader = null;
+		this.localSelectionPool = new mobmap.SelectionPool();
 		
 		this.meshData = null;
 	}

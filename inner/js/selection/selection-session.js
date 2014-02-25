@@ -33,15 +33,33 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		makeIDCollection: function(targetProject) {
+			var pickTime = targetProject.getCurrentTimeInSeconds();
+
 			var ls = targetProject.getLayerList();
 			var len = ls.getCount();
 			
 			for (var i = 0;i < len;++i) {
 				var lyr = ls.getLayerAt(i);
+				var selp = lyr.localSelectionPool;
+				selp.clear();
+
 				if (lyr.capabilities & mobmap.LayerCapability.SpatialSelectable) {
-					console.log("layer selection");
+					var pool = lyr.movingData.createPickPool();
+					pool.clear();
+
+					lyr.movingData.pickAt(pool, pickTime);
+					this.filterRect(pool, selp);
+//					var allCount = pool.pickedCount;
+//					console.log("layer selection", allCount);
 				}
 			}
+		},
+		
+		filterRect: function(sourcePickPool, targetSelPool) {
+			var xmin = Math.min(this.startPos.lng, this.endPos.lng);
+			var xmax = Math.max(this.startPos.lng, this.endPos.lng);
+			var ymin = Math.min(this.startPos.lat, this.endPos.lat);
+			var ymax = Math.max(this.startPos.lat, this.endPos.lat);
 		},
 
 		// - - - - - - - - - -

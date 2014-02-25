@@ -18,6 +18,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		getLayerList: function() {
 			return this.layerList;
 		},
+		
+		getCurrentTimeInSeconds: function() {
+			var d = this.currentDateTime;
+			return d.getCurrentTime();
+		},
 
 		addMovingObjectLayer: function() {
 			var lyr = new mobmap.MovingObjectLayer();
