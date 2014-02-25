@@ -23,7 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function MovingObjectLayer() {
 		this.layerId = mobmap.layerGetNextId();
-		this.jElement = $(document.createElement('span'));
+		this.jElement = $( createEventDummyElement() );
 		this.ownerList = null;
 		this.primaryView = null;
 		this.capabilities = LayerCapability.MarkerRenderable | LayerCapability.SpatialSelectable;

@@ -19,6 +19,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		return check;
 	};
 
+	aGlobal.createEventDummyElement = function() { return document.createElement('span'); } ;
+
 	aGlobal.createWrapperLabel = function(input, labelText, cls, id) {
 		var lb = $H('label', cls, id);
 		lb.appendChild(input);
