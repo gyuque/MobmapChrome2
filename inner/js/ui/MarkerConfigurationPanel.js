@@ -89,19 +89,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 
 		getSelectedVaryingType: function() {
-			var rawVal = this.jElement.find('input[name=MarkerVaryType]:checked').val();
-			if (rawVal !== null && rawVal !== undefined) {
-				return parseInt(rawVal, 10);
-			} else {
-				return null;
-			}
+			return pickIntRadioboxVal(this.jElement, 'MarkerVaryType');
 		},
 
 		onVaryingRadioChange: function(e) {
 			var mo = this.boundLayer._markerOptions || null;
 			if (mo) {
-				var newVal = parseInt(e.target.value, 10);
-				mo.setVaryingType(newVal);
+				mo.setVaryingType( this.getSelectedVaryingType() );
 			}
 			
 			this.syncFromModel();
@@ -166,6 +160,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		});
 	}
+	
+	function pickIntRadioboxVal(originElement, name) {
+		var rawVal = originElement.find('input[name=' +name+ ']:checked').val();
+		if (rawVal !== null && rawVal !== undefined) {
+			return parseInt(rawVal, 10);
+		} else {
+			return null;
+		}
+	}
+
 	
 	aGlobal.mobmap.MarkerConfigurationPanel = MarkerConfigurationPanel;
 })(window);
