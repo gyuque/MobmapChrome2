@@ -8,9 +8,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.varyingType = LayerMarkerOptions.MV_NONE;
 	}
 	
+	LayerMarkerOptions.CHANGE_EVENT = "layer-marker-options-event-change";
+	
 	LayerMarkerOptions.prototype = {
 		eventDispatcher: function() {
 			return this.jEventElement;
+		},
+		
+		setVaryingType: function(t) {
+			if (this.varyingType !== t) {
+				this.varyingType = t;
+				this.fire();
+			}
+		},
+		
+		fire: function() {
+			this.eventDispatcher().trigger(LayerMarkerOptions.CHANGE_EVENT, this);
 		}
 	};
 	
