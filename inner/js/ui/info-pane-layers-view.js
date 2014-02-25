@@ -313,7 +313,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		buildMarkerConfigurationPanel: function() {
-			this.markerPanel = new mobmap.MarkerConfigurationPanel(this.boundLayer.markerGenerator);
+			this.markerPanel = new mobmap.MarkerConfigurationPanel(this.boundLayer.markerGenerator, this.boundLayer);
 			this.markerPanel.hide();
 			this.element.appendChild(this.markerPanel.element);
 		},
@@ -359,6 +359,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			mdat.forEachExtraProperty(function(attrName, flags){
 				mp.addAdditionalPropertyName(attrName);
 			});
+			
+			mp.sendAttrNameToBind();
 		},
 		
 		onLayerDeleteButtonClick: function() {

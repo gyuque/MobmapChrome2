@@ -3,7 +3,9 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	
-	function MarkerConfigurationPanel(markerGenerator) {
+	function MarkerConfigurationPanel(markerGenerator, layer) {
+		this.boundLayer = layer;
+		
 		this.markerGenerator = markerGenerator;
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
@@ -44,6 +46,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			fs.appendChild( rl_attr.label );
 			fs.appendChild( rl_day.label );
 
+			rl_none.input.value = mobmap.LayerMarkerOptions.MV_NONE;
+			rl_attr.input.value = mobmap.LayerMarkerOptions.MV_ATTR;
+			rl_day.input.value  = mobmap.LayerMarkerOptions.MV_DAY;
+
 			// Observe
 			var v_handler = this.onVaryingRadioChange.bind(this);
 			$(rl_none.input).click(v_handler);
@@ -57,13 +63,34 @@ if (!window.mobmap) { window.mobmap={}; }
 			var fs = makeFieldSetWithLegend('Vary by attribute');
 			
 			this.attrBindComboElement = makeComboWithLabel(fs, 'Attribute', 'mm-bind-attr-combo');
+			$(this.attrBindComboElement).change( this.onAttrBindSelChange.bind(this) );
 
 			containerElement.appendChild(fs);
 		},
+		
+		onAttrBindSelChange: function() {
+			this.sendAttrNameToBind();
+		},
+		
+		sendAttrNameToBind: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				var n = this.getAttrNameToBind();
+				mo.bindAttributeName(n);
+			}
+		},
+		
+		getAttrNameToBind: function() {
+			return this.attrBindComboElement.value;
+		},
 
 
-		onVaryingRadioChange: function() {
-			console.log("vchange");
+		onVaryingRadioChange: function(e) {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				var newVal = parseInt(e.target.value, 10);
+				mo.setVaryingType(newVal);
+			}
 		},
 
 		show: function() { this.expandablePanel.show(); },

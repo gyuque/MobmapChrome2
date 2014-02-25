@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function LayerMarkerOptions() {
 		this.jEventElement = $( createEventDummyElement() );
 		this.varyingType = LayerMarkerOptions.MV_NONE;
+		this.boundAttributeName = null;
 	}
 	
 	LayerMarkerOptions.CHANGE_EVENT = "layer-marker-options-event-change";
@@ -18,6 +19,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		setVaryingType: function(t) {
 			if (this.varyingType !== t) {
 				this.varyingType = t;
+				this.fire();
+			}
+		},
+		
+		bindAttributeName: function(a_name) {
+			if (this.boundAttributeName !== a_name) {
+				this.boundAttributeName = a_name;
 				this.fire();
 			}
 		},
