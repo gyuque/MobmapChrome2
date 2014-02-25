@@ -14,10 +14,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.currentSelectionSession;
 		},
 		
-		clear: function() {
+		clear: function(suppress_event) {
 			var prj = this.ownerApp.getCurrentProject();
 			prj.forEachLayer(function(index, layer){
-				console.log("ToDo: clear", index)
+				layer.localSelectionPool.clear(suppress_event);
 			});
 		},
 		
