@@ -33,7 +33,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		makeIDCollection: function(targetProject) {
+			var ls = targetProject.getLayerList();
+			var len = ls.getCount();
 			
+			for (var i = 0;i < len;++i) {
+				var lyr = ls.getLayerAt(i);
+				if (lyr.capabilities & mobmap.LayerCapability.SpatialSelectable) {
+					console.log("layer selection");
+				}
+			}
 		},
 
 		// - - - - - - - - - -

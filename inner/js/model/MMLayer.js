@@ -2,6 +2,11 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var gLayerNextId = 1;
+	aGlobal.mobmap.layerGetNextId = function() {
+		var i = gLayerNextId++;
+		return i;
+	};
 
 	var LayerEvent = {
 		LoadWillStart: 'mm-layer-model-event-load-will-start',
@@ -12,14 +17,16 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	var LayerCapability = {
-		MarkerRenderable: 0x01
+		MarkerRenderable: 0x01,
+		SpatialSelectable: 0x10
 	};
 
 	function MovingObjectLayer() {
+		this.layerId = mobmap.layerGetNextId();
 		this.jElement = $(document.createElement('span'));
 		this.ownerList = null;
 		this.primaryView = null;
-		this.capabilities = LayerCapability.MarkerRenderable;
+		this.capabilities = LayerCapability.MarkerRenderable | LayerCapability.SpatialSelectable;
 		this.dataTimeRange = {
 			start: 0,
 			end: 0

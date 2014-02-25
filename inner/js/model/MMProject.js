@@ -14,6 +14,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		eventDispatcher: function() {
 			return this.jElement;
 		},
+		
+		getLayerList: function() {
+			return this.layerList;
+		},
 
 		addMovingObjectLayer: function() {
 			var lyr = new mobmap.MovingObjectLayer();

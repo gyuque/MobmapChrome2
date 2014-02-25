@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function MMMeshLayer() {
+		this.layerId = mobmap.layerGetNextId();
 		this.jElement = $(document.createElement('span'));
 		this.ownerList = null;
 		this.primaryView = null;
