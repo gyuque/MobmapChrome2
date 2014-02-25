@@ -9,12 +9,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.markerGenerator = markerGenerator;
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
+		this.jElement = $(this.element);
 		this.expandablePanel.setTitle("Marker");
 		
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
 		
 		this.configurePanelContent();
+		this.syncFromModel();
 	}
 	
 	MarkerConfigurationPanel.prototype = {
@@ -84,6 +86,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.attrBindComboElement.value;
 		},
 
+		
+
+		getSelectedVaryingType: function() {
+			var rawVal = this.jElement.find('input[name=MarkerVaryType]:checked').val();
+			if (rawVal !== null && rawVal !== undefined) {
+				return parseInt(rawVal, 10);
+			} else {
+				return null;
+			}
+		},
 
 		onVaryingRadioChange: function(e) {
 			var mo = this.boundLayer._markerOptions || null;
@@ -91,6 +103,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				var newVal = parseInt(e.target.value, 10);
 				mo.setVaryingType(newVal);
 			}
+			
+			this.syncFromModel();
+		},
+		
+		checkVaryingTypeRadio: function(newVal) {
+			checkRadioboxByInt(this.jElement, 'MarkerVaryType', newVal);
 		},
 
 		show: function() { this.expandablePanel.show(); },
@@ -107,6 +125,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			opt.value = attrName;
 			
 			this.attrBindComboElement.appendChild(opt);
+		},
+		
+		syncFromModel: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				var vtype = mo.varyingType;
+				var selected_vtype = this.getSelectedVaryingType();
+				if (vtype !== selected_vtype) {
+					this.checkVaryingTypeRadio(vtype);
+				}
+			}
 		}
 	};
 	
@@ -128,6 +157,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		lb.appendChild(cb);
 		container.appendChild(lb);
 		return cb;
+	}
+	
+	function checkRadioboxByInt(originElement, name, i) {
+		originElement.find('input[name=' +name+ ']').each(function(elIndex, element) {
+			if ( parseInt(element.value, 10) === i ) {
+				element.checked = true;
+			}
+		});
 	}
 	
 	aGlobal.mobmap.MarkerConfigurationPanel = MarkerConfigurationPanel;
