@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 
 		this._lvObserved = false;
+		this._markerOptions = null;
 		this._lctrlObserved = false;
 		this.dataReady = false;
 		this.sourceLoader = null;

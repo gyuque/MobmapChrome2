@@ -33,6 +33,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 
 		this._lvObserved = false;
+		this._markerOptions = new mobmap.LayerMarkerOptions();
 		this._lctrlObserved = false;
 		
 		this.sourceLoader = null;
