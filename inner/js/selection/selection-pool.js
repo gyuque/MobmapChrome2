@@ -21,15 +21,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.eventDispatcher().trigger(SelectionPool.CHANGE_EVENT, this);
 		},
 		
-		clear: function() {
+		clear: function(suppress_event) {
 			var m = this.idmap;
 			for (var i in m) {
 				delete m[i];
 			}
+
+			if (!suppress_event) { this.fire(); }
 		},
 		
-		addId: function(objId) {
+		addId: function(objId, suppress_event) {
 			this.idmap[objId] = true;
+			
+			if (!suppress_event) { this.fire(); }
 		}
 	};
 

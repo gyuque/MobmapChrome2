@@ -41,7 +41,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < len;++i) {
 				var lyr = ls.getLayerAt(i);
 				var selp = lyr.localSelectionPool;
-				selp.clear();
+				selp.clear(true);
 
 				if (lyr.capabilities & mobmap.LayerCapability.SpatialSelectable) {
 					var pool = lyr.movingData.createPickPool();
@@ -49,9 +49,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 					lyr.movingData.pickAt(pool, pickTime);
 					this.filterRect(pool, selp);
-//					var allCount = pool.pickedCount;
-//					console.log("layer selection", allCount);
 				}
+				
+				selp.fire();
 			}
 		},
 		
@@ -60,6 +60,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			var xmax = Math.max(this.startPos.lng, this.endPos.lng);
 			var ymin = Math.min(this.startPos.lat, this.endPos.lat);
 			var ymax = Math.max(this.startPos.lat, this.endPos.lat);
+			
+			var sourceCount = sourcePickPool.pickedCount;
+			var src_array = sourcePickPool.getArray();
+			for (var i = 0;i < sourceCount;++i) {
+				var sourceRecord = src_array[i];
+				var objId = sourceRecord._id;
+				
+				var ox = sourceRecord.x;
+				var oy = sourceRecord.y;
+				if (ox >= xmin && oy >= ymin && ox <= xmax && oy <= ymax) {
+					targetSelPool.addId(objId, true);
+				}
+			}
 		},
 
 		// - - - - - - - - - -
