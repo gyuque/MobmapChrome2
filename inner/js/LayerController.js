@@ -184,7 +184,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!sourceLayer.dataReady) {return;}
 
 			// Vary marker by attribute(if set) --------------------------------------
-			var nVariations = sourceLayer.getNumOfMarkerVariations();
 			var boundAttrName = null;
 			var chipW = overlay.markerTextureConf.chipWidth;
 			if (sourceLayer._markerOptions && sourceLayer._markerOptions.varyingType === mobmap.LayerMarkerOptions.MV_ATTR) {
@@ -215,12 +214,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			var m_array = mk_pool.getArray();
 			for (var i = 0;i < count;++i) {
 				var sourceRecord = src_array[i];
+				var marker_data = m_array[i];
 				
-				m_array[i].lat = sourceRecord.y;
-				m_array[i].lng = sourceRecord.x;
+				marker_data.lat = sourceRecord.y;
+				marker_data.lng = sourceRecord.x;
 				
 				if (boundAttrName !== null) {
 					var boundAttrVal = sourceRecord[boundAttrName];
+					var mkIndex = sourceLayer.mapAttributeToMarkerIndex(boundAttrVal);
+					
+					marker_data.chipX = mkIndex * chipW;
+				} else {
+					marker_data.chipX = 0;
 				}
 			}
 			

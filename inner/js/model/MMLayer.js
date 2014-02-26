@@ -160,6 +160,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getNumOfMarkerVariations: function() {
 			return this.markerGenerator.options.nVariations;
+		},
+		
+		mapAttributeToMarkerIndex: function(attrRawValue) {
+			var i = parseInt(attrRawValue, 10);
+			var n = this.getNumOfMarkerVariations();
+			
+			if (i >= n) { i = n - 1; }
+			if (i < 0) { i = 0; }
+
+			return i;
 		}
 	};
 
