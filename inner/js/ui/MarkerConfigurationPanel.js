@@ -67,6 +67,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			containerElement.appendChild(outerBox);
 			
 			this.syncMarkerVariationCountDisp();
+			this.markerSliderElements.jSlider.change( this.onMarkerVariationSliderChange.bind(this) );
 		},
 		
 		syncMarkerVariationCountDisp: function(val) {
@@ -77,10 +78,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		showMarkerVariationSliderPos: function(val) {
 			var oldVal = this.markerSliderElements.jSlider.val();
-			console.log(oldVal)
 			
 			if (oldVal !== val) {
-				
+				this.markerSliderElements.jSlider[0].value = val;
 			}
 		},
 		
@@ -92,6 +92,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.markerSliderElements.jDispBox.text(val);
 				disp.setAttribute('data-current-value', val);
 			}
+		},
+		
+		onMarkerVariationSliderChange: function() {
+			var v = this.markerSliderElements.jSlider.val();
+			this.markerGenerator.setNumOfVariation(v);
 		},
 		
 		buildMarkerVaryOptions: function(containerElement) {

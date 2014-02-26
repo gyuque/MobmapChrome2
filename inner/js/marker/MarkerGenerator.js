@@ -21,9 +21,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.testDummyMarkerGenerator();
 	}
 	
+	MarkerGenerator.CHANGE_EVENT = "marker-generator-configuration-change";
+	
 	MarkerGenerator.prototype = {
 		eventDispatcher: function() {
 			return this.jResultCanvas;
+		},
+		
+		fire: function() {
+			this.eventDispatcher().trigger(MarkerGenerator.CHANGE_EVENT, this);
+		},
+		
+		setNumOfVariation: function(n) {
+			this.options.nVariations = n;
+			this.fire();
 		},
 		
 		configureCanvas: function() {
