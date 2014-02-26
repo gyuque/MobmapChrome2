@@ -12,6 +12,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(this.element);
 		this.expandablePanel.setTitle("Marker");
 		
+		this.markerSliderElements = {
+			jSlider: null,
+			jDispBox: null
+		};
+		
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
 		
@@ -29,8 +34,64 @@ if (!window.mobmap) { window.mobmap={}; }
 			ec.innerHTML = '';
 			ec.appendChild( this.markerGenerator.resultCanvas );
 			
+			this.buildMarkerColumnsSlider(ec);
 			this.buildMarkerVaryOptions(ec);
 			this.buildMarkerAttrBindOptions(ec);
+		},
+		
+		buildMarkerColumnsSlider: function(containerElement) {
+			var outerBox = $H('div', 'mm-marker-variation-slider-outer');
+
+			var slider = $H('input');
+			var disp = $H('div');
+			disp.setAttribute('data-current-value', '-1');
+			
+			slider.type = 'range';
+			
+			// Table style - - - - - -
+			outerBox.style.display = "table";
+			disp.style.display     = "table-cell";
+			slider.style.display   = "table-cell";
+
+			disp.style.minWidth    = "2em";
+			disp.style.fontSize    = "13px";
+			disp.style.textAlign   = "center";
+			disp.style.verticalAlign = "middle";
+			// - - - - - - - - - - - -
+			
+			this.markerSliderElements.jSlider = $(slider);
+			this.markerSliderElements.jDispBox = $(disp);
+			
+			outerBox.appendChild(disp);
+			outerBox.appendChild(slider);
+			containerElement.appendChild(outerBox);
+			
+			this.syncMarkerVariationCountDisp();
+		},
+		
+		syncMarkerVariationCountDisp: function(val) {
+			var n = this.markerGenerator.options.nVariations;
+			this.showMarkerVariationSliderPos(n);
+			this.showMarkerVariationCount(n);
+		},
+		
+		showMarkerVariationSliderPos: function(val) {
+			var oldVal = this.markerSliderElements.jSlider.val();
+			console.log(oldVal)
+			
+			if (oldVal !== val) {
+				
+			}
+		},
+		
+		showMarkerVariationCount: function(val) {
+			var disp = this.markerSliderElements.jDispBox[0];
+			
+			var oldVal = parseInt(disp.getAttribute('data-current-value'), 10);
+			if (oldVal !== val) {
+				this.markerSliderElements.jDispBox.text(val);
+				disp.setAttribute('data-current-value', val);
+			}
 		},
 		
 		buildMarkerVaryOptions: function(containerElement) {
