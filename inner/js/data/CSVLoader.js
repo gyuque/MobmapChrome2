@@ -72,6 +72,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			outRecord._time = absTime;
 			outRecord.x     = f_lng;
 			outRecord.y     = f_lat;
+		},
+		
+		setIgnoreFirstLine: function(ig) {
+			console.log("ToDo: implement", ig);
 		}
 	};
 	

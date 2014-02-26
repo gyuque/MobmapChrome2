@@ -90,7 +90,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onFullLoadClick: function() {
+			this.csvLoader.setIgnoreFirstLine( this.getIgnoreFirstChecked() );
 			this.ownerApp.loadCSVWithLoader(this.csvLoader);
+		},
+		
+		getIgnoreFirstChecked: function() {
+			return this.jIgnoreFirstLineCheck[0].checked;
 		},
 
 		// Preload and preview ===================
