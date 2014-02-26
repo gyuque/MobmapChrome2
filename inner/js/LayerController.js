@@ -88,7 +88,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this));
 
+			if (lyr._markerOptions) {
+				lyr._markerOptions.eventDispatcher().bind(
+					mobmap.LayerMarkerOptions.CHANGE_EVENT,
+					this.onLayerMarkerOptionsChange.bind(this, lyr) );
+			}
+
 			return true;
+		},
+		
+		onLayerMarkerOptionsChange: function(sourceLayer, e) {
+			if (this.ownerApp) { this.ownerApp.redrawMap();}
 		},
 		
 		onLayerLoadFinish: function(e, sourceLayer) {
@@ -173,11 +183,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
 			if (!sourceLayer.dataReady) {return;}
 
+			// Vary marker by attribute(if set) --------------------------------------
+			var nVariations = sourceLayer.getNumOfMarkerVariations();
+			var boundAttrName = null;
+			var chipW = overlay.markerTextureConf.chipWidth;
+			if (sourceLayer._markerOptions && sourceLayer._markerOptions.varyingType === mobmap.LayerMarkerOptions.MV_ATTR) {
+				boundAttrName = sourceLayer._markerOptions.boundAttributeName;
+			}
+			// -----------------------------------------------------------------------
+
 			var movingData = sourceLayer.movingData;
 			var mk_pool = overlay.getTopMarkerPool();
 			mk_pool.clear();
 			
-			this.applyGeneratedMarkerOfLayer(overlay, sourceLayer);
+			this.applyGeneratedMarkerOfLayer(overlay, sourceLayer); // dirty only
 			
 			// Prepare pick pool (if not ready)
 			if (!overlay._stockPickPool) {
@@ -199,6 +218,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				m_array[i].lat = sourceRecord.y;
 				m_array[i].lng = sourceRecord.x;
+				
+				if (boundAttrName !== null) {
+					var boundAttrVal = sourceRecord[boundAttrName];
+				}
 			}
 			
 			overlay.renderGL();

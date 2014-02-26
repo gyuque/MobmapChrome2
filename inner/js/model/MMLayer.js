@@ -156,6 +156,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
 			//console.log(this.movingData)
+		},
+		
+		getNumOfMarkerVariations: function() {
+			return this.markerGenerator.options.nVariations;
 		}
 	};
 
