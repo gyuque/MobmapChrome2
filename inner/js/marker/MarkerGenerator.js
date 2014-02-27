@@ -15,6 +15,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.previewG = this.previewCanvas.getContext('2d');
 		this.resultG = this.resultCanvas.getContext('2d');
+
+		this.textureSourceCanvas = document.createElement('canvas');
+		this.textureSourceG = this.textureSourceCanvas.getContext('2d');
 		
 		this.configureCanvas();
 		
@@ -32,9 +35,36 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.eventDispatcher().trigger(MarkerGenerator.CHANGE_EVENT, this);
 		},
 		
+		updateTextureCanvas: function() {
+			var w = this.calcTextureSize();
+			var h = this.resultCanvas.height - 0;
+			this.textureSourceCanvas.width = w;
+			this.textureSourceCanvas.height = h;
+			
+			this.textureSourceG.clearRect(0, 0, w, h);
+			this.textureSourceG.drawImage( this.resultCanvas, 0, 0 );
+			
+			return this.textureSourceCanvas;
+		},
+		
+		calcTextureSize: function() {
+			var op = this.options;
+			var w = op.chipWidth * op.nVariations;
+			var e = Math.ceil(Math.LOG2E * Math.log(w));
+			
+			return Math.pow(2, e);
+		},
+		
 		setNumOfVariation: function(n) {
-			this.options.nVariations = n;
-			this.fire();
+			if (this.options.nVariations !== n) {
+				this.dirty = true;
+				this.options.nVariations = n;
+				
+				this.configureCanvas();
+				this.testDummyMarkerGenerator();
+				
+				this.fire();
+			}
 		},
 		
 		configureCanvas: function() {

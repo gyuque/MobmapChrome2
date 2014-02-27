@@ -93,12 +93,27 @@ if (!window.mobmap) { window.mobmap={}; }
 					mobmap.LayerMarkerOptions.CHANGE_EVENT,
 					this.onLayerMarkerOptionsChange.bind(this, lyr) );
 			}
+			
+			if (lyr.markerGenerator) {
+				lyr.markerGenerator.eventDispatcher().bind(
+					mobmap.MarkerGenerator.CHANGE_EVENT,
+					this.onLayerMarkerGeneratorConfigurationChange.bind(this, lyr)
+				);
+			}
 
 			return true;
 		},
 		
-		onLayerMarkerOptionsChange: function(sourceLayer, e) {
+		redrawMap: function() {
 			if (this.ownerApp) { this.ownerApp.redrawMap();}
+		},
+		
+		onLayerMarkerOptionsChange: function(sourceLayer, e) {
+			this.redrawMap();
+		},
+		
+		onLayerMarkerGeneratorConfigurationChange: function(sourceLayer, e) {
+			this.redrawMap();
 		},
 		
 		onLayerLoadFinish: function(e, sourceLayer) {
@@ -107,7 +122,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				sourceLayer.bindOverlay(ov);
 			}
 			
-			if (this.ownerApp) { this.ownerApp.redrawMap();}
+			this.redrawMap();
 		},
 		
 		onLayerRequestDelete: function(e, sourceLayer) {
@@ -238,7 +253,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				return;
 			}
 			
-			var textureSourceImage = mg.resultCanvas;
+			var textureSourceImage = mg.updateTextureCanvas();
 			if (targetLayer.setMarkerImage(textureSourceImage)) { // Success?
 				mg.dirty = false;
 			}

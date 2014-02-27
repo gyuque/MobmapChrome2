@@ -7,6 +7,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.boundLayer = layer;
 		
 		this.markerGenerator = markerGenerator;
+		this.markerGenerator.eventDispatcher().bind(
+			mobmap.MarkerGenerator.CHANGE_EVENT,
+			this.onMarkerGeneratorConfigurationChange.bind(this)
+		);
+		
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
 		this.jElement = $(this.element);
@@ -47,6 +52,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			disp.setAttribute('data-current-value', '-1');
 			
 			slider.type = 'range';
+			slider.min = 1;
+			slider.max = 50;
 			
 			// Table style - - - - - -
 			outerBox.style.display = "table";
@@ -169,6 +176,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		checkVaryingTypeRadio: function(newVal) {
 			checkRadioboxByInt(this.jElement, 'MarkerVaryType', newVal);
+		},
+		
+		onMarkerGeneratorConfigurationChange: function() {
+			this.syncMarkerVariationCountDisp();
 		},
 
 		show: function() { this.expandablePanel.show(); },
