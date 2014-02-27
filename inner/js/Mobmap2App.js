@@ -181,6 +181,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		meshldrctrl_AfterLoadFinish: function(controller) {
 		},
 		
+		meshldrctrl_ErrorOccurred: function(controller, err) {
+			console.log("meshldrctrl_ErrorOccurred", err)
+		},
+		
 		confirmLayerDelete: function(targetLayer) {
 			this.layerDeleteDialog.openWithLayer(
 				targetLayer,

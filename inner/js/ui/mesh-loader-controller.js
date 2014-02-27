@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.meshLayer = null;
 		
 		this.targetProject = null;
+		this.lastError = 0;
 	}
 
 	MeshLoaderController.prototype = {
@@ -42,14 +43,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (this.meshLoader.isValidType()) {
 				this.meshLoader.readRestContentAsync(this);
+			} else {
+				this.reportError(1);
 			}
 		},
 		
 		csvloaderPreloadError: function(e) {
 			console.log(e);
-			
+			this.reportError(2);
 		},
-		
+
+		reportError: function(e) {
+			this.lastError = e;
+			if (this.listener && this.listener.meshldrctrl_ErrorOccurred) {
+				this.listener.meshldrctrl_ErrorOccurred(this, e);
+			}
+		},
+
 		// Content loader callbacks
 		
 		meshloaderNewRecordLoaded: function(tSeconds, latIndex, lngIndex, value) {
