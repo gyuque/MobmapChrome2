@@ -5,8 +5,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function LayerDeleteDialog() {
 		this.initProperties();
-		this.okCallback = null;
-
 		this.ensureWindowElement();
 	}
 	
@@ -14,6 +12,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		// base
 		initProperties: mobmap.MMDialogBase.initProperties,
 		buildView: mobmap.MMDialogBase.buildView,
+		getDialog: mobmap.MMDialogBase.getDialog,
+		showDialogOnCenter: mobmap.MMDialogBase.showDialogOnCenter,
+		addOKButton: mobmap.MMDialogBase.addOKButton,
+		addCancelButton: mobmap.MMDialogBase.addCancelButton,
+		onOK: mobmap.MMDialogBase.defaultOnOK,
+		onCancel: mobmap.MMDialogBase.defaultOnCancel,
 
 		openWithLayer: function(targetLayer, callback) {
 			this.ensureWindowElement();
@@ -33,51 +37,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!this.element) {
 				this.buildView();
 				
-				var el = this.element;
-				var buttons_area = document.createElement('div');
-				var okButton = document.createElement('button');
-				var cancelButton = document.createElement('button');
-				buttons_area.setAttribute('class', 'mm-layer-delete-dialog-buttons');
-				buttons_area.appendChild(okButton);
-				buttons_area.appendChild(cancelButton);
-				el.appendChild(buttons_area);
-				
-				$(okButton).text('OK').click(this.onOK.bind(this));
-				$(cancelButton).text('Don\'t delete').click(this.onCancel.bind(this));
-
-				document.body.appendChild(el);
+				this.addOKButton();
+				this.addCancelButton('Don\'t delete');
 			}
 		},
-		
-		onOK: function() {
-			if (this.okCallback) {
-				this.okCallback();
-				this.okCallback = null;
-			}
 
-			this.getDialog().close();
-		},
-		
-		onCancel: function() {
-			this.getDialog().close();
-		},
-		
 		showDialog: function() {
-			this.jElement.kendoWindow({
-				modal:true,
-				pinned: true,
-				width: 384,
-				height: 72,
-				title: 'Delete layer'
-			});
-			
-			var dialog = this.getDialog();
-			dialog.open();
-			dialog.center();
-		},
-		
-		getDialog: function() {
-			return this.jElement.data("kendoWindow");
+			this.showDialogOnCenter('Delete layer');
 		}
 	};
 	
