@@ -37,6 +37,7 @@ function installMobLayer(pkg) {
 		this.targetPane = 'overlayShadow';
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
+		this.prevRenderRegion = {minLat:-1, maxLat:-1, minLng:-1, maxLng:-1};
 		
 		this.ownerObject = null;
 		this.canvasReadyCallback = null;
@@ -180,7 +181,10 @@ function installMobLayer(pkg) {
 		
 		GLMobLayer.adjustOverlayCanvasPosition(this, this.canvasOffset);
 		//this.canvas.style.backgroundColor = "rgba(0,0,0,0.8)";
-		this.renderGL();
+		if (this.isRenderedRegionChanged()) {
+			this.renderGL();
+			this.updateRenderedRegion();
+		}
 	};
 	
 	GLMobLayer.overlaybase_changeCanvasSize = function(w, h) {
@@ -230,7 +234,7 @@ function installMobLayer(pkg) {
 		var gl = this.gl;
 		if (!gl) {return;}
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
-	
+
 		this.updateProjectionGrid(this.projectionGrid);
 //		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -524,6 +528,37 @@ function installMobLayer(pkg) {
 		this.locateCanvas();
 	};
 
+	// Dirty check
+	GLMobLayer.prototype.resetRenderedRegion = function() {
+		var r = this.prevRenderRegion;
+		r.minLat = r.maxLat = r.minLng = r.maxLng = -1;
+	};
+
+	GLMobLayer.prototype.updateRenderedRegion = function() {
+		var bnd = this.getMap().getBounds();
+		var mapNE = bnd.getNorthEast();
+		var mapSW = bnd.getSouthWest();
+
+		var r = this.prevRenderRegion;
+		r.minLat = mapSW.lat();
+		r.maxLat = mapNE.lat();
+		r.minLng = mapSW.lng();
+		r.maxLng = mapNE.lng();
+	};
+	
+	GLMobLayer.prototype.isRenderedRegionChanged = function() {
+		var bnd = this.getMap().getBounds();
+		var mapNE = bnd.getNorthEast();
+		var mapSW = bnd.getSouthWest();
+		
+		var r = this.prevRenderRegion;
+		return (
+			r.minLat != mapSW.lat() ||
+			r.maxLat != mapNE.lat() ||
+			r.minLng != mapSW.lng() ||
+			r.maxLng != mapNE.lng()
+		);
+	};
 
 	// Utilities
 	GLMobLayer.setupOverlayMapEvents = function(lyr) {

@@ -244,6 +244,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
+			overlay.resetRenderedRegion();
 			overlay.renderGL();
 		},
 	
