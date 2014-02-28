@@ -56,7 +56,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		reportError: function(e) {
 			this.lastError = e;
 			if (this.listener && this.listener.meshldrctrl_ErrorOccurred) {
-				this.listener.meshldrctrl_ErrorOccurred(this, e);
+				this.listener.meshldrctrl_ErrorOccurred(this, e, this.meshLayer);
 			}
 		},
 

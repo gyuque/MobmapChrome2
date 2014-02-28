@@ -14,6 +14,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
 		this.meshLoaderCtrl = new mobmap.MeshLoaderController(this);
 		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
+		this.loadErrorDialog = new mobmap.LoadErrorDialog();
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
@@ -181,8 +182,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		meshldrctrl_AfterLoadFinish: function(controller) {
 		},
 		
-		meshldrctrl_ErrorOccurred: function(controller, err) {
-			console.log("meshldrctrl_ErrorOccurred", err)
+		meshldrctrl_ErrorOccurred: function(controller, err, targetLayer) {
+			this.getCurrentProject().removeLayerAndNotify(targetLayer);
+			this.loadErrorDialog.showDialog();
 		},
 		
 		confirmLayerDelete: function(targetLayer) {
