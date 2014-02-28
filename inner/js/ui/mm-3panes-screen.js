@@ -53,7 +53,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		var jBody = $(bodyPane);
 		var splitter = jBody.kendoSplitter({
 			orientation: "horizontal",
-			panes:[{collapsible: true, size:'224px', scrollable:false},{scrollable:false}]
+			panes:[{collapsible: true, size:'224px', scrollable:false},{scrollable:false}],
+			collapse: this.onInfoPaneCollapse.bind(this),
+			expand: this.onInfoPaneExpand.bind(this)
 		});
 		
 		// Pick up child panes
@@ -81,6 +83,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		var j = this.eventDispatcher();
 		setTimeout(j.trigger.bind(j, Mobmap3PanesScreen.RESIZE_EVENT), 1);
+	};
+	
+	proto.onInfoPaneCollapse = function() {
+		this.fitToWindow();
+	};
+	
+	proto.onInfoPaneExpand = function() {
+		this.fitToWindow();
 	};
 	
 	// +++ Export +++
