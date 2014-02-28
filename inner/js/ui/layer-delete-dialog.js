@@ -4,15 +4,17 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function LayerDeleteDialog() {
-		this.element = null;
-		this.jElement = null;
-		this.jMessageArea = null;
+		this.initProperties();
 		this.okCallback = null;
 
 		this.ensureWindowElement();
 	}
 	
 	LayerDeleteDialog.prototype = {
+		// base
+		initProperties: mobmap.MMDialogBase.initProperties,
+		buildView: mobmap.MMDialogBase.buildView,
+
 		openWithLayer: function(targetLayer, callback) {
 			this.ensureWindowElement();
 
@@ -29,17 +31,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		ensureWindowElement: function() {
 			if (!this.element) {
-				var el = document.createElement('div');
-				el.style.display = "none";
+				this.buildView();
 				
-				this.element = el;
-				this.jElement = $(el);
-				
-				// contents
-				var msg_area = document.createElement('div');
-				this.jMessageArea = $(msg_area);
-				el.appendChild(msg_area);
-				
+				var el = this.element;
 				var buttons_area = document.createElement('div');
 				var okButton = document.createElement('button');
 				var cancelButton = document.createElement('button');
