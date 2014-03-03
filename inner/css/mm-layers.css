@@ -90,7 +90,8 @@
 
 .mm-marker-preview-canvas {
 	background-color: #444;
-	border: 1px solid #ccc;
+	border: none;
+	box-shadow: 0 0 3px 2px #fff inset;
 }
 
 .mm-marker-result-canvas {

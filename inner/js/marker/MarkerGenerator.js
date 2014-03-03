@@ -13,12 +13,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.resultCanvas.setAttribute('class', 'mm-marker-result-canvas');
 		this.jResultCanvas = $(this.resultCanvas);
 
+		this.previewNegativeMargin = 4;
 		this.previewG = this.previewCanvas.getContext('2d');
 		this.resultG = this.resultCanvas.getContext('2d');
 
 		this.textureSourceCanvas = document.createElement('canvas');
 		this.textureSourceG = this.textureSourceCanvas.getContext('2d');
 		
+		this.adjustPreviewMargin();
 		this.configureCanvas();
 		
 		this.testDummyMarkerGenerator();
@@ -60,6 +62,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.dirty = true;
 				this.options.nVariations = n;
 				
+				this.adjustPreviewMargin();
 				this.configureCanvas();
 				this.testDummyMarkerGenerator();
 				
@@ -67,16 +70,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		adjustPreviewMargin: function() {
+			var max = this.options.chipWidth - 4;
+			var m = Math.floor(this.options.nVariations / 3);
+			if (m > max) {m = max;}
+			
+			this.previewNegativeMargin = m;
+		},
+		
 		configureCanvas: function() {
 			var op = this.options;
 			var w = op.chipWidth * op.nVariations;
 			var h = op.chipHeight * 2;
 			
-			this.previewCanvas.width = w;
-			this.previewCanvas.height = h;
+			this.previewCanvas.width = this.calcPreviewWidth();
+			this.previewCanvas.height = h >> 1;
 
 			this.resultCanvas.width = w;
 			this.resultCanvas.height = h;
+		},
+		
+		calcPreviewWidth: function() {
+			var op = this.options;
+			var w = op.chipWidth * op.nVariations;
+			var neg = (op.nVariations - 1) * this.previewNegativeMargin;
+			
+			return w - neg;
 		},
 		
 		clearCanvas: function() {
@@ -98,7 +117,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.previewG,
 				this.previewCanvas.width - 0,
 				this.previewCanvas.height - 0,
-				this.resultCanvas
+				this.resultCanvas,
+				op.chipWidth,
+				this.previewNegativeMargin
 			);
 		}
 	};
@@ -200,21 +221,31 @@ if (!window.mobmap) { window.mobmap={}; }
 		return "rgb(" +cR+ "," +cG+ "," +cB+ ")";
 	};
 
-	MarkerGenerator.renderPreviewImage = function(destG, destW, destH, sourceCanvas) {
+	MarkerGenerator.renderPreviewImage = function(destG, destW, destH, sourceCanvas, chipWidth, negativeMargin) {
 		// Generate fade image
 		var g = destG;
 		var x;
-		var a;
+		var dx;
+		var a = 1;
 		var h = destH;
-		for (x = 0;x < destW;++x) {
-			a = 2.0 - x / (destW / 2);
+		var srcW = sourceCanvas.width - 0;
+		for (x = dx = 0;x < srcW;++x) {
+			if (x && (x % chipWidth) === 0) {
+				dx -= negativeMargin;
+			}
+			
+			/*
+			a = 2.2 - x / (srcW / 2);
 			if (a > 1) {a = 1;}
+			*/
 			
 			g.save();
 			g.globalAlpha = a;
 			g.drawImage(sourceCanvas, x, 0, 1, h,
-			                          x, 0, 1, h);
+			                          dx, 0, 1, h);
 			g.restore();
+			
+			++dx;
 		}
 	}
 
