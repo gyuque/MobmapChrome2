@@ -34,6 +34,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.idmap[objId] = true;
 			
 			if (!suppress_event) { this.fire(); }
+		},
+		
+		isAnySelected: function() {
+			var m = this.idmap;
+			for (var i in m) { return true; }
+			
+			return false;
+		},
+		
+		isIDSelected: function(objId) {
+			return !!( this.idmap[objId] );
 		}
 	};
 

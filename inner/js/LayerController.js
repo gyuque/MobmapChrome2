@@ -88,6 +88,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this));
 
+			// Observe layer internal events
+
 			if (lyr._markerOptions) {
 				lyr._markerOptions.eventDispatcher().bind(
 					mobmap.LayerMarkerOptions.CHANGE_EVENT,
@@ -98,6 +100,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				lyr.markerGenerator.eventDispatcher().bind(
 					mobmap.MarkerGenerator.CHANGE_EVENT,
 					this.onLayerMarkerGeneratorConfigurationChange.bind(this, lyr)
+				);
+			}
+			
+			if (lyr.localSelectionPool) {
+				lyr.localSelectionPool.eventDispatcher().bind(
+					mobmap.SelectionPool.CHANGE_EVENT,
+					this.onLayerSelectionPoolChange.bind(this, lyr)
 				);
 			}
 
@@ -113,6 +122,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerMarkerGeneratorConfigurationChange: function(sourceLayer, e) {
+			this.redrawMap();
+		},
+		
+		onLayerSelectionPoolChange: function(sourceLayer, e) {
 			this.redrawMap();
 		},
 		
@@ -201,10 +214,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Vary marker by attribute(if set) --------------------------------------
 			var boundAttrName = null;
 			var chipW = overlay.markerTextureConf.chipWidth;
+			var chipH = overlay.markerTextureConf.chipHeight;
 			if (sourceLayer._markerOptions && sourceLayer._markerOptions.varyingType === mobmap.LayerMarkerOptions.MV_ATTR) {
 				boundAttrName = sourceLayer._markerOptions.boundAttributeName;
 			}
 			// -----------------------------------------------------------------------
+
+			// Selection --
+			var selection_pl = sourceLayer.localSelectionPool;
+			var anySelected = selection_pl.isAnySelected();
+			// ------------
 
 			var movingData = sourceLayer.movingData;
 			var mk_pool = overlay.getTopMarkerPool();
@@ -233,6 +252,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				marker_data.lat = sourceRecord.y;
 				marker_data.lng = sourceRecord.x;
+				marker_data.chipY = 0;
 				
 				if (boundAttrName !== null) {
 					var boundAttrVal = sourceRecord[boundAttrName];
@@ -241,6 +261,13 @@ if (!window.mobmap) { window.mobmap={}; }
 					marker_data.chipX = mkIndex * chipW;
 				} else {
 					marker_data.chipX = 0;
+				}
+				
+				if (anySelected) {
+					var this_selected = selection_pl.isIDSelected(sourceRecord._id);
+					if (!this_selected) {
+						marker_data.chipY = chipH;
+					}
 				}
 			}
 			

@@ -322,7 +322,9 @@ function installMobLayer(pkg) {
 		// console.log("rendering "+len+" marker polygons");
 		
 		var texWidth = this.markerTextureConf.originalWidth;
+		var texHeight = this.markerTextureConf.originalHeight;
 		var u_width = this.markerTextureConf.chipWidth / texWidth;
+		var v_height = this.markerTextureConf.chipHeight / texHeight;
 
 		var tempBounds = this.tempBounds;
 		this.calcCurrnetBounds(tempBounds, 16);
@@ -342,11 +344,14 @@ function installMobLayer(pkg) {
 			vlist[vi+4] = vlist[vi]     ;  vlist[vi+5] = vlist[vi+1] + 32;
 			vi += 6;
 			
-			// Append texture coordinates
+			// Append texture coordinates (fixed + variable = final UV)
 //			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
+
+			//   Fixed UV
 			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, u_width * 2.0, 1.0);
 
-			bi += this.setMarkerTextureCoords(tblist, bi, mk.chipX / texWidth, 0.0, 0.0, 0.0);
+			//   Variable UV
+			bi += this.setMarkerTextureCoords(tblist, bi, mk.chipX / texWidth, mk.chipY / texHeight, 0.0, 0.0);
 
 			++triCount;
 			if (
@@ -692,13 +697,14 @@ function installMobLayer(pkg) {
 	function MarkerDisplayData() {
 		this.used = false;
 		this.screenX = this.screenY = this.lat = this.lng = 0;
-		this.chipX = 32;
+		this.chipX = 0;
 	}
 	
 	function MarkerTextureConfiguration() {
 		this.originalWidth  = 1;
 		this.originalHeight = 1;
 		this.chipWidth      = 16;
+		this.chipHeight     = 16;
 	}
 
 	// Shaders ---------------------------------------------
