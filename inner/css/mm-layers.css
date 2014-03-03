@@ -111,3 +111,14 @@ label.varytypeopt {
 .mm-layer-delete-dialog-buttons button {
 	margin: 0 9px;
 }
+
+.mm-layer-view-selection-count {
+	background: #888 url('../images/mini-cursor-icon.png') no-repeat 2px 1px;
+	color: #fff;
+	border-radius: 10px;
+	height: 12px;
+	font-size: 10px;
+	padding: 1px 4px 1px 14px;
+	margin-left: 3px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.3) inset;
+}

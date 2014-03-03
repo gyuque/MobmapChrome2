@@ -188,7 +188,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.appendLayerItemView(layer.primaryView,
 						nextInView ? nextInView.primaryView : null);
 					
-					
+					lv.updateSelectionCount();
 					console.log("Needs view"); // This layer needs new view.
 				}
 				
@@ -201,6 +201,14 @@ if (!window.mobmap) { window.mobmap={}; }
 					 bind(LE.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
 					 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
 					 bind(LE.Destroy, this.onLayerDestroy.bind(this));
+					
+					if (layer.localSelectionPool) {
+						layer.
+						 localSelectionPool.
+						 eventDispatcher().
+						 bind(mobmap.SelectionPool.CHANGE_EVENT,
+						      this.onLayerSelectionPoolChange.bind(this, layer));
+					}
 				}
 			}
 		},
@@ -239,6 +247,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				layer.primaryView.removeSelf();
 				layer.primaryView = null;
 			}
+		},
+
+		onLayerSelectionPoolChange: function(layer, e) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.updateSelectionCount();
+			}
 		}
 	};
 	
@@ -251,6 +265,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.subCaptionElement = null;
 		this.markerPanel = null;
 		
+		this.jSelCountIndicator = null;
 		this.element = $H('div', 'mm-layer-view-item-box');
 		this.jElement = $(this.element);
 		this.build();
@@ -265,6 +280,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Caption ---------------------
 			var caption = $H('h3');
 			caption.appendChild($T( this.makeLayerTypeString() ));
+
+			var selCountEl = $H('span', 'mm-layer-view-selection-count');
+			caption.appendChild(selCountEl);
+			this.jSelCountIndicator = $(selCountEl);
+			
 			this.element.appendChild(caption);
 			var delbtn = this.addCaptionButtons(caption);
 			$(delbtn).click(this.onLayerDeleteButtonClick.bind(this));
@@ -361,6 +381,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			});
 			
 			mp.sendAttrNameToBind();
+		},
+		
+		updateSelectionCount: function() {
+			var lyr = this.boundLayer;
+			if (!lyr) {return;}
+			
+			var n = 0;
+			if (lyr.localSelectionPool) {
+				n = lyr.localSelectionPool.count();
+			}
+			
+			if (n > 0) {
+				this.jSelCountIndicator.show().text(n);
+			} else {
+				this.jSelCountIndicator.hide();
+			}
 		},
 		
 		onLayerDeleteButtonClick: function() {
