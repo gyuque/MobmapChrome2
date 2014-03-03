@@ -74,6 +74,11 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function layerbase_destroy() {
 		this.eventDispatcher().trigger(LayerEvent.Destroy, this);
+		layerbase_removeAllEventHandlers.apply(this);
+	}
+
+	function layerbase_removeAllEventHandlers() {
+		this.eventDispatcher().unbind();
 	}
 
 	MovingObjectLayer.prototype = {

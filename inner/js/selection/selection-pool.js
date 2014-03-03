@@ -6,7 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function SelectionPool() {
 		var eve = document.createElement('span');
 		this.jEventElement = $(eve);
-		
+
 		this.idmap = createCleanHash();
 	}
 	
@@ -16,11 +16,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		eventDispatcher: function() {
 			return this.jEventElement;
 		},
-		
+
 		fire: function() {
 			this.eventDispatcher().trigger(SelectionPool.CHANGE_EVENT, this);
 		},
-		
+
 		clear: function(suppress_event) {
 			var m = this.idmap;
 			for (var i in m) {
@@ -45,6 +45,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		isIDSelected: function(objId) {
 			return !!( this.idmap[objId] );
+		},
+		
+		count: function() {
+			var m = this.idmap;
+			var n = 0;
+			
+			for (var i in m) { ++n; }
+			return n;
 		}
 	};
 
