@@ -72,6 +72,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 		
 		MeshCanvasOverlay.prototype.render = function() {
+			var nDrawnCells = 0;
 			var g = this.g;
 			var md = this.boundData;
 			if (!md || !g) { return; }
@@ -79,6 +80,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!this.updateProjectionGrid(this.projectionGrid)) {
 				return;
 			}
+			
+			// Map bounds  - -
+			var mbnd = this.getMap().getBounds();
+			var mapNE = mbnd.getNorthEast();
+			var mapSW = mbnd.getSouthWest();
+
+			var mapMinLng = mapSW.lng();
+			var mapMaxLng = mapNE.lng();
+			var mapMinLat = mapSW.lat();
+			var mapMaxLat = mapNE.lat();
+			// - - - - - - - -
 			
 			var nX = (md.indexRange.maxX - md.indexRange.minX) + 1;
 			var nY = (md.indexRange.maxY - md.indexRange.minY) + 1;
@@ -113,6 +125,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 					pt.lat = o_lat + (y + 1) * dlat;
 					pt.lng = o_lng + (x + 1) * dlng;
+					if ((pt.lng - dlng) > mapMaxLng ||
+					    (pt.lat - dlat) > mapMaxLat) { break; }
+					
 					this.projectionGrid.calc(pt);
 					var sx2 = Math.floor(pt.screenX);
 					var sy2 = Math.floor(pt.screenY);
@@ -122,22 +137,33 @@ if (!window.mobmap) { window.mobmap={}; }
 						oldSY = sy2;
 					}
 
+					if (pt.lng < mapMinLng || pt.lat < mapMinLat) { continue; }
+
+					// Skip an empty row. But first column sould NOT be skipped to update oldSY.
+					// So break here.
+					if (!md.hasRowAnyData(y)) {
+						break;
+					}
+
+					// Render a cell
 					var cellVal = md.pick(y, x, this.pickTime);
 					if (cellVal) {
 						var cellColor = this.mapValueToCellColor(cellVal.val);
 						g.fillStyle = cellColor;
 					
 						g.fillRect(sx1, sy2, (sx2-sx1), (sy1-sy2));
+						++nDrawnCells;
 	//					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
 					}
-
 				}
-			}
+			} // y loop
+			
+			console.log("N:",nDrawnCells);
 		};
 
 		MeshCanvasOverlay.prototype.mapValueToCellColor = function(val) {
 			var components = [255, 0, 0, 1];
-			var a = val / 300.0;
+			var a = val / 20000.0;
 			if (a < 0) {a=0;} else if (a > 1) {a=1;}
 			
 			components[3] = a;

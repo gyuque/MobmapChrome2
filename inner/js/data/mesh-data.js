@@ -5,6 +5,11 @@ if (!window.mobmap) window.mobmap={};
 	
 	function MeshData() {
 		this.meshMap = {};
+		
+		// + for pick optimization +
+		//   Use this hash to skip empty row.
+		this.usedRowMap = {};
+		
 		this.indexRange = {
 			minX: 0,
 			maxX: 0,
@@ -53,6 +58,7 @@ if (!window.mobmap) window.mobmap={};
 				m[i].sortByTime();
 			}
 
+			this.buildRowMap();
 			this.checkRange();
 		},
 		
@@ -86,6 +92,29 @@ if (!window.mobmap) window.mobmap={};
 			
 			this.indexRange.minY = minY;
 			this.indexRange.maxY = maxY;
+		},
+		
+		buildRowMap: function() {
+			this.clearRowMap();
+			var rm = this.usedRowMap;
+			
+			var m = this.meshMap;
+			for (var i in m) {
+				var c = m[i];
+				var y = c.cellIndexY;
+				
+				if (!rm.hasOwnProperty(y)) { rm[y] = 0; }
+				++rm[y];
+			}
+		},
+		
+		clearRowMap: function() {
+			var m = this.usedRowMap;
+			for (var i in m) { delete m[i]; }
+		},
+		
+		hasRowAnyData: function(yIndex) {
+			return !! this.usedRowMap[yIndex];
 		}
 	};
 
