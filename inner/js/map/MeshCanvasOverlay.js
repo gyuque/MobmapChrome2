@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.targetPane = 'overlayShadow';
 			this.canvasOffset = {x: 0, y:0};
 			this.canvasSize = {w: 0, h:0};
+			this.prevRenderRegion = {minLat:-1, maxLat:-1, minLng:-1, maxLng:-1};
 			
 			this.ownerObject = null;
 			this.projectionGrid = new mobmap.FastProjectionGrid(9);
@@ -190,6 +191,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.locateCanvas();
 		};
 
+		MeshCanvasOverlay.prototype.resetRenderedRegion = mobmap.GLMobLayer.overlaybase_resetRenderedRegion;
+		MeshCanvasOverlay.prototype.updateRenderedRegion = mobmap.GLMobLayer.overlaybase_updateRenderedRegion;
+		MeshCanvasOverlay.prototype.isRenderedRegionChanged = mobmap.GLMobLayer.overlaybase_isRenderedRegionChanged;
 
 		pkg.MeshCanvasOverlay = MeshCanvasOverlay;
 	}

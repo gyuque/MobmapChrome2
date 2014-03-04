@@ -60,10 +60,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var len = this.layerList.getCount();
 			for (var i = 0;i < len;++i) {
 				var lyr = this.layerList.getLayerAt(i);
-				if (lyr.dataTimeRange.start < start_t) { start_t = lyr.dataTimeRange.start; }
-				if (lyr.dataTimeRange.end > end_t) { end_t = lyr.dataTimeRange.end; }
+
+				if (lyr.hasTimeRange()) {
+					if (lyr.dataTimeRange.start < start_t) { start_t = lyr.dataTimeRange.start; }
+					if (lyr.dataTimeRange.end > end_t) { end_t = lyr.dataTimeRange.end; }
+				}
 			}
-			
+
 			return {
 				start: start_t,
 				end: end_t

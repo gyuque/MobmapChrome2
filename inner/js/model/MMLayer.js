@@ -95,6 +95,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.dataTimeRange.start = Number.MAX_VALUE;
 			this.dataTimeRange.end   = -1;
 		},
+		
+		hasTimeRange: function() {
+			return true;
+		},
 
 		loadFromLoader: function(loader) {
 			this.initTimeRange(); // Set invalid time range at first

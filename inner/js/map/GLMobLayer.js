@@ -534,12 +534,12 @@ function installMobLayer(pkg) {
 	};
 
 	// Dirty check
-	GLMobLayer.prototype.resetRenderedRegion = function() {
+	GLMobLayer.overlaybase_resetRenderedRegion = function() {
 		var r = this.prevRenderRegion;
 		r.minLat = r.maxLat = r.minLng = r.maxLng = -1;
 	};
 
-	GLMobLayer.prototype.updateRenderedRegion = function() {
+	GLMobLayer.overlaybase_updateRenderedRegion = function() {
 		var bnd = this.getMap().getBounds();
 		var mapNE = bnd.getNorthEast();
 		var mapSW = bnd.getSouthWest();
@@ -550,8 +550,8 @@ function installMobLayer(pkg) {
 		r.minLng = mapSW.lng();
 		r.maxLng = mapNE.lng();
 	};
-	
-	GLMobLayer.prototype.isRenderedRegionChanged = function() {
+
+	GLMobLayer.overlaybase_isRenderedRegionChanged = function() {
 		var bnd = this.getMap().getBounds();
 		var mapNE = bnd.getNorthEast();
 		var mapSW = bnd.getSouthWest();
@@ -564,6 +564,10 @@ function installMobLayer(pkg) {
 			r.maxLng != mapNE.lng()
 		);
 	};
+
+	GLMobLayer.prototype.resetRenderedRegion = GLMobLayer.overlaybase_resetRenderedRegion;
+	GLMobLayer.prototype.updateRenderedRegion = GLMobLayer.overlaybase_updateRenderedRegion;
+	GLMobLayer.prototype.isRenderedRegionChanged = GLMobLayer.overlaybase_isRenderedRegionChanged;
 
 	// Utilities
 	GLMobLayer.setupOverlayMapEvents = function(lyr) {

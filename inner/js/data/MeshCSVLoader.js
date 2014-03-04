@@ -47,6 +47,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return (this.dataType === MeshCSVLoader.DTYPE_DYNAMIC ||
 				    this.dataType === MeshCSVLoader.DTYPE_STATIC) ;
 		},
+		
+		isDynamic: function() {
+			return (this.dataType === MeshCSVLoader.DTYPE_DYNAMIC);
+		},
 
 		// Metadata lines - - - - - - - -
 		readMetaFields: function(fields) {

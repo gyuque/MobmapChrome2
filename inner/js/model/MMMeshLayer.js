@@ -36,6 +36,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.meshData = md;
 		},
 
+		hasTimeRange: function() {
+			if (!this.meshData) { return false; }
+			if (!this.meshData.isTimeRangeLengthValid()) { return false; }
+			
+			return this.meshData.dynamic;
+		},
+
 		afterLoadFinish: function() {
 			this.meshData.close();
 			this.updateDataTimeRange();

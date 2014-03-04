@@ -40,6 +40,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			console.log("+ Preload finished, lc=",loader.countLines());
 			this.meshLoader.readMetadata();
 			this.meshData.meshDefinition = this.meshLoader.meshDefinition;
+			this.meshData.dynamic = this.meshLoader.isDynamic();
 			
 			if (this.meshLoader.isValidType()) {
 				this.meshLoader.readRestContentAsync(this);
@@ -64,7 +65,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		meshloaderNewRecordLoaded: function(tSeconds, latIndex, lngIndex, value) {
 			this.meshData.register(tSeconds, latIndex, lngIndex, value);
-			console.log("New Record:", latIndex, lngIndex, "=>", value, "at", tSeconds);
+			//console.log("New Record:", latIndex, lngIndex, "=>", value, "at", tSeconds);
 		},
 		
 		meshloaderLoadFinish: function() {

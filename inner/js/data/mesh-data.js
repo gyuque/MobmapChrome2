@@ -5,6 +5,7 @@ if (!window.mobmap) window.mobmap={};
 	
 	function MeshData() {
 		this.meshMap = {};
+		this.dynamic = false;
 		
 		// + for pick optimization +
 		//   Use this hash to skip empty row.
@@ -28,6 +29,11 @@ if (!window.mobmap) window.mobmap={};
 		register: function(tSeconds, latIndex, lngIndex, value) {
 			var cell = this.ensureCell(lngIndex, latIndex);
 			cell.addRecord(tSeconds, value);
+		},
+		
+		isTimeRangeLengthValid: function() {
+			var d = this.timeRange.max - this.timeRange.min;
+			return d > 0.1;
 		},
 		
 		pick: function(latIndex, lngIndex, tSeconds) {
