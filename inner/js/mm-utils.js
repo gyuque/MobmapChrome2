@@ -168,4 +168,41 @@ if (!window.mobmap) { window.mobmap={}; }
 		aHSV[1] = Math.floor(g * 255);
 		aHSV[2] = Math.floor(b * 255);
 	}
+	
+	function getDefaultHourPrefix(name, plu) {
+		switch(name) {
+		case 'sec':  return plu ? 'seconds' : 'second';
+		case 'min':  return plu ? 'minutes' : 'minute';
+		case 'hour': return plu ? 'hours' : 'hour';
+		}
+		
+		return '';
+	}
+	
+	function makeFixedNumber(n) {
+		var d = Math.floor(n * 10) % 10;
+		if (d === 0) {
+			return Math.floor(n);
+		} else {
+			return n.toFixed(1);
+		}
+	}
+	
+	aGlobal.makePrettySecRange = function(s, messageProvider) {
+		if (!messageProvider) {
+			messageProvider = getDefaultHourPrefix;
+		}
+		
+		if (s < 120) {
+			return makeFixedNumber(s) +' '+ messageProvider('sec', s > 1);
+		}
+		
+		if (s < 7200) {
+			var m = (s / 60);
+			return makeFixedNumber(m) +' '+ messageProvider('min', m > 1);
+		}
+		
+		var h = (s / 3600);
+		return makeFixedNumber(h) +' '+ messageProvider('hour', h > 1);
+	}
 })(window);

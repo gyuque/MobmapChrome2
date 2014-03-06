@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function TimelineBar() {
 		BarButton.appendButtonStyleSheet();
 		
+		this.suppressUpdatingText = false;
 		this.dragging = false;
 		this.height = TL_DEFAULT_HEIGHT;
 		this.width = 200;
@@ -150,6 +151,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		updateDisplayTexts: function() {
+			if (this.suppressUpdatingText) {
+				return;
+			}
+			
 			if (this.jDateDisplayElement && this.boundData) {
 				var tx = this.boundData.makeCurrentPrettyDate();
 				this.jDateDisplayElement.text(tx);
@@ -158,6 +163,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.jTimeDisplayElement && this.boundData) {
 				var time_tx = this.boundData.makeCurrentPrettyTime();
 				this.jTimeDisplayElement.text(time_tx);
+			}
+		},
+		
+		showSpecialDisplayTexts: function(t1, t2) {
+			if (this.jDateDisplayElement) {
+				this.jDateDisplayElement.text(t1);
+			}
+
+			if (this.jTimeDisplayElement) {
+				this.jTimeDisplayElement.text(t2);
+			}
+		},
+		
+		setSuppressUpdatingText: function(s) {
+			this.suppressUpdatingText = s;
+			if (!s) {
+				this.updateDisplayTexts();
 			}
 		},
 		

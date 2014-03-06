@@ -30,6 +30,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.setupWidgets();
 		this.setupDisplayArea();
+		
+		this.specialDisplayTexts = {
+			row1: null,
+			row2: null,
+			messageIndex: 0
+		};
 	}
 	
 	ToolPane.prototype = {
@@ -135,12 +141,45 @@ if (!window.mobmap) { window.mobmap={}; }
 		pushStopButton: function() {
 			this.controlPanel.pushStopButton();
 		},
+
+		// Play speed -----------------------------------
+		getPlaySpeedFromChosenIndex: function() {
+			var index = this.controlPanel.getPlaySpeedSliderValue();
+			return mobmap.PlayController.getPresetPlaySpeed(index);
+		},
 		
 		sendChosenPlaySpeed: function(pc) {
-			var index = this.controlPanel.getPlaySpeedSliderValue();
-			var spd = mobmap.PlayController.getPresetPlaySpeed(index);
-			
+			var spd = this.getPlaySpeedFromChosenIndex();
 			pc.setOptionRealSecPerPlaySec(spd);
+		},
+		
+		showPlaySpeedAsSpecialTexts: function() {
+			var spd = this.getPlaySpeedFromChosenIndex();
+			var disp_text = makePrettySecRange(spd);
+			this.setSpecialDisplayTexts(disp_text, " /movie sec.");
+		},
+		
+		setSpecialDisplayTexts: function(str1, str2) {
+			var sp = this.specialDisplayTexts;
+			var newMessageIndex = sp.messageIndex + 1;
+
+			sp.row1 = str1;
+			sp.row2 = str2;
+			sp.messageIndex = newMessageIndex;
+
+			this.timelineBar.setSuppressUpdatingText(true);
+			this.timelineBar.showSpecialDisplayTexts(str1, str2);
+			
+			setTimeout( this.clearSpecialDisplayTexts.bind(this, newMessageIndex) , 1000 );
+		},
+		
+		clearSpecialDisplayTexts: function(messageIndex) {
+			var sp = this.specialDisplayTexts;
+			if (sp.messageIndex === messageIndex) {
+				sp.row1 = null;
+				sp.row2 = null;
+				this.timelineBar.setSuppressUpdatingText(false);
+			}
 		}
 	};
 	
@@ -239,7 +278,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			rg.max = 7;
 			rg.value = 3;
 			
-			this.jPlaySpeedRange = $(rg).change( this.onPlaySpeedSliderChange.bind(this) );
+			this.jPlaySpeedRange = $(rg).
+				change( this.onPlaySpeedSliderChange.bind(this) ).
+				mousedown( this.onPlaySpeedSliderClick.bind(this) );
 			this.optionContainer.appendChild(rg);
 		},
 		
@@ -255,7 +296,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onPlaySpeedSliderChange: function() {
-			var invoke_name = "onPlaySpeedSliderChange";
+			this.callOwnerAPI("onPlaySpeedSliderChange");
+		},
+
+		onPlaySpeedSliderClick: function() {
+			this.callOwnerAPI("onPlaySpeedSliderClick");
+		},
+		
+		callOwnerAPI: function(invoke_name) {
 			if (this.ownerApp && this.ownerApp[invoke_name]) {
 				this.ownerApp[invoke_name]();
 			}

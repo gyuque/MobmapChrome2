@@ -268,7 +268,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onPlaySpeedSliderChange: function() {
-			this.getToolPane().sendChosenPlaySpeed( this.playController );
+			var pane = this.getToolPane();
+			pane.sendChosenPlaySpeed( this.playController );
+			pane.showPlaySpeedAsSpecialTexts();
+		},
+		
+		onPlaySpeedSliderClick: function() {
+			this.getToolPane().showPlaySpeedAsSpecialTexts();
 		}
 	};
 
