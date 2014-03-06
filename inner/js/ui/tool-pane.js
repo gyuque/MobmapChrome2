@@ -134,6 +134,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		pushStopButton: function() {
 			this.controlPanel.pushStopButton();
+		},
+		
+		sendChosenPlaySpeed: function(pc) {
+			var index = this.controlPanel.getPlaySpeedSliderValue();
+			var spd = mobmap.PlayController.getPresetPlaySpeed(index);
+			
+			pc.setOptionRealSecPerPlaySec(spd);
 		}
 	};
 	
@@ -228,8 +235,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		buildOptionWidgets: function() {
 			var rg = document.createElement('input');
 			rg.setAttribute('type', 'range');
+			rg.min = 0;
+			rg.max = 7;
+			rg.value = 3;
 			
-			this.jPlaySpeedRange = $(rg);
+			this.jPlaySpeedRange = $(rg).change( this.onPlaySpeedSliderChange.bind(this) );
 			this.optionContainer.appendChild(rg);
 		},
 		
@@ -242,6 +252,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else {
 				console.log("WARNING: cannot invoke App."+invoke_name );
 			}
+		},
+		
+		onPlaySpeedSliderChange: function() {
+			var invoke_name = "onPlaySpeedSliderChange";
+			if (this.ownerApp && this.ownerApp[invoke_name]) {
+				this.ownerApp[invoke_name]();
+			}
+		},
+		
+		getPlaySpeedSliderValue: function() {
+			return this.jPlaySpeedRange.val();
 		}
 	};
 	

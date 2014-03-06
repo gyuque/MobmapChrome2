@@ -132,7 +132,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!targetProject) {return;}
 			
 			var targetTime = targetProject.currentDateTime;
-			var sec = targetTime.getCurrentTime();
+			var sec = targetTime.getCurrentTimeAsInt();
 			
 			// ----------------------------------------------------------------------------
 			//  Rendering routine is not here.

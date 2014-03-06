@@ -20,6 +20,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.setupScreen();
 		this.connectWithViews();
 
+		this.getToolPane().sendChosenPlaySpeed( this.playController );
 		this.newProject();
 	}
 	
@@ -264,6 +265,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		onPlayStateButtonPush_ff: function() {
 			this.playController.playFast();
+		},
+		
+		onPlaySpeedSliderChange: function() {
+			this.getToolPane().sendChosenPlaySpeed( this.playController );
 		}
 	};
 

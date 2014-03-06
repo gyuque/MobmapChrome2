@@ -30,6 +30,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		getCurrentTime: function() {
 			return this.currentTime;
 		},
+
+		getCurrentTimeAsInt: function() {
+			return this.currentTime | 0;
+		},
 		
 		makeCurrentPrettyDate: function() {
 			var d = new Date(this.currentTime * 1000.0);

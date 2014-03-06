@@ -14,6 +14,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.prevShownDataTime = 0;
 	}
 	
+	PlayController.PresetPlaySpeed = [
+		// real sec / movie sec.
+		1,
+		10,
+		60,
+		600,
+		1800,
+		3600,
+		3600 * 6,
+		3600 * 24
+	];
+
 	PlayController.prototype = {
 		isPlaying: function() {
 			return (this.playSpeed !== 0);
@@ -81,7 +93,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var dt = cur_t - this.prevDrawTime;
 			
 			var realt_per_ms = this.playOption.realSecPerPlayerSec / 1000;
-			var dDataTime = Math.floor(this.playSpeed * dt * realt_per_ms + 0.5);
+			var dDataTime = this.playSpeed * dt * realt_per_ms;
 			
 			var endTime = this.getEndOfVisibleTimeline();
 			var nextDataSec = curDataTime.getCurrentTime() + dDataTime;
@@ -98,9 +110,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		getEndOfVisibleTimeline: function() {
 			var tl = this.ownerApp.getTimelineBar();
 			return tl.getViewportEnd();
+		},
+		
+		setOptionRealSecPerPlaySec: function(s) {
+			this.playOption.realSecPerPlayerSec = s;
 		}
 	};
+
+	PlayController.getPresetPlaySpeed = function(index) {
+		var ps = PlayController.PresetPlaySpeed;
+		if (index < 0) {index = 0;}
+		if (index >= ps.length) { index = ps.length - 1; }
+		
+		return ps[index];
+	};
 	
+
 	PlayController.PlayOption = function() {
 		this.realSecPerPlayerSec = 600;
 	};
