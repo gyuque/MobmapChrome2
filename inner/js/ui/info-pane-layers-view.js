@@ -18,6 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jLayerListMenuElement = $(this.layerListMenuElement);
 		this.jLayerListMenuElement.kendoMenu({ select: this.onLayerMenuSelect.bind(this) });
 		
+		this.jContainerElement.addClass('welcome');
 		this.jWelcomeBox = this.generateWelcomeBox();
 		this.itemsContainerElement = this.generateItemsContainer();
 	}
@@ -105,9 +106,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		// - - - - - - - - - - - - - - - - - - - - -
 
 		generateWelcomeBox: function() {
+			var hero_icon = $H('img');
+			hero_icon.src = "../icons/icon-128.png";
+			
 			var box = $H('div');
 			box.id = 'mm-layers-welcome';
-			box.appendChild($T('Welcome!'));
+			box.appendChild(hero_icon);
+
+			var welcome_h = $H('h2');
+			welcome_h.appendChild( $T('Welcome to Mobmap') );
+			box.appendChild(welcome_h);
 			
 			var btnLocalCSV = $H('button');
 			$(btnLocalCSV).text('Local CSV').click( this.onWelcomeLocalCSVClick.bind(this) );
@@ -133,7 +141,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var btn = $H('button', 'mm-data-service-button');
 			btn.appendChild($T('Open Download Service'));
 			
-			$(btn).click( this.onDownloadServiceButtonClick.bind(this) );
+			//                         -----------------------------------vvvv
+			$(btn).click( this.onDownloadServiceButtonClick.bind(this) ).hide();
 			
 			return btn;
 		},
@@ -157,6 +166,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		hideWelcomeBox: function() {
 			this.jWelcomeBox.hide();
+			this.jContainerElement.removeClass('welcome');
 		},
 		
 		onWelcomeLocalCSVClick: function() {
