@@ -4,13 +4,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function DateTime() {
-		this.element = document.createElement('span');
+		this.element = createEventDummyElement();
 		this.jElement = $(this.element);
 		
 		this.currentTime = 0;
-		this.primaryRange = null;
-		
-		this.pooledRange = {start:0, end:0};
 	}
 	
 	DateTime.CURRENT_TIME_CHANGE_EVENT = "mm-datetime-current-time-change";

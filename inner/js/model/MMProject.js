@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(document.createElement('span'));
 		this.layerList = new LayerList(this.jElement[0]);
 		this.currentDateTime = new mobmap.DateTime();
+		this.timeRangeSelection = new mobmap.TimeRangeSelection();
 	}
 	
 	MMProject.LAYERLIST_CHANGE = "mmprj-event-layerlist-change";

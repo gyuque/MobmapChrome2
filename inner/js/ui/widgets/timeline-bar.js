@@ -28,6 +28,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jDateDisplayElement = null;
 		this.jTimeDisplayElement = null;
 		this.boundData = null;
+		this.boundRangeData = null;
 		
 		this.zoomAnimationParams = {
 			oldStart: 0,
