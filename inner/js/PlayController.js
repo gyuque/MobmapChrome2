@@ -32,8 +32,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		stop: function()     { this.setPlaySpeed(0); },
-		play: function()     { this.setPlaySpeed(1); },
-		playFast: function() { this.setPlaySpeed(5); },
+		play: function()     { this.playWithSpeed(1); },
+		playFast: function() { this.playWithSpeed(5); },
+		
+		playWithSpeed: function(speed_nx) {
+			if (this.playSpeed !== speed_nx) {
+				this.autoRewindIfNeeded();
+			}
+			this.setPlaySpeed(speed_nx); 
+		},
 		
 		setPlaySpeed: function(s) {
 			if (this.playSpeed !== s) {
@@ -108,12 +115,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		getEndOfVisibleTimeline: function() {
-			var tl = this.ownerApp.getTimelineBar();
-			return tl.getViewportEnd();
+			return this.ownerApp.getTimelineBar().getViewportEnd();
+		},
+
+		getStartOfVisibleTimeline: function() {
+			return this.ownerApp.getTimelineBar().getViewportStart();
 		},
 		
 		setOptionRealSecPerPlaySec: function(s) {
 			this.playOption.realSecPerPlayerSec = s;
+		},
+		
+		autoRewindIfNeeded: function() {
+			var endTime = this.getEndOfVisibleTimeline();
+			var startTime = this.getStartOfVisibleTimeline();
+			
+			var curDataTime = this.ownerApp.getCurrentProjectDateTime();
+			var cursec = curDataTime.getCurrentTimeAsInt();
+			
+			if (cursec >= (endTime - 1)) {
+				curDataTime.setCurrentTime(startTime);
+				return true;
+			}
+			
+			return false;
 		}
 	};
 

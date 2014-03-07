@@ -55,6 +55,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.longSpanBar.viewportEndTime;
 		},
 
+		getViewportStart: function() {
+			return this.longSpanBar.viewportStartTime;
+		},
+
 		bindDateTime: function(d) {
 			this.boundData = d;
 			d.eventDispatcher().bind(mobmap.DateTime.CURRENT_TIME_CHANGE_EVENT, this.onBoundDateTimeChange.bind(this));
