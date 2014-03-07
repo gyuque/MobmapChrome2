@@ -45,6 +45,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.editToolBar.setApp(a);
 		},
 		
+		setRangeButtonSelected: function(b) {
+			this.controlPanel.setRangeButtonSelected(b);
+		},
+		
 		connectToSelectionController: function(selcon) {
 			selcon.addResponder(this.editToolBar);
 		},
@@ -197,6 +201,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.buildOptionWidgets();
 		
 		this.makeButtonGroups();
+		this.observeRangeButton();
 	}
 	
 	TimelineControlPanel.prototype = {
@@ -269,6 +274,19 @@ if (!window.mobmap) { window.mobmap={}; }
 				mobmap.ToolButtonGroup.EVENT_SELECT_CHANGED,
 				this.onPlayStateToggleChange.bind(this)
 			);
+		},
+		
+		observeRangeButton: function() {
+			var b = this.buttons['range'];
+			b.eventDispatcher().click( this.onRangeButtonClick.bind(this) );
+		},
+		
+		setRangeButtonSelected: function(b) {
+			this.buttons['range'].setSelectedStyle(b);
+		},
+		
+		onRangeButtonClick: function() {
+			this.callOwnerAPI("onMakeTimeRangeButtonClick");
 		},
 		
 		buildOptionWidgets: function() {

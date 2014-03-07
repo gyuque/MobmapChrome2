@@ -41,6 +41,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.viewportStack = [];
 	}
 	
+	TimelineBar.BAR_MOUSEDOWN = "mm-timeline-bar-mousedown";
+	TimelineBar.BAR_MOUSEUP = "mm-timeline-bar-mouseup";
+	
 	TimelineBar.prototype = {
 		// APIs
 		eventDispatcher: function() {
@@ -192,6 +195,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.dragging = true;
 			var localX = this.calcLocalMouseX(e);
 			this.changeByCursorX(localX);
+
+			this.eventDispatcher().trigger(TimelineBar.BAR_MOUSEDOWN, this);
 		},
 		
 		onBarDoubleClick: function(e) {
@@ -203,7 +208,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onBarMouseUp: function(e) {
-			
+			this.eventDispatcher().trigger(TimelineBar.BAR_MOUSEUP, this);
 		},
 		
 		onGlobalMouseUp: function(e) {

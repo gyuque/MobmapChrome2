@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.appScreen = appScreen;
 		this.setupScreen();
 		this.connectWithViews();
+		this.observeTimelineBarUIEvents();
 
 		this.getToolPane().sendChosenPlaySpeed( this.playController );
 		this.newProject();
@@ -253,7 +254,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.mapPane.setApp(this);
 			this.layersView.setApp(this);
 		},
+
+		// Timeline bar UI events - - - - - - -
 		
+		observeTimelineBarUIEvents: function() {
+			var tl = this.getToolPane().getTimelineBar();
+
+			tl.eventDispatcher().
+			 bind(mobmap.TimelineBar.BAR_MOUSEDOWN, this.onTimelineBarMouseDown.bind(this) ).
+			 bind(mobmap.TimelineBar.BAR_MOUSEUP, this.onTimelineBarMouseUp.bind(this) );
+		},
+		
+		onTimelineBarMouseDown: function() {
+			console.log("MDN");
+		},
+
+		onTimelineBarMouseUp: function() {
+			console.log("MUP");
+		},
+
 		// Play buttons - - - - - - - - - - - -
 		onPlayStateButtonPush_play: function() {
 			this.playController.play();
@@ -275,6 +294,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onPlaySpeedSliderClick: function() {
 			this.getToolPane().showPlaySpeedAsSpecialTexts();
+		},
+		
+		onMakeTimeRangeButtonClick: function() {
+			var pj = this.getCurrentProject();
+			if (!pj) { return; }
+
+			if (!pj.timeRangeSelection.hasFloating) {
+				this.getToolPane().setRangeButtonSelected(true);
+				pj.timeRangeSelection.newFloating();
+			}
 		}
 	};
 

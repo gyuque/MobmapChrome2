@@ -11,7 +11,7 @@
 	top: 5%;
 	position: relative;
 	text-align: center;
-	background: linear-gradient(to bottom, #ddd, #bbb);
+	background: linear-gradient(to bottom, #ddd, #bbb, #ccc, #aaa);
 	box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 3px 3px rgba(255,255,255,0.3) inset, 0 1px 1px #fff inset;
 	border: 1px solid #999;
 	border-radius: 10px;
@@ -21,11 +21,11 @@
 }
 
 #mm-layers-welcome h2 {
-	margin: 0 -3px 1px -3px;
+	margin: 0 -4px 1px -4px;
 	border-top: 1px solid #999;
 	border-bottom: 1px solid #eee;
-	border-left: 1px solid #3055bf;
-	border-right: 1px solid #3055bf;
+	border-left: 2px solid #3055bf;
+	border-right: 2px solid #3055bf;
 	background: linear-gradient(to bottom, #204099, #3055bf);
 	color: #fff;
 	font-size: 11px;
