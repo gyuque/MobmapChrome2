@@ -72,6 +72,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		bindTimeRangeSelection: function(d) {
 			this.boundRangeData = d;
+			d.eventDispatcher().
+			 bind(mobmap.TimeRangeSelection.FLOATING_CHANGE_EVENT, this.onBoundTimeRangeFloatingChange.bind(this) );
 			return this;
 		},
 		
@@ -252,6 +254,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.syncFromData();
 		},
 		
+		onBoundTimeRangeFloatingChange: function() {
+			this.renderDetailView();
+		},
+		
 		calcDateTimeFromX: function(x) {
 			var vStart = this.longSpanBar.viewportStartTime;
 			var vEnd = this.longSpanBar.viewportEndTime;
@@ -425,7 +431,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillStyle = "#333";
 			g.fillRect(0,y+2, w,h-4);
 			
+			this.drawFloatingSelectionRange(g, w, h, y);
 			g.restore();
+		},
+		
+		drawFloatingSelectionRange: function(g, areaWidth, areaHeight, y) {
+			if (!this.boundRangeData || !this.boundRangeData.isFloatingValid()) { return }
+
+			var r = this.boundRangeData.floatingRange;
+			var t1 = Math.min(r.start, r.end);
+			var t2 = Math.max(r.start, r.end);
+
+			var vStart = this.getViewportStart();
+			var vEnd = this.getViewportEnd();
+			var vLen = vEnd - vStart;
+			
+			var x1   = (t1 - vStart) * (areaWidth / vLen);
+			var xlen = (t2 - t1) * (areaWidth / vLen);
+			
+			g.fillStyle = 'rgba(255,255,255,0.2)';
+			g.fillRect(x1, y, xlen, areaHeight);
 		},
 		
 		longtimeAfterViewportChange: function() {

@@ -64,8 +64,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		isRangeValid: function() {
-			var d = this.floatingRange.end - this.floatingRange.start;
-			return d > 0.5;
+		},
+		
+		isFloatingValid: function() {
+			if (!this.hasFloating) { return false; }
+
+			var r = this.floatingRange;
+			return r.start >= 0 && r.end >= 0;
 		},
 		
 		commitFloating: function() {
