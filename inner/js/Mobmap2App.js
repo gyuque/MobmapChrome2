@@ -324,6 +324,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		onMakeTimeRangeButtonClick: function() {
 			var pj = this.getCurrentProject();
 			if (!pj) { return; }
+			
+			// Clear if selection exists
+			if (pj.timeRangeSelection.anySelected()) {
+				pj.timeRangeSelection.clear();
+				this.getToolPane().setRangeButtonSelected(false);
+				return;
+			}
 
 			if (!pj.timeRangeSelection.hasFloating) {
 				this.getToolPane().setRangeButtonSelected(true);
