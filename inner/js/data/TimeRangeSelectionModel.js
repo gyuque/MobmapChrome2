@@ -14,6 +14,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	TimeRangeSelection.CHANGE_EVENT = "mm-timerange-selection-change";
+	TimeRangeSelection.FLOATING_CHANGE_EVENT = "mm-timerange-floating-selection-change";
 	
 	TimeRangeSelection.prototype = {
 		eventDispatcher: function() {
@@ -51,6 +52,37 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.floatingRange.start = -1;
 			this.floatingRange.end = -1;
 			this.hasFloating = true;
+		},
+		
+		setFloatingStart: function(seconds) {
+			this.floatingRange.start = seconds;
+		},
+		
+		setFloatingEnd: function(seconds) {
+			this.floatingRange.end = seconds;
+			this.eventDispatcher().trigger(TimeRangeSelection.FLOATING_CHANGE_EVENT, this);
+		},
+		
+		isRangeValid: function() {
+			var d = this.floatingRange.end - this.floatingRange.start;
+			return d > 0.5;
+		},
+		
+		commitFloating: function() {
+			this.correctFloatingTimeOrder();
+			this.hasFloating = false;
+			
+			var r = this.floatingRange;
+			this.selectSingleRange( r.start, r.end );
+		},
+		
+		correctFloatingTimeOrder: function() {
+			var r = this.floatingRange;
+			var t1 = r.start;
+			var t2 = r.end;
+			
+			r.start = Math.min(t1, t2);
+			r.end = Math.max(t1, t2);
 		}
 	};
 

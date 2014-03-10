@@ -266,11 +266,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onTimelineBarMouseDown: function() {
-			console.log("MDN");
+			var pj = this.getCurrentProject();
+			if (pj && pj.timeRangeSelection.hasFloating) {
+				pj.timeRangeSelection.setFloatingStart( pj.getCurrentTimeInSeconds() );
+			}
 		},
 
 		onTimelineBarMouseUp: function() {
-			console.log("MUP");
+			var pj = this.getCurrentProject();
+			if (pj && pj.timeRangeSelection.hasFloating) {
+				pj.timeRangeSelection.setFloatingEnd( pj.getCurrentTimeInSeconds() );
+				pj.timeRangeSelection.commitFloating();
+			}
 		},
 
 		// Play buttons - - - - - - - - - - - -
