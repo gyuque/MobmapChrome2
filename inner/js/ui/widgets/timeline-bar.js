@@ -73,7 +73,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		bindTimeRangeSelection: function(d) {
 			this.boundRangeData = d;
 			d.eventDispatcher().
-			 bind(mobmap.TimeRangeSelection.FLOATING_CHANGE_EVENT, this.onBoundTimeRangeFloatingChange.bind(this) );
+			 bind(mobmap.TimeRangeSelection.FLOATING_CHANGE_EVENT, this.onBoundTimeRangeFloatingChange.bind(this) ).
+			 bind(mobmap.TimeRangeSelection.CHANGE_EVENT, this.onBoundTimeRangeSelectionChange.bind(this) );
 			return this;
 		},
 		
@@ -255,7 +256,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onBoundTimeRangeFloatingChange: function() {
-			this.renderDetailView();
+		},
+		
+		onBoundTimeRangeSelectionChange: function() {
+			this.redrawBar();
 		},
 		
 		calcDateTimeFromX: function(x) {
@@ -432,24 +436,35 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(0,y+2, w,h-4);
 			
 			this.drawFloatingSelectionRange(g, w, h, y);
+			this.drawTimeSelectionRange(g, w, h, y);
 			g.restore();
 		},
 		
 		drawFloatingSelectionRange: function(g, areaWidth, areaHeight, y) {
-			if (!this.boundRangeData || !this.boundRangeData.isFloatingValid()) { return }
+			if (!this.boundRangeData || !this.boundRangeData.isFloatingValid()) { return; }
 
 			var r = this.boundRangeData.floatingRange;
 			var t1 = Math.min(r.start, r.end);
 			var t2 = Math.max(r.start, r.end);
 
+			this.drawRangeBar(g, areaWidth, areaHeight, y, t1, t2, 0.2);
+		},
+		
+		drawTimeSelectionRange: function(g, areaWidth, areaHeight, y) {
+			if (!this.boundRangeData || !this.boundRangeData.anySelected()) { return; }
+			var r = this.boundRangeData.getFirstSelection();
+			this.drawRangeBar(g, areaWidth, areaHeight, y, r.start, r.end, 0.3);
+		},
+		
+		drawRangeBar: function(g, areaWidth, areaHeight, y, t1, t2, alpha) {
 			var vStart = this.getViewportStart();
 			var vEnd = this.getViewportEnd();
 			var vLen = vEnd - vStart;
 			
 			var x1   = (t1 - vStart) * (areaWidth / vLen);
 			var xlen = (t2 - t1) * (areaWidth / vLen);
-			
-			g.fillStyle = 'rgba(255,255,255,0.2)';
+
+			g.fillStyle = 'rgba(255,255,255,' +alpha+ ')';
 			g.fillRect(x1, y, xlen, areaHeight);
 		},
 		

@@ -25,6 +25,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.rangeList.length > 0;
 		},
 		
+		getFirstSelection: function() {
+			return this.rangeList[0] || null;
+		},
+		
 		clear: function(suppress_event) {
 			if (this.anySelected()) {
 				this.rangeList.length = 0;
