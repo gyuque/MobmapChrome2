@@ -53,7 +53,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		var jBody = $(bodyPane);
 		var splitter = jBody.kendoSplitter({
 			orientation: "horizontal",
-			panes:[{collapsible: true, size:'224px', scrollable:false},{scrollable:false}],
+			panes:[{collapsible: true, size:'240px', scrollable:false},{scrollable:false}],
 			collapse: this.onInfoPaneCollapse.bind(this),
 			expand: this.onInfoPaneExpand.bind(this)
 		});

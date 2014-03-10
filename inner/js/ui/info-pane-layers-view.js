@@ -117,24 +117,42 @@ if (!window.mobmap) { window.mobmap={}; }
 			welcome_h.appendChild( $T('Welcome to Mobmap') );
 			box.appendChild(welcome_h);
 			
-			var btnLocalCSV = $H('button');
-			$(btnLocalCSV).text('Local CSV').click( this.onWelcomeLocalCSVClick.bind(this) );
 			
 			var btnOpenService = this.setupDownloaderServiceButton();
-			var btnLoadMesh = this.setupMeshLoadButton();
-			
+
+			var abLocalMovCSV = this.generateWelcomeActionButton("images/mov-data-icon.png", "Moving Objects", "from Local CSV File");
+			var abLocalMeshCSV = this.generateWelcomeActionButton("images/mesh-data-icon.png", "Mesh", "from Local CSV File");
+			$(abLocalMovCSV).click( this.onWelcomeLocalCSVClick.bind(this) );
+			$(abLocalMeshCSV).click( this.onLoadMeshButtonClick.bind(this) );
+						
 			var src_h = $H('header', 'mm-welcome-heading');
 			src_h.appendChild($T('Select initial data.'));
 			box.appendChild(src_h);
 			
 			var sources = $H('div', 'mm-welcome-sources');
-			sources.appendChild(btnLocalCSV);
+			/*
 			sources.appendChild(btnOpenService);
-			sources.appendChild(btnLoadMesh);
+			*/
+			sources.appendChild(abLocalMovCSV);
+			sources.appendChild(abLocalMeshCSV);
 			box.appendChild(sources);
 
 			this.containerElement.appendChild(box);
 			return $(box);
+		},
+		
+		generateWelcomeActionButton: function(iconURL, label1, label2) {
+			var box = $H('div', 'mm-welcome-box-action');
+			var labelElement1 = $H('span');
+			labelElement1.appendChild( $T(label1) );
+			var labelElement2 = $H('span');
+			labelElement2.appendChild( $T(label2) );
+			
+			box.appendChild(labelElement1);
+			box.appendChild(labelElement2);
+			box.style.backgroundImage = 'url(' + iconURL + ')';
+			
+			return box;
 		},
 		
 		setupDownloaderServiceButton: function() {
@@ -146,16 +164,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return btn;
 		},
-		
-		setupMeshLoadButton: function() {
-			var btn = $H('button', 'mm-initial-mesh-load-button');
-			btn.appendChild($T('Local Mesh'));
-			
-			$(btn).click( this.onLoadMeshButtonClick.bind(this) );
-			
-			return btn;
-		},
-		
+
 		onDownloadServiceButtonClick: function() {
 			this.ownerApp.openDataDownloadService();
 		},
