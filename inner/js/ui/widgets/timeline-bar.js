@@ -67,6 +67,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.boundData = d;
 			d.eventDispatcher().bind(mobmap.DateTime.CURRENT_TIME_CHANGE_EVENT, this.onBoundDateTimeChange.bind(this));
 			this.syncFromData();
+			return this;
+		},
+		
+		bindTimeRangeSelection: function(d) {
+			this.boundRangeData = d;
+			return this;
 		},
 		
 		setDateDisplayElement: function(el) {

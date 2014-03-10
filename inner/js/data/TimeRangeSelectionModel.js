@@ -74,6 +74,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var r = this.floatingRange;
 			this.selectSingleRange( r.start, r.end );
+
+			this.eventDispatcher().trigger(TimeRangeSelection.FLOATING_CHANGE_EVENT, this);
 		},
 		
 		correctFloatingTimeOrder: function() {

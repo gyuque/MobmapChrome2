@@ -49,6 +49,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.gmap;
 		},
 		
+		panTo: function(lat, lng) {
+			this.getGoogleMaps().panTo(new google.maps.LatLng(lat, lng));
+		},
+		
 		observeContainerEvents: function(app3PanesView) {
 			app3PanesView.eventDispatcher().bind(mobmap.Mobmap3PanesScreen.RESIZE_EVENT,
 				this.onContainerResize.bind(this));

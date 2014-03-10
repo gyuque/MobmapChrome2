@@ -53,7 +53,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.mapPane.observeProjectEvents(prj);
 			
 			if (this.toolPane) {
-				this.toolPane.getTimelineBar().bindDateTime( prj.currentDateTime );
+				this.toolPane.getTimelineBar().
+				 bindDateTime( prj.currentDateTime ).
+				 bindTimeRangeSelection( prj.timeRangeSelection );
 			}
 		},
 		
@@ -94,6 +96,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.onCurrentDateTimeChange.bind(this)
 			);
 			
+			// Time range selection changes
+			prj.timeRangeSelection.eventDispatcher().
+			 bind(
+			  mobmap.TimeRangeSelection.FLOATING_CHANGE_EVENT,
+			  this.onTimeRangeFloatingSelectionChange.bind(this)
+			 ).
+			 bind(
+			  mobmap.TimeRangeSelection.CHANGE_EVENT,
+			  this.onTimeRangeSelectionChange.bind(this)
+			 );
+			
 			this.layerController.observeProject(prj);
 		},
 
@@ -122,6 +135,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onCurrentDateTimeChange: function(e, sender) {
+			this.updateFloatingTimeSelectionIfNeeded();
 		},
 
 		// -----------------------------------------------------
@@ -140,6 +154,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		redrawMap: function() {
 			this.getMapPane().redraw();
+		},
+		
+		moveMapTo: function(lat, lng) {
+			this.getMapPane().panTo(lat, lng);
 		},
 		
 		loadLocalCSVMovingData: function() {
@@ -292,17 +310,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		onPlayStateButtonPush_ff: function() {
 			this.playController.playFast();
 		},
-		
+
 		onPlaySpeedSliderChange: function() {
 			var pane = this.getToolPane();
 			pane.sendChosenPlaySpeed( this.playController );
 			pane.showPlaySpeedAsSpecialTexts();
 		},
-		
+
 		onPlaySpeedSliderClick: function() {
 			this.getToolPane().showPlaySpeedAsSpecialTexts();
 		},
-		
+
 		onMakeTimeRangeButtonClick: function() {
 			var pj = this.getCurrentProject();
 			if (!pj) { return; }
@@ -311,6 +329,19 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.getToolPane().setRangeButtonSelected(true);
 				pj.timeRangeSelection.newFloating();
 			}
+		},
+		
+		updateFloatingTimeSelectionIfNeeded: function() {
+			var pj = this.getCurrentProject();
+			if (pj && pj.timeRangeSelection.hasFloating) {
+				pj.timeRangeSelection.setFloatingEnd( pj.getCurrentTimeInSeconds() );
+			}
+		},
+		
+		onTimeRangeFloatingSelectionChange: function() {
+		},
+		
+		onTimeRangeSelectionChange: function() {
 		}
 	};
 

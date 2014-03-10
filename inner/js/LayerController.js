@@ -39,6 +39,34 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
+		moveToOverlayCenter: function(overlay) {
+			var ownerLayer = overlay.ownerObject;
+			if (ownerLayer.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+				this.moveToMarkersOverlayCenter(overlay);
+			}
+		},
+		
+		moveToMarkersOverlayCenter: function(markersOverlay) {
+			var pickPool = this.ensureOverlayPickPool(markersOverlay);
+			pickPool.clear();
+			
+			markersOverlay.ownerObject.movingData.pickAt(pickPool, 0);
+			var len = pickPool.pickedCount;
+			if (len < 1) { return; }
+			
+			var xSum = 0, ySum = 0;
+			
+			var arr = pickPool.getArray();
+			for (var i = 0;i < len;++i) {
+				var rec = arr[i];
+				xSum += rec.x;
+				ySum += rec.y;
+			}
+			
+			xSum /= len;
+			ySum /= len;
+			this.ownerApp.moveMapTo(ySum, xSum);
+		},
 
 		// OVERLAY FACTORY ==============================
 
@@ -134,8 +162,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (ov && sourceLayer.bindOverlay) {
 				sourceLayer.bindOverlay(ov);
 			}
-			
+
 			this.redrawMap();
+			
+			// This is the first layer.
+			if (ov && this.mapOverlayList.length === 1) {
+				this.moveToOverlayCenter(ov);
+			}
 		},
 		
 		onLayerRequestDelete: function(e, sourceLayer) {
@@ -209,6 +242,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		ensureOverlayPickPool: function(overlay) {
+			if (!overlay._stockPickPool) {
+				var movingData = overlay.ownerObject.movingData;
+				overlay._stockPickPool = movingData.createPickPool();
+			}
+			
+			return overlay._stockPickPool;
+		},
+		
 		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
 			if (!sourceLayer.dataReady) {return;}
 
@@ -232,12 +274,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.applyGeneratedMarkerOfLayer(overlay, sourceLayer); // dirty only
 			
-			// Prepare pick pool (if not ready)
-			if (!overlay._stockPickPool) {
-				overlay._stockPickPool = movingData.createPickPool();
-			}
+			// Get prepared pick pool (create if not ready)
+			var pickPool = this.ensureOverlayPickPool(overlay);
 
-			var pickPool = overlay._stockPickPool;
 			pickPool.clear();
 			movingData.pickAt(pickPool, targetTimeSec);
 			var count = pickPool.pickedCount;
