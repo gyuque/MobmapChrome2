@@ -14,6 +14,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(this.element);
 		this.expandablePanel.setTitle("Mesh");
 
+		this.gradientEditor = new mobmap.GradientEditor();
 		this.configurePanelContent();
 	}
 	
