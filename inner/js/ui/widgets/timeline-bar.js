@@ -465,7 +465,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var xlen = (t2 - t1) * (areaWidth / vLen);
 
 			g.fillStyle = 'rgba(255,255,255,' +alpha+ ')';
-			g.fillRect(x1, y, xlen, areaHeight);
+			g.fillRect(x1, y+1, xlen, areaHeight-2);
 		},
 		
 		longtimeAfterViewportChange: function() {

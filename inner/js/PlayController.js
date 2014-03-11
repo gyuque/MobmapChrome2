@@ -12,6 +12,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.prevDrawTime = 0;
 		this.prevShownDataTime = 0;
+		
+		this.nowSnapback = false;
+		this.snapbackCount = 0;
+		this.snapbackOriginTime = 0;
+		this.snapbackDestTime = 0;
 	}
 	
 	PlayController.PresetPlaySpeed = [
@@ -25,13 +30,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		3600 * 6,
 		3600 * 24
 	];
+	
+	PlayController.nSnapbackSteps = 11;
 
 	PlayController.prototype = {
 		isPlaying: function() {
 			return (this.playSpeed !== 0);
 		},
 		
-		stop: function()     { this.setPlaySpeed(0); },
+		stop: function()     {
+			this.setPlaySpeed(0);
+			this.nowSnapback = false;
+		},
+
 		play: function()     { this.playWithSpeed(1); },
 		playFast: function() { this.playWithSpeed(5); },
 		
@@ -95,23 +106,69 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		processAnimationFrame: function() {
 			var curDataTime = this.ownerApp.getCurrentProjectDateTime();
+			var endTime = this.getEndOfVisibleTimeline();
 
 			var cur_t = now_time();
 			var dt = cur_t - this.prevDrawTime;
 			
 			var realt_per_ms = this.playOption.realSecPerPlayerSec / 1000;
 			var dDataTime = this.playSpeed * dt * realt_per_ms;
-			
-			var endTime = this.getEndOfVisibleTimeline();
-			var nextDataSec = curDataTime.getCurrentTime() + dDataTime;
-			
+
+			// Calc next time - - - - - - - - - - - - -
+			var nextDataSec;
+			if (this.nowSnapback) {
+				// Snapback play
+				nextDataSec = this.calcSnapbackTime();
+				nextTimeIsEnd = false;
+				if (++this.snapbackCount > PlayController.nSnapbackSteps) {
+					this.nowSnapback = false;
+				}
+			} else {
+				// Normal play
+				nextDataSec = curDataTime.getCurrentTime() + dDataTime;
+			}
+
+			var nextExceedSelectedRange = this.checkExceedSelectedTimeRange(curDataTime.getCurrentTime(), nextDataSec);
 			var nextTimeIsEnd = (nextDataSec >= endTime);
-			
+
 			// Set new time - - - - - -
-			curDataTime.setCurrentTime(nextDataSec);
-			
+			if (nextExceedSelectedRange) {
+				var sel_rg = this.getCurrentSelectedTimeRange();
+				curDataTime.setCurrentTime( sel_rg.end );
+				nextTimeIsEnd = false; // force continue
+
+				// Start snapback
+				this.nowSnapback = true;
+				this.snapbackCount = 0;
+
+				this.snapbackOriginTime = sel_rg.end;
+				this.snapbackDestTime = sel_rg.start;
+			} else {
+				curDataTime.setCurrentTime(nextDataSec);
+			}
+
+
 			this.prevDrawTime = cur_t;
 			return !nextTimeIsEnd;
+		},
+		
+		calcSnapbackTime: function() {
+			var a = this.snapbackCount / PlayController.nSnapbackSteps;
+			var a2 = 1 - (1-a)*(1-a);
+			return (1-a2) * this.snapbackOriginTime  +  a2 * this.snapbackDestTime;
+		},
+		
+		getCurrentSelectedTimeRange: function() {
+			var pj = this.ownerApp.getCurrentProject();
+			if (!pj || !pj.timeRangeSelection.anySelected()) {return null;}
+			return pj.timeRangeSelection.getFirstSelection();
+		},
+		
+		checkExceedSelectedTimeRange: function(curT, nextT) {
+			var r = this.getCurrentSelectedTimeRange();
+			if (!r) {return false;}
+
+			return (curT < (r.end + 0.1) && nextT > r.end);
 		},
 		
 		getEndOfVisibleTimeline: function() {
