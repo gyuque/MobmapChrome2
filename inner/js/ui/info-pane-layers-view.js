@@ -283,6 +283,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.progressLabel = null;
 		this.subCaptionElement = null;
 		this.markerPanel = null;
+		this.meshPanel = null;
 		
 		this.jSelCountIndicator = null;
 		this.element = $H('div', 'mm-layer-view-item-box');
@@ -295,6 +296,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	LayerItemView.prototype = {
 		build: function() {
 			var use_marker = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable);
+			var use_mesh = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MeshRenderable);
 			
 			// Caption ---------------------
 			var caption = $H('h3');
@@ -325,6 +327,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (use_marker) {
 				this.buildMarkerConfigurationPanel();
+			}
+			
+			if (use_mesh) {
+				this.buildMeshConfigurationPanel();
 			}
 		},
 		
@@ -357,6 +363,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.appendChild(this.markerPanel.element);
 		},
 		
+		buildMeshConfigurationPanel: function() {
+			this.meshPanel = new mobmap.MeshConfigurationPanel(this.boundLayer);
+			this.meshPanel.hide();
+			this.element.appendChild(this.meshPanel.element);
+		},
+		
 		setSubCaption: function(label) {
 			$(this.subCaptionElement).text(label);
 		},
@@ -378,9 +390,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		toggleVisibilities: function() {
 			if (this.layerReady) {
 				this.hideProgress();
-				if (this.markerPanel) {
-					this.markerPanel.show();
-				}
+				if (this.markerPanel) { this.markerPanel.show(); }
+				if (this.meshPanel) { this.meshPanel.show(); }
 			}
 		},
 		

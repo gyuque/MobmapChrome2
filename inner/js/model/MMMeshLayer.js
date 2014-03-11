@@ -8,7 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(document.createElement('span'));
 		this.ownerList = null;
 		this.primaryView = null;
-		this.capabilities = 0;
+		this.capabilities = mobmap.LayerCapability.MeshRenderable;
 		this.dataTimeRange = {
 			start: 0,
 			end: 0

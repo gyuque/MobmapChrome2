@@ -18,6 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	var LayerCapability = {
 		MarkerRenderable: 0x01,
+		MeshRenderable  : 0x02,
 		SpatialSelectable: 0x10
 	};
 
