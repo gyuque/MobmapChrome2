@@ -22,7 +22,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.localSelectionPool = new mobmap.SelectionPool();
 		
 		this.meshData = null;
+		this.colorRule = new MMMeshLayer.ColorRule( this.eventDispatcher() );
+		this.generateDefaultGradient();
 	}
+	
+	MMMeshLayer.COLOR_RULE_CHANGE = "mm-mesh-layer-event-color-rule-change";
 	
 	MMMeshLayer.prototype = {
 		eventDispatcher: mobmap.MMLayerBase.eventDispatcher,
@@ -67,6 +71,40 @@ if (!window.mobmap) { window.mobmap={}; }
 		updateDataTimeRange: function() {
 			this.dataTimeRange.start = this.meshData.timeRange.min;
 			this.dataTimeRange.end = this.meshData.timeRange.max;
+		},
+		
+		generateDefaultGradient: function() {
+			var g = this.colorRule;
+			g.clearGradient(true);
+			
+			var s1 = new MMGradientStop(0, 255,0,0, 0);
+			var s2 = new MMGradientStop(1, 255,0,0, 1);
+			g.addStop(s1);
+			g.addStop(s2);
+			g.fire();
+		}
+	};
+	
+	MMMeshLayer.ColorRule = function(jEventElement) {
+		this.jEventElement = jEventElement;
+		this.gradientStops = [];
+	};
+	
+	MMMeshLayer.ColorRule.prototype = {
+		clearGradient: function(suppress_event) {
+			this.gradientStops.length = 0;
+			
+			if (!suppress_event) {
+				this.fire();
+			}
+		},
+		
+		fire: function() {
+			this.jEventElement.trigger(MMMeshLayer.COLOR_RULE_CHANGE, this);
+		},
+
+		addStop: function(st) {
+			this.gradientStops.push(st);
 		}
 	};
 	

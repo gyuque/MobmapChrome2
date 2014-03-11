@@ -205,4 +205,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		var h = (s / 3600);
 		return makeFixedNumber(h) +' '+ messageProvider('hour', h > 1);
 	}
+
+	aGlobal.MMGradientStop = function(pos, r, g, b, a) {
+		this.position = pos;
+		this.r = r;
+		this.g = g;
+		this.b = b;
+		this.a = a;
+	};
+
 })(window);
