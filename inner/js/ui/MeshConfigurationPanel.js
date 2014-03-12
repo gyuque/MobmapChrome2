@@ -25,8 +25,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			cc.appendChild( this.gradientEditor.getPreviewElement() );
 
 			var ec = this.expandablePanel.expandedContentElement;
-//			ec.innerHTML = '';
-//			ec.appendChild( this.markerGenerator.resultCanvas );
+			ec.innerHTML = '';
+			ec.appendChild( this.gradientEditor.element );
 		},
 		
 		show: function() { this.expandablePanel.show(); },

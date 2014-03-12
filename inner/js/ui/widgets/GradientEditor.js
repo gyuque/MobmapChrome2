@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function GradientEditor(boundGradient) {
 		this.element = document.createElement('div');
+		this.jElement = $( this.element );
 		this.boundGradient = boundGradient;
 		
 		this.previewHeight = 10;
@@ -14,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.previewCanvas = document.createElement('canvas');
 		this.previewCanvasG = this.previewCanvas.getContext('2d');
+		this.element.appendChild(this.previewCanvas);
 
 		this.smallPreviewCanvas = document.createElement('canvas');
 		this.smallPreviewCanvasG = this.smallPreviewCanvas.getContext('2d');
@@ -63,18 +65,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		renderPreview: function() {
-			/*
+			this.clearPreview();
 			var w = this.previewWidth;
 			var h = this.previewHeight;
+			var pad = this.previewPadding;
 			
 			var g = this.previewCanvasG;
-			this.clearPreview();
 			g.fillStyle = 'rgba(0,0,0,0.5)';
 			g.fillRect(this.previewPadding-1, this.previewPadding-1, w+2, h+2);
+			g.fillStyle = 'rgba(255,255,255,0.5)';
+			g.fillRect(pad, pad, w, h);
 			
 			g.drawImage(this.gradientCanvas, 0, 0, this.gradientCanvas.width - 0, 4,
-				        this.previewPadding, this.previewPadding, w, h);	
-			*/
+				        pad, pad, w, h);
+				
+			this.drawStopCursorsOnBar(g, pad, pad, w, this.boundGradient);
 		},
 		
 		clearPreview: function() {
@@ -98,6 +103,34 @@ if (!window.mobmap) { window.mobmap={}; }
 				var stopColor = source.getStopAsHTMLColor(i);
 				gr.addColorStop( source.getStopPosition(i) , stopColor);
 			}
+		},
+		
+		drawStopCursorsOnBar: function(g, ox, oy, bar_width, gradientSource) {
+			var len = gradientSource.countStops();
+			for (var i = 0;i < len;++i) {
+				var t =  gradientSource.getStopPosition(i) / (len-1);
+				var sc = gradientSource.getStopAsHTMLColor(i);
+				var bx = Math.floor((bar_width-1) * t);
+				
+				this.drawStopCursor(g, ox + bx, oy, this.previewHeight-1, sc);
+			}
+		},
+		
+		drawStopCursor: function(g, x, y, h, stopColor) {
+			g.save();
+			g.translate(x, y);
+			
+			g.fillStyle = 'rgba(0,0,0,0.6)';
+			g.fillRect(-1, -1, 3, h+1);
+			g.fillRect(-2, h-1, 5, 5);
+			g.fillStyle = '#fff';
+			g.fillRect(0, 0, 1, h);
+			g.fillStyle = '#aaa';
+			g.fillRect(-1, h, 3, 3);
+			g.fillStyle = stopColor;
+			g.fillRect(-1, h, 3, 3);
+			
+			g.restore();
 		}
 	};
 	
