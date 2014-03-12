@@ -178,3 +178,20 @@ label.varytypeopt {
 	margin-left: 3px;
 	box-shadow: 0 1px 3px rgba(0,0,0,0.3) inset;
 }
+
+.mm-gradient-val-range-slider {
+	width: 60px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.mm-gradient-val-range-control-box {
+	display: table;
+}
+
+.mm-gradient-val-range-control-box > div {
+	display: table-cell;
+	min-width: 110px;
+	font-size: 10px;
+	vertical-align: middle;
+}
