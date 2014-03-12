@@ -23,10 +23,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.meshData = null;
 		this.colorRule = new MMMeshLayer.ColorRule( this.eventDispatcher() );
+		this.renderValueRange = {
+			min: 0,
+			max: 10000
+		};
+
 		this.generateDefaultGradient();
 	}
 	
 	MMMeshLayer.COLOR_RULE_CHANGE = "mm-mesh-layer-event-color-rule-change";
+	MMMeshLayer.RENDER_VALUE_RANGE_CHANGE = "mm-mesh-layer-event-render-value-range-change";
 	
 	MMMeshLayer.prototype = {
 		eventDispatcher: mobmap.MMLayerBase.eventDispatcher,
@@ -105,6 +111,19 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		addStop: function(st) {
 			this.gradientStops.push(st);
+		},
+		
+		countStops: function() {
+			return this.gradientStops.length;
+		},
+		
+		getStopAsHTMLColor: function(index) {
+			var s = this.gradientStops[index];
+			return makeStyleSheetRGBA(s.r, s.g, s.b, s.a);
+		},
+		
+		getStopPosition: function(index) {
+			return this.gradientStops[index].position;
 		}
 	};
 	

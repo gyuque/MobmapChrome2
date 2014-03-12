@@ -12,7 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
 		this.jElement = $(this.element);
-		this.expandablePanel.setTitle("Mesh");
+		this.expandablePanel.setTitle("Mesh coloring");
 
 		this.gradientEditor = new mobmap.GradientEditor( layer.colorRule );
 		this.configurePanelContent();
@@ -20,6 +20,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	MeshConfigurationPanel.prototype = {
 		configurePanelContent: function() {
+			var cc = this.expandablePanel.closedContentElement;
+			cc.innerHTML = '';
+			cc.appendChild( this.gradientEditor.getPreviewElement() );
+
 			var ec = this.expandablePanel.expandedContentElement;
 //			ec.innerHTML = '';
 //			ec.appendChild( this.markerGenerator.resultCanvas );

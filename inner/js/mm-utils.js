@@ -71,6 +71,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	aGlobal.makeStyleSheetRGB = function(r, g, b) {
 		return 'rgb(' +r+ ',' +g+ ',' +b+ ')';
 	};
+
+	aGlobal.makeStyleSheetRGBA = function(r, g, b, a) {
+		return 'rgba(' +r+ ',' +g+ ',' +b+ ',' +a+ ')';
+	};
 	
 	aGlobal.$BRAC = function(s) {
 		return '(' +s+ ')';
