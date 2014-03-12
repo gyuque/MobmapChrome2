@@ -18,6 +18,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.gradientEditor = new mobmap.GradientEditor( layer.colorRule );
 		this.configurePanelContent();
+		this.observeValueRangeControllerEvents();
+		
+		this.syncFromData();
 	}
 	
 	MeshConfigurationPanel.prototype = {
@@ -37,7 +40,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			var box = $H('div', 'mm-gradient-val-range-control-box');
 			
 			var labelbox = $H('div');
-			labelbox.innerHTML = "Val. range:";
 			
 			var val_range = $H('input', 'mm-gradient-val-range-slider');
 			val_range.type = 'range';
@@ -51,7 +53,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			box.appendChild(val_range);
 			container.appendChild(box);
 		},
+
+		observeValueRangeControllerEvents: function() {
+			this.jValRangeSlider.change( this.onValRangeSliderChange.bind(this) );
+		},
 		
+		onValRangeSliderChange: function () {
+
+		},
+		
+		updateValRangeText: function() {
+			var r = this.boundLayer.renderValueRange;
+			this.jValRangeDispBox.text("Val. range: " + r.min +'-'+ r.max);
+		},
+
+		syncFromData: function() {
+			this.updateValRangeText();
+		},
+
 		show: function() { this.expandablePanel.show(); },
 		hide: function() { this.expandablePanel.hide(); }
 	};
