@@ -195,3 +195,12 @@ label.varytypeopt {
 	font-size: 10px;
 	vertical-align: middle;
 }
+
+.mm-range-gradient-param {
+	display: block;
+	width: 68px;
+}
+
+.mm-gradient-param-col {
+	text-align: center;
+}

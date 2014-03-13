@@ -231,6 +231,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.owner = owner;
 		this.element = $H('tr');
 		this.jPickerElement = null;
+		this.jAlphaLabel = null;
+		this.jAlphaRange = null;
+		this.jPosLabel = null;
+		this.jPosRange = null;
 		this.stopData = new MMGradientStop(0, 0, 0, 0, 0);
 		if (initialStopData) {
 			this.stopData.copyFrom(initialStopData);
@@ -243,6 +247,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		buildView: function() {
 			var td1 = $H('td');
 			this.element.appendChild(td1);
+			var td2 = $H('td', 'mm-gradient-param-col');
+			this.element.appendChild(td2);
+			var td3 = $H('td', 'mm-gradient-param-col');
+			this.element.appendChild(td3);
 			
 			var pickerElement = $H('input');
 			td1.appendChild(pickerElement);
@@ -251,6 +259,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jPickerElement.kendoColorPicker({
 				
 			});
+			
+			var s_alpha = $H('span');
+			s_alpha.innerHTML = 'Alpha';
+			td2.appendChild(s_alpha);
+			var r_alpha = this.makeGradientStopOptionRange();
+			td2.appendChild(r_alpha);
+			
+			this.jAlphaLabel = $(s_alpha);
+			this.jAlphaRange = $(r_alpha);
+
+			var s_pos = $H('span');
+			s_pos.innerHTML = 'Pos';
+			td3.appendChild(s_pos);
+			var r_pos = this.makeGradientStopOptionRange();
+			td3.appendChild(r_pos);
+
+			this.jPosLabel = $(s_pos);
+			this.jPosRange = $(r_pos);
+		},
+		
+		makeGradientStopOptionRange: function() {
+			var r = $H('input', 'mm-range-gradient-param');
+			r.type = 'range';
+			r.min = 0;
+			r.max = 10;
+			return r;
 		}
 	};
 
