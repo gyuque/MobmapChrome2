@@ -8,6 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.element = document.createElement('div');
 		this.jElement = $( this.element );
 		this.boundGradient = boundGradient;
+		this.stopListView = new GradientStopListView();
 		
 		this.previewHeight = 10;
 		this.previewWidth = 100;
@@ -16,6 +17,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.previewCanvas = document.createElement('canvas');
 		this.previewCanvasG = this.previewCanvas.getContext('2d');
 		this.element.appendChild(this.previewCanvas);
+		this.element.appendChild(this.stopListView.element);
 
 		this.smallPreviewCanvas = document.createElement('canvas');
 		this.smallPreviewCanvasG = this.smallPreviewCanvas.getContext('2d');
@@ -27,6 +29,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.configureCanvas();
 		this.redraw();
 		this.sendColorList();
+		
+		this.syncFromModel();
 	}
 	
 	GradientEditor.prototype = {
@@ -136,8 +140,106 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(-1, h, 3, 3);
 			
 			g.restore();
+		},
+		
+		syncFromModel: function() {
+			var dirty = false;
+			var gr = this.boundGradient;
+			var len = gr.countStops();
+			
+			var currentViewLength = this.stopListView.countStops();
+			if (len !== currentViewLength) {
+				// fast-pass
+				// It must be dirty.
+				dirty = true;
+			} else {
+				// slow-pass
+				// Check inside.
+				for (var i = 0;i < len;++i) {
+					if ( !( this.stopListView.hasEqualStop(i, gr.getAt(i)) ) ) {
+						dirty = true;
+						break;
+					}
+				}
+			}
+			
+			if (dirty) {
+				this.stopListView.syncFrom(gr);
+			}
 		}
 	};
-	
+
+
+	function GradientStopListView() {
+		this.element = $H('table');
+		this.items = [];
+	}
+
+	GradientStopListView.prototype = {
+		countStops: function() {
+			return this.items.length;
+		},
+		
+		hasEqualStop: function(index, stop) {
+			var item = this.items[index];
+			if (!item) {return false;}
+			
+			return item.stopData.equals(stop);
+		},
+		
+		addStopItem: function() {
+			var item = new GradientStopListViewItem(this);
+			this.element.appendChild(item.element);
+			this.items.push(item);
+		},
+		
+		clear: function() {
+			var len = this.items.length;
+			for (var i = 0;i < len;++i) {
+				var item = this.items[0];
+				this.remove(item);
+			}
+		},
+		
+		remove: function(item) {
+			var index = this.items.indexOf(item);
+			if (index >= 0) {
+				this.element.removeChild(item.element);
+				this.items.splice(index, 1);
+			}
+		},
+		
+		syncFrom: function(sourceGradient) {
+			if (this.countStops() === sourceGradient.countStops()) {
+				
+			} else {
+				this.rebuildFrom(sourceGradient);
+			}
+		},
+		
+		rebuildFrom: function(sourceGradient) {
+			this.clear();
+			console.log("rebuild");
+		}
+	};
+
+
+	function GradientStopListViewItem(owner) {
+		this.owner = owner;
+		this.element = $H('tr');
+		this.stopData = new MMGradientStop(0, 0, 0, 0, 0);
+		this.buildView();
+	}
+
+	GradientStopListViewItem.prototype = {
+		buildView: function() {
+			var td1 = $H('td');
+			this.element.appendChild(td1);
+			
+			td1.innerHTML = "Color picker";
+		}
+	};
+
+
 	aGlobal.mobmap.GradientEditor = GradientEditor;
 })(window);

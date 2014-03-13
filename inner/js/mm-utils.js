@@ -218,6 +218,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.a = a;
 	};
 	
+	aGlobal.MMGradientStop.prototype.equals = function(s) {
+		return this.position === s.position && 
+		       this.r === s.r &&
+		       this.g === s.g &&
+		       this.b === s.b ;
+	};
+	
 	// Used for generated gradient colors
 	aGlobal.CachedColorList = function() {
 		this.list = new Array(100);
@@ -246,11 +253,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			for (var i = 0;i < n;++i) {
 				var t = i / (n-1);
+				pos = Math.floor((w-1) * t) << 2;
 				
 				var cR = pixels[pos++];
 				var cG = pixels[pos++];
 				var cB = pixels[pos++];
-				var cA = pixels[pos++] / 255.0;
+				var cA = pixels[pos  ] / 255.0;
 				
 				this.list[i] = makeStyleSheetRGBA(cR, cG, cB, cA);
 			}

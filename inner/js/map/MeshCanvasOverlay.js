@@ -174,10 +174,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 
 		MeshCanvasOverlay.prototype.mapValueToCellColor = function(val) {
-			var components = [255, 0, 0, 1];
 			var a = val / this.renderValueMax;
-			if (a < 0) {a=0;} else if (a > 1) {a=1;}
+			if (this.colorList) {
+				return this.colorList.getColor(a);
+			}
 			
+			var components = [255, 0, 0, 1];
+			if (a < 0) {a=0;} else if (a > 1) {a=1;}
 			components[3] = a;
 			return "rgba(" + components.join(',') + ")";
 		};

@@ -126,6 +126,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.gradientStops.length;
 		},
 		
+		getAt: function(index) {
+			return this.gradientStops[index] || null;
+		},
+		
 		getStopAsHTMLColor: function(index) {
 			var s = this.gradientStops[index];
 			return makeStyleSheetRGBA(s.r, s.g, s.b, s.a);
