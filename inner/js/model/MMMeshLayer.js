@@ -89,6 +89,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.addStop(s1);
 			g.addStop(s2);
 			g.fire();
+		},
+		
+		setRenderValueRangeMax: function(vmax) {
+			if (this.renderValueRange.max === vmax) { return; }
+
+			this.renderValueRange.max = vmax;
+			this.eventDispatcher().trigger(MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this);
 		}
 	};
 	
