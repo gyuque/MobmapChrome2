@@ -23,6 +23,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.ownerObject = null;
 			this.projectionGrid = new mobmap.FastProjectionGrid(9);
+			
+			this.renderValueMax = 10000;
 		}
 		
 		// Inherit
@@ -35,6 +37,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		MeshCanvasOverlay.prototype.setPickTime = function(t) {
 			this.pickTime = t;
+		};
+		
+		MeshCanvasOverlay.prototype.setRenderValueMax = function(vmax) {
+			this.renderValueMax = vmax;
 		};
 
 		MeshCanvasOverlay.prototype.draw = function() {
@@ -164,7 +170,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		MeshCanvasOverlay.prototype.mapValueToCellColor = function(val) {
 			var components = [255, 0, 0, 1];
-			var a = val / 20000.0;
+			var a = val / this.renderValueMax;
 			if (a < 0) {a=0;} else if (a > 1) {a=1;}
 			
 			components[3] = a;

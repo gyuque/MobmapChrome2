@@ -31,7 +31,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.generateDefaultGradient();
 	}
 	
-	MMMeshLayer.RangePreset = [5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000];
+	MMMeshLayer.RangePreset = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
 	MMMeshLayer.COLOR_RULE_CHANGE = "mm-mesh-layer-event-color-rule-change";
 	MMMeshLayer.RENDER_VALUE_RANGE_CHANGE = "mm-mesh-layer-event-render-value-range-change";
 	

@@ -114,7 +114,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			lyr.eventDispatcher().
 			 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
-			 bind(LE.Destroy, this.onLayerDestroy.bind(this));
+			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
+			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) );
 
 			// Observe layer internal events
 
@@ -154,6 +155,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerSelectionPoolChange: function(sourceLayer, e) {
+			this.redrawMap();
+		},
+		
+		onLayerRenderValueMaxChange: function() {
 			this.redrawMap();
 		},
 		
@@ -237,6 +242,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				} else if (overlay.setPickTime) {
 					overlay.resetRenderedRegion();
 					overlay.setPickTime(targetTimeSec);
+					overlay.setRenderValueMax(layer.renderValueRange.max);
 					overlay.render();
 				}
 			}
