@@ -225,6 +225,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		       this.b === s.b ;
 	};
 	
+	aGlobal.MMGradientStop.prototype.copyFrom = function(s) {
+		this.position = s.position;
+		this.r = s.r;
+		this.g = s.g;
+		this.b = s.b;
+
+		return this;
+	};
+	
 	// Used for generated gradient colors
 	aGlobal.CachedColorList = function() {
 		this.list = new Array(100);

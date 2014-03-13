@@ -187,8 +187,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			return item.stopData.equals(stop);
 		},
 		
-		addStopItem: function() {
-			var item = new GradientStopListViewItem(this);
+		addStopItem: function(gstop) {
+			var item = new GradientStopListViewItem(this, gstop);
 			this.element.appendChild(item.element);
 			this.items.push(item);
 		},
@@ -219,15 +219,23 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		rebuildFrom: function(sourceGradient) {
 			this.clear();
-			console.log("rebuild");
+			var len = sourceGradient.countStops();
+			for (var i = 0;i < len;++i) {
+				this.addStopItem( sourceGradient.getAt(i) );
+			}
 		}
 	};
 
 
-	function GradientStopListViewItem(owner) {
+	function GradientStopListViewItem(owner, initialStopData) {
 		this.owner = owner;
 		this.element = $H('tr');
+		this.jPickerElement = null;
 		this.stopData = new MMGradientStop(0, 0, 0, 0, 0);
+		if (initialStopData) {
+			this.stopData.copyFrom(initialStopData);
+		}
+		
 		this.buildView();
 	}
 
@@ -236,7 +244,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var td1 = $H('td');
 			this.element.appendChild(td1);
 			
-			td1.innerHTML = "Color picker";
+			var pickerElement = $H('input');
+			td1.appendChild(pickerElement);
+			
+			this.jPickerElement = $(pickerElement);
+			this.jPickerElement.kendoColorPicker({
+				
+			});
 		}
 	};
 
