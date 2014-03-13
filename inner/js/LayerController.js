@@ -243,6 +243,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					overlay.resetRenderedRegion();
 					overlay.setPickTime(targetTimeSec);
 					overlay.setRenderValueMax(layer.renderValueRange.max);
+					overlay.setColorList(layer.colorRule.cachedColorList);
 					overlay.render();
 				}
 			}

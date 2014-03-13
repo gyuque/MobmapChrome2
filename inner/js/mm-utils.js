@@ -217,5 +217,44 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.b = b;
 		this.a = a;
 	};
+	
+	// Used for generated gradient colors
+	aGlobal.CachedColorList = function() {
+		this.list = new Array(100);
+	};
+	
+	aGlobal.CachedColorList.prototype = {
+		countColors: function() {
+			return this.list.length;
+		},
+		
+		getColor: function(ratio) {
+			var index = Math.floor(ratio * 99.0);
+			if (index < 0) { index = 0; }
+			else if (index > 99) { index = 99; }
+			
+			return this.list[index];
+		},
+		
+		makeCacheFromCanvas: function(cv) {
+			var g = cv.getContext('2d');
+			var w = cv.width - 0;
+			var n = this.countColors();
+			var imageData = g.getImageData(0, 0, w, 1);
+			var pixels = imageData.data;
+			var pos = 0;
+			
+			for (var i = 0;i < n;++i) {
+				var t = i / (n-1);
+				
+				var cR = pixels[pos++];
+				var cG = pixels[pos++];
+				var cB = pixels[pos++];
+				var cA = pixels[pos++] / 255.0;
+				
+				this.list[i] = makeStyleSheetRGBA(cR, cG, cB, cA);
+			}
+		}
+	};
 
 })(window);

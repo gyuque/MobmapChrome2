@@ -25,6 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.projectionGrid = new mobmap.FastProjectionGrid(9);
 			
 			this.renderValueMax = 10000;
+			this.colorList = null;
 		}
 		
 		// Inherit
@@ -41,6 +42,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		MeshCanvasOverlay.prototype.setRenderValueMax = function(vmax) {
 			this.renderValueMax = vmax;
+		};
+
+		MeshCanvasOverlay.prototype.setColorList = function(cl) {
+			this.colorList = cl;
 		};
 
 		MeshCanvasOverlay.prototype.draw = function() {

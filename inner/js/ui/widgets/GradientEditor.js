@@ -26,11 +26,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.previewCanvas.setAttribute('class', 'mm-gradient-editor-preview');
 		this.configureCanvas();
 		this.redraw();
+		this.sendColorList();
 	}
 	
 	GradientEditor.prototype = {
 		getPreviewElement: function() {
 			return this.smallPreviewCanvas;
+		},
+		
+		sendColorList: function() {
+			this.boundGradient.cachedColorList.makeCacheFromCanvas( this.gradientCanvas );
 		},
 		
 		configureCanvas: function() {

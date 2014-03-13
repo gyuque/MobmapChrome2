@@ -102,6 +102,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	MMMeshLayer.ColorRule = function(jEventElement) {
 		this.jEventElement = jEventElement;
 		this.gradientStops = [];
+		this.cachedColorList = new CachedColorList();
 	};
 	
 	MMMeshLayer.ColorRule.prototype = {
