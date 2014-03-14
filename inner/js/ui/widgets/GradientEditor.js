@@ -3,6 +3,8 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	var kGradientCanvasWidth = 1024;
+	var kPresetPreviewWidth = 100;
+	var kPresetPreviewHeight = 10;
 	
 	function GradientEditor(boundGradient, label_p) {
 		this.element = document.createElement('div');
@@ -17,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.previewCanvas = document.createElement('canvas');
 		this.previewCanvasG = this.previewCanvas.getContext('2d');
+		this.buildPresetSelector(this.element);
 		this.element.appendChild(this.previewCanvas);
 		this.element.appendChild(this.stopListView.element);
 
@@ -38,7 +41,84 @@ if (!window.mobmap) { window.mobmap={}; }
 		);
 	}
 	
+	GradientEditor.PresetGradient = [
+		{
+			name: 'Red',
+			stops: [
+				[255,0,0 ,0 ,0],
+				[255,0,0 ,1 ,1]
+			]
+		},
+
+		{
+			name: 'White',
+			stops: [
+				[255,255,255 ,0 ,0],
+				[255,255,255 ,1 ,1]
+			]
+		},
+		
+		{
+			name: 'Heat',
+			stops: [
+				[0  ,128,255 ,1 ,0   ],
+				[0  ,255,128 ,1 ,0.25],
+				[255,255,0   ,1 ,0.5 ],
+				[255,128,0   ,1 ,0.75],
+				[255,  0,0   ,1 ,1   ]
+			]
+		}
+	];
+	
 	GradientEditor.prototype = {
+		buildPresetSelector: function(containerElement) {
+			var menuElement = $H('ul');
+
+			var topItem = $H('li');
+			topItem.appendChild( $T('Choose preset') );
+			menuElement.appendChild(topItem);
+			
+			var preset_ls = $H('ul');
+			topItem.appendChild(preset_ls);
+			this.appendPresetMenuItems(preset_ls, GradientEditor.PresetGradient);
+			
+			$(menuElement).kendoMenu();
+			containerElement.appendChild(menuElement);
+		},
+		
+		appendPresetMenuItems: function(parentList, presets) {
+			for (var i in presets) {
+				var presetData = presets[i];
+				var li = $H('li');
+				li.appendChild( this.generatePresetGradientPreview(presetData.stops) );
+				
+				parentList.appendChild(li);
+			}
+		},
+		
+		generatePresetGradientPreview: function(presetStops) {
+			var cv = $H('canvas');
+			var w = kPresetPreviewWidth;
+			var h = kPresetPreviewHeight;
+			cv.width = w;
+			cv.height = h;
+			cv.style.border = '1px solid #000';
+			
+			var g = cv.getContext('2d');
+			var grad = g.createLinearGradient(0, 0, w, 0);
+			for (var i in presetStops) {
+				var st = presetStops[i];
+				grad.addColorStop(st[4], makeStyleSheetRGBA(st[0],st[1],st[2],st[3]) );
+			}
+			
+			g.fillStyle = '#aaa';
+			g.fillRect(0, 0, w, h);
+			g.fillStyle = grad;
+			g.fillRect(0, 0, w, h);
+			
+			return cv;
+		},
+		
 		getPreviewElement: function() {
 			return this.smallPreviewCanvas;
 		},
@@ -389,7 +469,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.owner.notifyItemColorChange(this);
 		}
 	};
-
 
 	aGlobal.mobmap.GradientEditor = GradientEditor;
 })(window);
