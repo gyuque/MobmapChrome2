@@ -16,7 +16,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jValRangeDispBox = null;
 		this.expandablePanel.setTitle("Mesh coloring");
 
-		this.gradientEditor = new mobmap.GradientEditor( layer.colorRule );
+		this.gradientEditor = new mobmap.GradientEditor( layer.colorRule, this );
 		this.configurePanelContent();
 		this.observeValueRangeControllerEvents();
 		this.observeModelChangeEvents();
@@ -82,9 +82,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.jValRangeSlider.val() - 0;
 		},
 		
-		updateValRangeText: function() {
+		makeValRangeText: function() {
 			var r = this.boundLayer.renderValueRange;
-			this.jValRangeDispBox.text("Val. range: " + r.min +'-'+ r.max);
+			return r.min +'-'+ r.max
+		},
+		
+		updateValRangeText: function() {
+			this.jValRangeDispBox.text( "Val. range: " + this.makeValRangeText() );
+			this.gradientEditor.renderSmallPreview();
 		},
 		
 		updateValRangeSliderPosition: function() {
@@ -109,6 +114,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onColoringRuleChange: function() {
 			this.gradientEditor.syncFromModel();
+		},
+		
+		getGradientPreivewLabelText: function() {
+			return this.makeValRangeText();
 		},
 
 		show: function() { this.expandablePanel.show(); },

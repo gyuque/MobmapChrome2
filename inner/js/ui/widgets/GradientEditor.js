@@ -4,11 +4,12 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	var kGradientCanvasWidth = 1024;
 	
-	function GradientEditor(boundGradient) {
+	function GradientEditor(boundGradient, label_p) {
 		this.element = document.createElement('div');
 		this.jElement = $( this.element );
 		this.boundGradient = boundGradient;
 		this.stopListView = new GradientStopListView();
+		this.previewLabelProvider = label_p || null;
 		
 		this.previewHeight = 10;
 		this.previewWidth = 100;
@@ -74,7 +75,30 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillRect(1, 1, w, h);
 
 			g.drawImage(this.gradientCanvas, 0, 0, this.gradientCanvas.width - 0, 4,
-				        1, 1, w, h);	
+				        1, 1, w, h);
+				
+			if (this.previewLabelProvider) {
+				var tx = this.previewLabelProvider.getGradientPreivewLabelText();
+				this.drawGradientLabel(g, w+2, h+2, tx);
+			}
+		},
+		
+		drawGradientLabel: function(g, w, h, labelText) {
+			g.save();
+			g.font = "10px sans-serif";
+			g.textAlign = 'center';
+
+			g.fillStyle = '#000';
+			g.save();
+			g.shadowBlur = 1;
+			g.shadowColor = '#000';
+			g.fillText(labelText, w >> 1, h - 2);
+			g.restore();
+
+			g.fillStyle = '#fff';
+			g.fillText(labelText, w >> 1, h - 2);
+
+			g.restore();
 		},
 		
 		renderPreview: function() {
