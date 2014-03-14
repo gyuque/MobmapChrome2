@@ -137,6 +137,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getStopPosition: function(index) {
 			return this.gradientStops[index].position;
+		},
+		
+		writeStopData: function(index, source, suppress_event) {
+			var st = this.getAt(index);
+			if (st) {
+				st.copyFrom(source);
+				
+				if (!suppress_event) {
+					this.fire();
+				}
+			}
 		}
 	};
 	

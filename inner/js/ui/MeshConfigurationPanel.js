@@ -61,7 +61,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		observeModelChangeEvents: function() {
 			this.boundLayer.eventDispatcher().
-			 bind(mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onRenderValueRangeChange.bind(this) );
+			 bind(mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onRenderValueRangeChange.bind(this) ).
+			 bind(mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onColoringRuleChange.bind(this) );
 		},
 		
 		onValRangeSliderChange: function () {
@@ -104,6 +105,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onRenderValueRangeChange: function() {
 			this.syncFromData();
+		},
+		
+		onColoringRuleChange: function() {
+			this.gradientEditor.syncFromModel();
 		},
 
 		show: function() { this.expandablePanel.show(); },

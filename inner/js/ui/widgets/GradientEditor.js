@@ -31,6 +31,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.sendColorList();
 		
 		this.syncFromModel();
+		this.stopListView.eventDispatcher().bind(
+			GradientStopListView.ITEM_CHANGE_EVENT,
+			this.onGradientStopListViewItemChange.bind(this)
+		);
 	}
 	
 	GradientEditor.prototype = {
@@ -102,6 +106,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var gr = g.createLinearGradient(0, 0, kGradientCanvasWidth, 0);
 			this.registerGradientStops(gr, this.boundGradient);
 			
+			g.clearRect(0, 0, kGradientCanvasWidth, 4);
 			g.fillStyle = gr;
 			g.fillRect(0, 0, kGradientCanvasWidth, 4);
 		},
@@ -166,16 +171,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (dirty) {
 				this.stopListView.syncFrom(gr);
 			}
+		},
+		
+		onGradientStopListViewItemChange: function(e, index) {
+			var st = this.stopListView.getStopDataAt(index);
+			this.boundGradient.writeStopData(index, st, true);
+			this.redraw();
+			this.sendColorList();
+			this.boundGradient.fire();
 		}
 	};
 
 
 	function GradientStopListView() {
 		this.element = $H('table');
+		this.jElement = $(this.element);
 		this.items = [];
 	}
+	
+	GradientStopListView.ITEM_CHANGE_EVENT = "gradient-stop-listview-item-change-event";
 
 	GradientStopListView.prototype = {
+		eventDispatcher: function() {
+			return this.jElement;
+		},
+		
 		countStops: function() {
 			return this.items.length;
 		},
@@ -223,6 +243,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < len;++i) {
 				this.addStopItem( sourceGradient.getAt(i) );
 			}
+		},
+		
+		notifyItemColorChange: function(changedItem) {
+			this.eventDispatcher().trigger(
+				GradientStopListView.ITEM_CHANGE_EVENT,
+				this.items.indexOf(changedItem)
+			);
+		},
+		
+		getStopDataAt: function(index) {
+			return this.items[index].stopData;
 		}
 	};
 
@@ -256,7 +287,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.jPickerElement = $(pickerElement);
 			this.jPickerElement.kendoColorPicker({
-				opacity: true
+				opacity: true,
+				change: this.onColorPickerChange.bind(this)
 			});
 
 			var s_pos = $H('span');
@@ -266,7 +298,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			td2.appendChild(r_pos);
 
 			this.jPosLabel = $(s_pos);
-			this.jPosRange = $(r_pos);
+			this.jPosRange = $(r_pos).change( this.onPositionRangeChange.bind(this) );
+		},
+		
+		onPositionRangeChange: function() {
+			var pos = this.jPosRange.val() / 20.0;
+			this.stopData.position = pos;
+			
+			this.owner.notifyItemColorChange(this);
 		},
 		
 		makeGradientStopOptionRange: function() {
@@ -305,6 +344,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		showPositionText: function(pos) {
 			this.jPosLabel.text('Position: ' + pos.toFixed(2));
+		},
+		
+		onColorPickerChange: function() {
+			var st = this.stopData;
+			var kc = this.getColorPickerObject().color().toBytes();
+			st.r = kc.r;
+			st.g = kc.g;
+			st.b = kc.b;
+			st.a = kc.alpha;
+			this.owner.notifyItemColorChange(this);
 		}
 	};
 
