@@ -231,16 +231,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.owner = owner;
 		this.element = $H('tr');
 		this.jPickerElement = null;
-		this.jAlphaLabel = null;
-		this.jAlphaRange = null;
 		this.jPosLabel = null;
 		this.jPosRange = null;
 		this.stopData = new MMGradientStop(0, 0, 0, 0, 0);
+		this.showingPosition = -1;
+		
 		if (initialStopData) {
 			this.stopData.copyFrom(initialStopData);
 		}
 		
 		this.buildView();
+		this.syncFromStopData(initialStopData);
 	}
 
 	GradientStopListViewItem.prototype = {
@@ -249,31 +250,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.appendChild(td1);
 			var td2 = $H('td', 'mm-gradient-param-col');
 			this.element.appendChild(td2);
-			var td3 = $H('td', 'mm-gradient-param-col');
-			this.element.appendChild(td3);
 			
 			var pickerElement = $H('input');
 			td1.appendChild(pickerElement);
 			
 			this.jPickerElement = $(pickerElement);
 			this.jPickerElement.kendoColorPicker({
-				
+				opacity: true
 			});
-			
-			var s_alpha = $H('span');
-			s_alpha.innerHTML = 'Alpha';
-			td2.appendChild(s_alpha);
-			var r_alpha = this.makeGradientStopOptionRange();
-			td2.appendChild(r_alpha);
-			
-			this.jAlphaLabel = $(s_alpha);
-			this.jAlphaRange = $(r_alpha);
 
 			var s_pos = $H('span');
-			s_pos.innerHTML = 'Pos';
-			td3.appendChild(s_pos);
+			s_pos.innerHTML = 'Position';
+			td2.appendChild(s_pos);
 			var r_pos = this.makeGradientStopOptionRange();
-			td3.appendChild(r_pos);
+			td2.appendChild(r_pos);
 
 			this.jPosLabel = $(s_pos);
 			this.jPosRange = $(r_pos);
@@ -283,8 +273,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			var r = $H('input', 'mm-range-gradient-param');
 			r.type = 'range';
 			r.min = 0;
-			r.max = 10;
+			r.max = 20;
 			return r;
+		},
+		
+		getColorPickerObject: function() {
+			return this.jPickerElement.data("kendoColorPicker");
+		},
+		
+		setPickerColor: function(r, g, b, a) {
+			var kc = kendo.Color.fromBytes(r,g,b,a);
+			this.getColorPickerObject().color( kc );
+		},
+		
+		syncFromStopData: function(s) {
+			this.setPickerColor(s.r, s.g, s.b, s.a);
+			this.syncPosition(s.position);
+		},
+		
+		syncPosition: function(newValue) {
+			if (newValue < 0) { newValue = 0; }
+			else if (newValue > 1) { newValue = 1; }
+			
+			if (Math.abs(newValue - this.showingPosition) < 0.0001) { return; }
+			
+			this.showingPosition = newValue;
+			var sliderVal = Math.floor(newValue * 20);
+			this.jPosRange.val(sliderVal);
+			this.showPositionText(newValue);
+		},
+		
+		showPositionText: function(pos) {
+			this.jPosLabel.text('Position: ' + pos.toFixed(2));
 		}
 	};
 
