@@ -222,7 +222,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		return this.position === s.position && 
 		       this.r === s.r &&
 		       this.g === s.g &&
-		       this.b === s.b ;
+		       this.b === s.b &&
+		       this.a === s.a ;
 	};
 	
 	aGlobal.MMGradientStop.prototype.copyFrom = function(s) {
@@ -230,6 +231,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.r = s.r;
 		this.g = s.g;
 		this.b = s.b;
+		this.a = s.a;
 
 		return this;
 	};

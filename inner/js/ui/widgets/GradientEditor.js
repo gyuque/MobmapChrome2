@@ -167,7 +167,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					}
 				}
 			}
-			
+
 			if (dirty) {
 				this.stopListView.syncFrom(gr);
 			}
@@ -203,7 +203,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		hasEqualStop: function(index, stop) {
 			var item = this.items[index];
 			if (!item) {return false;}
-			
+
 			return item.stopData.equals(stop);
 		},
 		
@@ -231,9 +231,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		syncFrom: function(sourceGradient) {
 			if (this.countStops() === sourceGradient.countStops()) {
-				
+				this.updateViewsFrom(sourceGradient);
 			} else {
 				this.rebuildFrom(sourceGradient);
+			}
+		},
+		
+		updateViewsFrom: function(sourceGradient) {
+			var len = sourceGradient.countStops();
+			for (var i = 0;i < len;++i) {
+				this.syncFromStopData( sourceGradient.getAt(i) );
 			}
 		},
 		
@@ -304,6 +311,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onPositionRangeChange: function() {
 			var pos = this.jPosRange.val() / 20.0;
 			this.stopData.position = pos;
+			this.showPositionText(pos);
 			
 			this.owner.notifyItemColorChange(this);
 		},
@@ -352,7 +360,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			st.r = kc.r;
 			st.g = kc.g;
 			st.b = kc.b;
-			st.a = kc.alpha;
+			st.a = kc.a;
+
 			this.owner.notifyItemColorChange(this);
 		}
 	};
