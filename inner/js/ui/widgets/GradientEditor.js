@@ -477,6 +477,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		syncFromStopData: function(s) {
+			this.stopData.copyFrom(s);
 			this.setPickerColor(s.r, s.g, s.b, s.a);
 			this.syncPosition(s.position);
 		},
