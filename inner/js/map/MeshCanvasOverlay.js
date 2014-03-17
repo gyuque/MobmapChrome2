@@ -137,8 +137,11 @@ if (!window.mobmap) { window.mobmap={}; }
 
 					pt.lat = o_lat + (y + 1) * dlat;
 					pt.lng = o_lng + (x + 1) * dlng;
-					if ((pt.lng - dlng) > mapMaxLng ||
-					    (pt.lat - dlat) > mapMaxLat) { break; }
+					if ((pt.lat - dlat) > mapMaxLat) { break; }
+					if ((pt.lng - dlng) > mapMaxLng) {
+						--nX;
+						break;
+					}
 					
 					this.projectionGrid.calc(pt);
 					var sx2 = Math.floor(pt.screenX);
@@ -149,7 +152,11 @@ if (!window.mobmap) { window.mobmap={}; }
 						oldSY = sy2;
 					}
 
-					if (pt.lng < mapMinLng || pt.lat < mapMinLat) { continue; }
+					if (pt.lat < mapMinLat) { break; }
+					if (pt.lng < mapMinLng) {
+						++sx;
+						continue;
+					}
 
 					// Skip an empty row. But first column sould NOT be skipped to update oldSY.
 					// So break here.
@@ -170,7 +177,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			} // y loop
 			
-			console.log("N:",nDrawnCells);
+			// console.log("N:",nDrawnCells);
 		};
 
 		MeshCanvasOverlay.prototype.mapValueToCellColor = function(val) {

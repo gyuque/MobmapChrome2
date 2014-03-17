@@ -67,6 +67,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				[255,128,0   ,1 ,0.75],
 				[255,  0,0   ,1 ,1   ]
 			]
+		},
+		
+		{
+			name: 'Heat(transparent)',
+			stops: [
+				[0  ,128,255 ,0.5 ,0   ],
+				[0  ,255,128 ,0.5 ,0.25],
+				[255,255,0   ,0.5 ,0.5 ],
+				[255,128,0   ,0.5 ,0.75],
+				[255,  0,0   ,0.5 ,1   ]
+			]
 		}
 	];
 	
@@ -82,7 +93,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			topItem.appendChild(preset_ls);
 			this.appendPresetMenuItems(preset_ls, GradientEditor.PresetGradient);
 			
-			$(menuElement).kendoMenu();
+			$(menuElement).kendoMenu({ select: this.onPresetMenuSelect.bind(this) });
 			containerElement.appendChild(menuElement);
 		},
 		
@@ -90,10 +101,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i in presets) {
 				var presetData = presets[i];
 				var li = $H('li');
+				li.setAttribute('data-index', i);
+				
+				var sampleLabel = $H('span', 'mm-gradient-preset-sample-label');
+				sampleLabel.appendChild( $T(presetData.name) );
+				
+				li.appendChild( sampleLabel );
 				li.appendChild( this.generatePresetGradientPreview(presetData.stops) );
 				
 				parentList.appendChild(li);
 			}
+		},
+		
+		onPresetMenuSelect: function(e) {
+			var selectedElement = e.item;
+			if (!selectedElement) {return;}
+			
+			var selectedIndex = selectedElement.getAttribute('data-index') - 0;
+			this.usePreset(GradientEditor.PresetGradient[selectedIndex]);
+		},
+		
+		usePreset: function(presetData) {
+			this.boundGradient.clearGradient(true);
+			var stops = presetData.stops;
+			var len = stops.length;
+			for (var i = 0;i < len;++i) {
+				var s = stops[i];
+				this.boundGradient.addStop( new MMGradientStop(s[4],  s[0],s[1],s[2],s[3]) );
+			}
+			
+			this.redraw();
+			this.sendColorList();
+			this.boundGradient.fire();
 		},
 		
 		generatePresetGradientPreview: function(presetStops) {
@@ -226,7 +265,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		drawStopCursorsOnBar: function(g, ox, oy, bar_width, gradientSource) {
 			var len = gradientSource.countStops();
 			for (var i = 0;i < len;++i) {
-				var t =  gradientSource.getStopPosition(i) / (len-1);
+				var t =  gradientSource.getStopPosition(i);
 				var sc = gradientSource.getStopAsHTMLColor(i);
 				var bx = Math.floor((bar_width-1) * t);
 				
@@ -344,7 +383,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		updateViewsFrom: function(sourceGradient) {
 			var len = sourceGradient.countStops();
 			for (var i = 0;i < len;++i) {
-				this.syncFromStopData( sourceGradient.getAt(i) );
+				this.items[i].syncFromStopData( sourceGradient.getAt(i) );
 			}
 		},
 		

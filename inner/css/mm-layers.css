@@ -204,3 +204,7 @@ label.varytypeopt {
 .mm-gradient-param-col {
 	text-align: center;
 }
+
+.mm-gradient-preset-sample-label {
+	display: block;
+}
