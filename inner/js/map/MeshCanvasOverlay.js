@@ -27,6 +27,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.renderValueMax = 10000;
 			this.colorList = null;
 			this.valueLabelEnabled = false;
+			this.cellSpacing = 0;
 		}
 		
 		// Inherit
@@ -51,6 +52,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		MeshCanvasOverlay.prototype.setValueLabelEnabled = function(e) {
 			this.valueLabelEnabled = e;
+		};
+
+		MeshCanvasOverlay.prototype.setCellSpacing = function(s) {
+			this.cellSpacing = s;
 		};
 		
 		MeshCanvasOverlay.prototype.draw = function() {
@@ -90,6 +95,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		MeshCanvasOverlay.prototype.render = function() {
 			var use_label = this.valueLabelEnabled;
+			var spacing = this.cellSpacing;
+			var size_reduce = spacing << 1;
 			var nDrawnCells = 0;
 			var g = this.g;
 			var md = this.boundData;
@@ -178,13 +185,15 @@ if (!window.mobmap) { window.mobmap={}; }
 					
 						var cellWidth = sx2 - sx1;
 						var cellHeight = sy1 - sy2;
-						g.fillRect(sx1, sy2, cellWidth, cellHeight);
+						if (cellWidth >= size_reduce && cellHeight >= size_reduce) {
+							g.fillRect(sx1 + spacing, sy2 + spacing, cellWidth - size_reduce, cellHeight - size_reduce);
 						
-						if (use_label) {
-							this.renderCellLabel(g, sx1, sy2, cellWidth, cellHeight, cellVal.val);
-						}
+							if (use_label) {
+								this.renderCellLabel(g, sx1, sy2, cellWidth, cellHeight, cellVal.val);
+							}
 
-						++nDrawnCells;
+							++nDrawnCells;
+						}
 	//					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
 					}
 				}
@@ -205,7 +214,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				g.shadowBlur = 1;
 				g.shadowColor = "#000";
 			
-				g.fillText(labelText, cellOriginX + 2, cellOriginY + cellHeight - 3);
+				g.fillText(labelText, cellOriginX + 2, cellOriginY + cellHeight - 4);
 			}
 			
 			g.restore();

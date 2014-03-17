@@ -255,6 +255,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					overlay.setRenderValueMax(layer.renderValueRange.max);
 					overlay.setColorList(layer.colorRule.cachedColorList);
 					overlay.setValueLabelEnabled(layer.otherRenderingOptions.labeled);
+					overlay.setCellSpacing(layer.otherRenderingOptions.spacing);
 					overlay.render();
 				}
 			}

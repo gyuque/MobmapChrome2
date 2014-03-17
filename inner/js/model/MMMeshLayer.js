@@ -29,7 +29,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 		
 		this.otherRenderingOptions = {
-			labeled: false
+			labeled: false,
+			spacing: 0
 		};
 
 		this.generateDefaultGradient();
@@ -107,6 +108,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.otherRenderingOptions.labeled === e) { return; }
 			
 			this.otherRenderingOptions.labeled = e;
+			this.eventDispatcher().trigger(MMMeshLayer.CELL_APPEARANCE_CHANGE, this);
+		},
+		
+		setCellSpacing: function(s) {
+			if (this.otherRenderingOptions.spacing === s) { return; }
+
+			this.otherRenderingOptions.spacing = s;
 			this.eventDispatcher().trigger(MMMeshLayer.CELL_APPEARANCE_CHANGE, this);
 		}
 	};

@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jValRangeSlider = null;
 		this.jValRangeDispBox = null;
 		this.jLabelCheck = null;
+		this.jSpacingCheck = null;
 		this.expandablePanel.setTitle("Cell appearance");
 
 		this.gradientEditor = new mobmap.GradientEditor( layer.colorRule, this );
@@ -122,19 +123,28 @@ if (!window.mobmap) { window.mobmap={}; }
 		getGradientPreivewLabelText: function() {
 			return this.makeValRangeText();
 		},
-		
+
 		buildCellStyleOptions: function(containerElement) {
 			var chk_l = createCheckbox('mm-mesh-style-check', 'mm-mesh-style-labeled');
-			var lab_l = $H('label');
+			var lab_l = $H('label', 'mm-mesh-style-check-label');
 			lab_l.appendChild( chk_l );
-			lab_l.appendChild( $T('with label') );
+			lab_l.appendChild( $T('Label') );
 			
 			containerElement.appendChild(lab_l);
 			this.jLabelCheck = $(chk_l);
+			
+			var chk_s = createCheckbox('mm-mesh-style-check', 'mm-mesh-style-spacing');
+			var lab_s = $H('label', 'mm-mesh-style-check-label');
+			lab_s.appendChild( chk_s );
+			lab_s.appendChild( $T('Spacing') );
+
+			containerElement.appendChild(lab_s);
+			this.jSpacingCheck = $(chk_s);
 		},
-		
+
 		observeCellOptionsEvents: function() {
 			this.jLabelCheck.click( this.onCellLabelCheckClick.bind(this) );
+			this.jSpacingCheck.click( this.onCellSpacingCheckClick.bind(this) );
 		},
 		
 		onCellLabelCheckClick: function() {
@@ -143,6 +153,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getCellLabelCheck: function() {
 			return !! this.jLabelCheck[0].checked;
+		},
+		
+		onCellSpacingCheckClick: function() {
+			this.boundLayer.setCellSpacing( this.getCellSpacingCheck() ? 1 : 0 );
+		},
+
+		getCellSpacingCheck: function() {
+			return !! this.jSpacingCheck[0].checked;
 		},
 
 		show: function() { this.expandablePanel.show(); },

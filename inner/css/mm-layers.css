@@ -208,3 +208,7 @@ label.varytypeopt {
 .mm-gradient-preset-sample-label {
 	display: block;
 }
+
+.mm-mesh-style-check-label {
+	margin-right: 1em;
+}
