@@ -16,7 +16,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			// Default values
 			this.generatedListeners = [];
-			this.targetPane = 'overlayShadow';
+			this.targetPane = 'overlayLayer';
 			this.canvasOffset = {x: 0, y:0};
 			this.canvasSize = {w: 0, h:0};
 			this.prevRenderRegion = {minLat:-1, maxLat:-1, minLng:-1, maxLng:-1};
