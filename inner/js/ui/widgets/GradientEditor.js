@@ -43,7 +43,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	GradientEditor.PresetGradient = [
 		{
-			name: 'Red',
+			name: 'Red gradient',
 			stops: [
 				[255,0,0 ,0 ,0],
 				[255,0,0 ,1 ,1]
@@ -51,7 +51,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		{
-			name: 'White',
+			name: 'White gradient',
 			stops: [
 				[255,255,255 ,0 ,0],
 				[255,255,255 ,1 ,1]
