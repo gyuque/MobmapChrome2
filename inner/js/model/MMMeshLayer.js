@@ -27,6 +27,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			min: 0,
 			max: 10000
 		};
+		
+		this.otherRenderingOptions = {
+			labeled: false
+		};
 
 		this.generateDefaultGradient();
 	}
@@ -34,6 +38,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	MMMeshLayer.RangePreset = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
 	MMMeshLayer.COLOR_RULE_CHANGE = "mm-mesh-layer-event-color-rule-change";
 	MMMeshLayer.RENDER_VALUE_RANGE_CHANGE = "mm-mesh-layer-event-render-value-range-change";
+	MMMeshLayer.CELL_APPEARANCE_CHANGE = "mm-mesh-layer-event-cell-appearance-change";
 	
 	MMMeshLayer.prototype = {
 		eventDispatcher: mobmap.MMLayerBase.eventDispatcher,
@@ -96,6 +101,13 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.renderValueRange.max = vmax;
 			this.eventDispatcher().trigger(MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this);
+		},
+		
+		setCellLabelEnabled: function(e) {
+			if (this.otherRenderingOptions.labeled === e) { return; }
+			
+			this.otherRenderingOptions.labeled = e;
+			this.eventDispatcher().trigger(MMMeshLayer.CELL_APPEARANCE_CHANGE, this);
 		}
 	};
 	

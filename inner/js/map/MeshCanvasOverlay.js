@@ -26,6 +26,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.renderValueMax = 10000;
 			this.colorList = null;
+			this.valueLabelEnabled = false;
 		}
 		
 		// Inherit
@@ -48,6 +49,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.colorList = cl;
 		};
 
+		MeshCanvasOverlay.prototype.setValueLabelEnabled = function(e) {
+			this.valueLabelEnabled = e;
+		};
+		
 		MeshCanvasOverlay.prototype.draw = function() {
 			if (!this.canvas) {
 				this.canvas = $H('canvas');
@@ -84,6 +89,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 		
 		MeshCanvasOverlay.prototype.render = function() {
+			var use_label = this.valueLabelEnabled;
 			var nDrawnCells = 0;
 			var g = this.g;
 			var md = this.boundData;
@@ -170,7 +176,14 @@ if (!window.mobmap) { window.mobmap={}; }
 						var cellColor = this.mapValueToCellColor(cellVal.val);
 						g.fillStyle = cellColor;
 					
-						g.fillRect(sx1, sy2, (sx2-sx1), (sy1-sy2));
+						var cellWidth = sx2 - sx1;
+						var cellHeight = sy1 - sy2;
+						g.fillRect(sx1, sy2, cellWidth, cellHeight);
+						
+						if (use_label) {
+							this.renderCellLabel(g, sx1, sy2, cellWidth, cellHeight, cellVal.val);
+						}
+
 						++nDrawnCells;
 	//					g.clearRect(sx1+1, sy2+1, (sx2-sx1)-2, (sy1-sy2)-2);
 					}
@@ -180,6 +193,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			// console.log("N:",nDrawnCells);
 		};
 
+		MeshCanvasOverlay.prototype.renderCellLabel = function(g, cellOriginX, cellOriginY, cellWidth, cellHeight, value) {
+			g.save();
+			g.font = '10px sans-serif';
+			var labelText = value.toString();
+			var m = g.measureText(labelText);
+			if (m.width < (cellWidth - 5)) {
+				g.fillStyle = "#fff";
+				g.shadowOffsetX = 0;
+				g.shadowOffsetY = 1;
+				g.shadowBlur = 1;
+				g.shadowColor = "#000";
+			
+				g.fillText(labelText, cellOriginX + 2, cellOriginY + cellHeight - 3);
+			}
+			
+			g.restore();
+		};
+		
 		MeshCanvasOverlay.prototype.mapValueToCellColor = function(val) {
 			var a = val / this.renderValueMax;
 			if (this.colorList) {

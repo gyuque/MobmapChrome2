@@ -116,7 +116,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
-			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) );
+			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
+			 bind( mobmap.MMMeshLayer.CELL_APPEARANCE_CHANGE, this.onLayerCellAppearanceChange.bind(this) );
 
 			// Observe layer internal events
 
@@ -164,6 +165,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerColoringRuleChange: function() {
+			this.redrawMap();
+		},
+		
+		onLayerCellAppearanceChange: function() {
 			this.redrawMap();
 		},
 		
@@ -249,6 +254,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					overlay.setPickTime(targetTimeSec);
 					overlay.setRenderValueMax(layer.renderValueRange.max);
 					overlay.setColorList(layer.colorRule.cachedColorList);
+					overlay.setValueLabelEnabled(layer.otherRenderingOptions.labeled);
 					overlay.render();
 				}
 			}

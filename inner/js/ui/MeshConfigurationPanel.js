@@ -14,11 +14,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(this.element);
 		this.jValRangeSlider = null;
 		this.jValRangeDispBox = null;
-		this.expandablePanel.setTitle("Mesh coloring");
+		this.jLabelCheck = null;
+		this.expandablePanel.setTitle("Cell appearance");
 
 		this.gradientEditor = new mobmap.GradientEditor( layer.colorRule, this );
 		this.configurePanelContent();
 		this.observeValueRangeControllerEvents();
+		this.observeCellOptionsEvents();
 		this.observeModelChangeEvents();
 		
 		this.syncFromData();
@@ -35,6 +37,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			ec.appendChild( this.gradientEditor.element );
 			
 			this.buildValueRangeController(ec);
+			this.buildCellStyleOptions(ec);
 		},
 		
 		buildValueRangeController: function(container) {
@@ -118,6 +121,28 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getGradientPreivewLabelText: function() {
 			return this.makeValRangeText();
+		},
+		
+		buildCellStyleOptions: function(containerElement) {
+			var chk_l = createCheckbox('mm-mesh-style-check', 'mm-mesh-style-labeled');
+			var lab_l = $H('label');
+			lab_l.appendChild( chk_l );
+			lab_l.appendChild( $T('with label') );
+			
+			containerElement.appendChild(lab_l);
+			this.jLabelCheck = $(chk_l);
+		},
+		
+		observeCellOptionsEvents: function() {
+			this.jLabelCheck.click( this.onCellLabelCheckClick.bind(this) );
+		},
+		
+		onCellLabelCheckClick: function() {
+			this.boundLayer.setCellLabelEnabled( this.getCellLabelCheck() );
+		},
+		
+		getCellLabelCheck: function() {
+			return !! this.jLabelCheck[0].checked;
 		},
 
 		show: function() { this.expandablePanel.show(); },
