@@ -15,7 +15,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.meshLoaderCtrl = new mobmap.MeshLoaderController(this);
 		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
 		this.loadErrorDialog = new mobmap.LoadErrorDialog();
+
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
+		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
@@ -173,6 +175,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.digitalTyphoonDialog.showDialogOnCenter();
 		},
 		
+		onDigitalTyphoonDialogOK: function() {
+			console.log( this.digitalTyphoonDialog.getURL() );
+		},
+		
 		afterLocalCSVPick: function(pickedFile) {
 			if (pickedFile) {
 				this.csvPreview.open();
@@ -223,7 +229,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (pj) {
 				pj.removeLayerAndNotify(targetLayer);
 			}
-//			targetLayer.destroy();
 		},
 		
 		// Selection operations
