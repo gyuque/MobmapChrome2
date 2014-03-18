@@ -15,7 +15,7 @@
   "version": "1.9.0",
   "description": "Mobmap Javascript Client",
   "permissions": [
-     "clipboardWrite", {"fileSystem": ["write"]} ,"storage", "http://*/*.csv","https://*/*.csv"
+     "clipboardWrite", {"fileSystem": ["write"]} ,"storage", "http://*/*.csv","https://*/*.csv", "http://agora.ex.nii.ac.jp/*"
   ],
 
   "sandbox": {

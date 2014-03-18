@@ -28,6 +28,16 @@
 					
 				});
 
+		},
+		
+		startDigitalTyphoonDownload: function(params) {
+			chrome.app.window.create('typhoon-download-console.html', {
+				 minWidth: 320,
+				 minHeight: 240,
+
+				}, function(win){
+					win.contentWindow.targetURL = params.url;
+				});
 		}
 	};
 })();
