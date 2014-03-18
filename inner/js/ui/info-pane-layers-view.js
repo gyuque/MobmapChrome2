@@ -122,8 +122,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			var abLocalMovCSV = this.generateWelcomeActionButton("images/mov-data-icon.png", "Moving Objects", "from Local CSV File");
 			var abLocalMeshCSV = this.generateWelcomeActionButton("images/mesh-data-icon.png", "Mesh", "from Local CSV File");
+			var abTyphoonJson = this.generateWelcomeActionButton("images/typhoon-data-icon.png", "Digital Typhoon", "from Web Page");
 			$(abLocalMovCSV).click( this.onWelcomeLocalCSVClick.bind(this) );
 			$(abLocalMeshCSV).click( this.onLoadMeshButtonClick.bind(this) );
+			$(abTyphoonJson).click( this.onTyphoonButtonClick.bind(this) );
 						
 			var src_h = $H('header', 'mm-welcome-heading');
 			src_h.appendChild($T('Select initial data.'));
@@ -135,6 +137,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			*/
 			sources.appendChild(abLocalMovCSV);
 			sources.appendChild(abLocalMeshCSV);
+			sources.appendChild(abTyphoonJson);
 			box.appendChild(sources);
 
 			this.containerElement.appendChild(box);
@@ -171,6 +174,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLoadMeshButtonClick: function() {
 			this.ownerApp.loadLocalCSVMeshData();
+		},
+		
+		onTyphoonButtonClick: function() {
+			this.ownerApp.loadDigitalTyphoon();
 		},
 		
 		hideWelcomeBox: function() {

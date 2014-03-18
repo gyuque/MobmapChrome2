@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.meshLoaderCtrl = new mobmap.MeshLoaderController(this);
 		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
 		this.loadErrorDialog = new mobmap.LoadErrorDialog();
+		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		
 		this.appScreen = appScreen;
 		this.setupScreen();
@@ -166,6 +167,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		loadLocalCSVMeshData: function() {
 			this.localMeshFilePicker.open();
+		},
+		
+		loadDigitalTyphoon: function() {
+			this.digitalTyphoonDialog.showDialogOnCenter();
 		},
 		
 		afterLocalCSVPick: function(pickedFile) {

@@ -10,7 +10,7 @@
 
 		chrome.app.window.create(url, {
 			 minWidth: 800,
-			 minHeight: 440,
+			 minHeight: 470,
 
 			// For debugging :)
 			// I want to place development tools at the center.
