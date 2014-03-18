@@ -12,6 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		LoadWillStart: 'mm-layer-model-event-load-will-start',
 		LoadProgressChange: 'mm-layer-model-event-load-progress-change',
 		LoadFinish: 'mm-layer-model-event-load-progress-finish',
+		VisibilityChange: 'mm-layer-model-event-visibility-change',
 		RequestDelete: 'mm-layer-model-event-request-delete',
 		Destroy: 'mm-layer-model-event-destroy'
 	};
@@ -26,6 +27,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.layerId = mobmap.layerGetNextId();
 		this.jElement = $( createEventDummyElement() );
 		this.ownerList = null;
+		this.visible = true;
 		this.primaryView = null;
 		this.capabilities = LayerCapability.MarkerRenderable | LayerCapability.SpatialSelectable;
 		this.dataTimeRange = {
@@ -81,6 +83,20 @@ if (!window.mobmap) { window.mobmap={}; }
 	function layerbase_removeAllEventHandlers() {
 		this.eventDispatcher().unbind();
 	}
+	
+	function layerbase_toggleVisibility() {
+		var newVal = !this.visible;
+		this.setVisibility(newVal);
+	}
+
+	function layerbase_setVisibility(v) {
+		if (this.visible !== v) {
+			this.visible = v;
+			this.eventDispatcher().trigger(LayerEvent.VisibilityChange, this);
+		}
+	}
+
+	// - - - - - - - - - - - - - - - - - - - -
 
 	MovingObjectLayer.prototype = {
 		// Common methods
@@ -91,6 +107,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		hasPrimaryView: layerbase_hasPrimaryView,
 		requestDelete: layerbase_requestDelete,
 		destroy: layerbase_destroy,
+		toggleVisibility: layerbase_toggleVisibility,
+		setVisibility: layerbase_setVisibility,
 		
 		initTimeRange: function() {
 			this.dataTimeRange.start = Number.MAX_VALUE;
@@ -198,7 +216,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		setParentEventElement: layerbase_setParentEventElement,
 		hasPrimaryView: layerbase_hasPrimaryView,
 		requestDelete: layerbase_requestDelete,
-		destroy: layerbase_destroy
+		destroy: layerbase_destroy,
+		toggleVisibility: layerbase_toggleVisibility,
+		setVisibility: layerbase_setVisibility
 	};
 	
 	aGlobal.mobmap.LayerCapability = LayerCapability;

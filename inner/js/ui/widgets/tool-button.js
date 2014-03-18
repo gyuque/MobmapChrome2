@@ -33,6 +33,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 	
+	ToolButton.prototype.addClass = function(c) {
+		this.j.addClass(c);
+	};
+	
 	ToolButton.prototype.setSelectedStyle = function(b) {
 		var cls = "selected";
 		if (b) {
@@ -55,6 +59,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	                 '0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QsFBiwBaMFD+AAAAB1p'+
 	                 'VFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFUlEQVQI12P8//8/Az7AxEA'+
 	                 'AUK4AAIcdAwVSsWMgAAAAAElFTkSuQmCC';
+	
+	ToolButton.getSharedSpacerData = function() { return SpacerData; }
 	
 	// Sprites -----------------------------------------------
 	function ToolButtonSpriteManager(spriteImageURL) {

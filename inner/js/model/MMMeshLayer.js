@@ -7,6 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.layerId = mobmap.layerGetNextId();
 		this.jElement = $(document.createElement('span'));
 		this.ownerList = null;
+		this.visible = true;
 		this.primaryView = null;
 		this.capabilities = mobmap.LayerCapability.MeshRenderable;
 		this.dataTimeRange = {
@@ -48,6 +49,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		hasPrimaryView: mobmap.MMLayerBase.hasPrimaryView,
 		requestDelete: mobmap.MMLayerBase.requestDelete,
 		destroy: mobmap.MMLayerBase.destroy,
+		toggleVisibility: mobmap.MMLayerBase.toggleVisibility,
+		setVisibility: mobmap.MMLayerBase.setVisibility,
 
 		setMeshData: function(md) {
 			this.meshData = md;

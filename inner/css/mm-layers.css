@@ -81,6 +81,18 @@
 	opacity: 0.8;
 }
 
+.layer-visibility-toggle {
+	position: absolute;
+	top: 1px;
+	right: 18px;
+	cursor: pointer;
+	background: url(../images/eyes.png) no-repeat top left;
+}
+
+.layer-visibility-toggle.selected {
+	background-position: top right;
+}
+
 .mm-layer-delete-button:active {
 	opacity: 1;
 }

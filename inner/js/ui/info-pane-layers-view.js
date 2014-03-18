@@ -219,7 +219,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					 bind(LE.LoadWillStart, this.willStartLayerLoad.bind(this)).
 					 bind(LE.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
 					 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
-					 bind(LE.Destroy, this.onLayerDestroy.bind(this));
+					 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
+					 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this, layer));
 					
 					if (layer.localSelectionPool) {
 						layer.
@@ -272,6 +273,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (layer.hasPrimaryView()) {
 				layer.primaryView.updateSelectionCount();
 			}
+		},
+		
+		onLayerVisibilityChange: function(layer, e) {
+			if (layer.hasPrimaryView()) {
+				var hiddenStyle = !layer.visible;
+				layer.primaryView.setVisibilityButtonHiddenStyle(hiddenStyle);
+			}
 		}
 	};
 	
@@ -285,6 +293,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.markerPanel = null;
 		this.meshPanel = null;
 		
+		this.visibilityButton = null;
 		this.jSelCountIndicator = null;
 		this.element = $H('div', 'mm-layer-view-item-box');
 		this.jElement = $(this.element);
@@ -307,8 +316,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jSelCountIndicator = $(selCountEl);
 			
 			this.element.appendChild(caption);
-			var delbtn = this.addCaptionButtons(caption);
-			$(delbtn).click(this.onLayerDeleteButtonClick.bind(this));
+
+			// Buttons on caption bar
+			this.addCaptionButtons(caption);
 
 			var sub_caption = $H('h4');
 			sub_caption.appendChild($T('CSV File'));
@@ -346,7 +356,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			img.src = 'images/delete-symbol.png';
 			containerElement.appendChild(img);
 
-			return img;
+			var v_btn = generateLayerVisibilityButton();
+			containerElement.appendChild(v_btn.element);
+			
+			$(img).click(this.onLayerDeleteButtonClick.bind(this));
+			v_btn.eventDispatcher().click(this.onLayerVisibilityButtonClick.bind(this));
+			this.visibilityButton = v_btn;
 		},
 
 		makeLayerTypeString: function() {
@@ -431,9 +446,23 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerDeleteButtonClick: function() {
 			this.boundLayer.requestDelete();
+		},
+		
+		onLayerVisibilityButtonClick: function() {
+			this.boundLayer.toggleVisibility();
+		},
+		
+		setVisibilityButtonHiddenStyle: function (h) {
+			this.visibilityButton.setSelectedStyle(h);
 		}
 	};
-	
+
+	function generateLayerVisibilityButton() {
+		var btn = new mobmap.ToolButton("layer-visibility", 16, 15);
+		btn.addClass('layer-visibility-toggle');
+		return btn;
+	}
+
 	// +++ Export +++
 	aGlobal.mobmap.LayersView = LayersView;
 })(window);
