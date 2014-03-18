@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.pickTime = 0;
 			
 			// Default values
+			this.visible = true;
 			this.generatedListeners = [];
 			this.targetPane = 'overlayLayer';
 			this.canvasOffset = {x: 0, y:0};
@@ -32,6 +33,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Inherit
 		MeshCanvasOverlay.prototype = new google.maps.OverlayView();
+
+		MeshCanvasOverlay.prototype.setVisibility = mobmap.GLMobLayer.overlaybase_setVisibility;
 
 		MeshCanvasOverlay.prototype.bindData = function(meshData) {
 			this.boundData = meshData;
@@ -130,6 +133,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var pt = _tempProjPt;
 
 			g.clearRect(0,0, this.canvasSize.w, this.canvasSize.h);
+			if (!this.visible) { return; }
+			
 			var oldSY = null;
 			for (var y = sy;y < (sy+nY);++y) {
 

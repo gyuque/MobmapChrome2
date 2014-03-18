@@ -33,6 +33,7 @@ function installMobLayer(pkg) {
 		// WebGL objects ------------------------------
 		
 		// Default values
+		this.visible = true;
 		this.generatedListeners = [];
 		this.targetPane = 'overlayLayer';
 		this.canvasOffset = {x: 0, y:0};
@@ -54,6 +55,9 @@ function installMobLayer(pkg) {
 	// Inherit
 	GLMobLayer.prototype = new google.maps.OverlayView();
 
+	GLMobLayer.overlaybase_setVisibility = function(v) { this.visible = v; };
+	GLMobLayer.prototype.setVisibility = GLMobLayer.overlaybase_setVisibility;
+	
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {
 		if (!this.canvas) {
@@ -244,9 +248,10 @@ function installMobLayer(pkg) {
 		gl.clearColor(0.0, 0.0, 0.0, 0.0);
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-		this.renderLayerStack();
-
+		if (this.visible) {
+			this.renderLayerStack();
+		}
+		
 		gl.flush();
 	};
 	

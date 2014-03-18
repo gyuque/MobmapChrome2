@@ -115,6 +115,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
+			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.CELL_APPEARANCE_CHANGE, this.onLayerCellAppearanceChange.bind(this) );
@@ -170,6 +171,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerCellAppearanceChange: function() {
 			this.redrawMap();
+		},
+		
+		onLayerVisibilityChange: function(e, sourceLayer) {
+			var ov = this.findMapOverlayFor(sourceLayer);
+			if (ov) {
+				ov.setVisibility(sourceLayer.visible);
+				this.redrawMap();
+			}
 		},
 		
 		onLayerLoadFinish: function(e, sourceLayer) {
