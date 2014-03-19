@@ -28,7 +28,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.newProject();
 
 //Typhoon TEST---------------------------------------------------------------------------------------------
-this.requestDigitalTyphoonDownload('http://agora.ex.nii.ac.jp/digital-typhoon/summary/wnp/s/201115.html.ja');
+//this.requestDigitalTyphoonDownload('http://agora.ex.nii.ac.jp/digital-typhoon/summary/wnp/s/201115.html.ja');
 	}
 	
 	Mobmap2App.PROJECT_SET_EVENT = 'mm-app-project-set';
