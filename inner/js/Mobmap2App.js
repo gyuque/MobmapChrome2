@@ -173,8 +173,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		loadDigitalTyphoon: function() {
 //Typhoon TEST---------------------------------------------------------------------------------------------
-setTimeout((function(){ this.requestDigitalTyphoonDownload('http://agora.ex.nii.ac.jp/digital-typhoon/summary/wnp/s/201115.html.ja')}).bind(this),100);
-return;
+//setTimeout((function(){ this.requestDigitalTyphoonDownload('http://agora.ex.nii.ac.jp/digital-typhoon/summary/wnp/s/201115.html.ja')}).bind(this),100);
+//return;
 			this.digitalTyphoonDialog.showDialogOnCenter();
 		},
 		

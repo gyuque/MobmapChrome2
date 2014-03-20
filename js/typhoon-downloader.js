@@ -64,6 +64,7 @@
 		if (ok) {
 			puts("[Success]");
 			window.sendInnerMessage("loadDigitalTyphoonJson", {data: responseText});
+			window.closeSelf();
 		} else {
 			puts("[Bad data]");
 		}

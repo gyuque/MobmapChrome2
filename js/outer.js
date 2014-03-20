@@ -46,6 +46,7 @@
 				 minHeight: 240,
 
 				}, function(win){
+					win.contentWindow.closeSelf = function() { win.close(); };
 					win.contentWindow.sendInnerMessage = sendInnerMessage;
 					win.contentWindow.targetURL = params.url;
 				});
