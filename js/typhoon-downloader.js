@@ -63,6 +63,7 @@
 		var ok = tinyCheckJSON(responseText);
 		if (ok) {
 			puts("[Success]");
+			window.sendInnerMessage("loadDigitalTyphoonJson", {data: responseText});
 		} else {
 			puts("[Bad data]");
 		}

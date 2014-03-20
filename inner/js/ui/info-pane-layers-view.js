@@ -328,7 +328,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.addCaptionButtons(caption);
 
 			var sub_caption = $H('h4');
-			sub_caption.appendChild($T('CSV File'));
+			sub_caption.appendChild($T('No data'));
 			this.element.appendChild(sub_caption);
 			this.subCaptionElement = sub_caption;
 

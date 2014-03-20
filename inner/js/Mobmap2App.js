@@ -26,9 +26,6 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.getToolPane().sendChosenPlaySpeed( this.playController );
 		this.newProject();
-
-//Typhoon TEST---------------------------------------------------------------------------------------------
-//this.requestDigitalTyphoonDownload('http://agora.ex.nii.ac.jp/digital-typhoon/summary/wnp/s/201115.html.ja');
 	}
 	
 	Mobmap2App.PROJECT_SET_EVENT = 'mm-app-project-set';
@@ -175,6 +172,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		loadDigitalTyphoon: function() {
+//Typhoon TEST---------------------------------------------------------------------------------------------
+setTimeout((function(){ this.requestDigitalTyphoonDownload('http://agora.ex.nii.ac.jp/digital-typhoon/summary/wnp/s/201115.html.ja')}).bind(this),100);
+return;
 			this.digitalTyphoonDialog.showDialogOnCenter();
 		},
 		
@@ -184,6 +184,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		requestDigitalTyphoonDownload: function(url) {
 			Mobmap2App.sendOuterMessage('startDigitalTyphoonDownload', {url: url});
+		},
+		
+		onMessage_loadDigitalTyphoonJson: function(params) {
+			this.readDigitalTyphoonJSON(params.data);
 		},
 		
 		afterLocalCSVPick: function(pickedFile) {
@@ -215,6 +219,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			csvLoader.setAttributeMap(attrMap);
 			newLayer.loadFromLoader(csvLoader);
+		},
+		
+		readDigitalTyphoonJSON: function(source) {
+			var j = JSON.parse(source);
+
+			this.layersView.hideWelcomeBox();
+			var newLayer = this.currentProject.addMovingObjectLayer();
+			
+			var loader = new mobmap.DigitalTyphoonLoader(newLayer);
+			loader.loadFromObject(j);
 		},
 		
 		meshldrctrl_AfterLoadFinish: function(controller) {

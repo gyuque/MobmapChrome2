@@ -23,6 +23,7 @@ var theApp = null;
 		mobmap.installMobLayer();
 		mobmap.installMeshOverlay();
 		$('#content-pane').empty();
+		observeMessage();
 		
 		var appScreen = new mobmap.Mobmap3PanesScreen(
 							'mobmap-panes-view',
@@ -33,6 +34,25 @@ var theApp = null;
 		theApp = new mobmap.Mobmap2App(appScreen);
 	}
 
+	function observeMessage() {
+		window.addEventListener("message", onReceiveMessage, false);
+	}
+	
+	function onReceiveMessage(e) {
+		if (!e.data) {return;}
+		if (e.data.indexOf('{') < 0) {return;}
+
+		var dat = JSON.parse(e.data);
+
+		if (dat.command) {
+			var method_name = 'onMessage_' + dat.command;
+			if (theApp[method_name]) {
+				theApp[method_name](dat.params);
+			} else {
+				console.log("Message handler not found: " + method_name);
+			}
+		}
+	}
 
 	// Hook
 	window.onload = main;

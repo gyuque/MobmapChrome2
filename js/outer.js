@@ -17,6 +17,16 @@
 		}
 	}
 	
+	function sendInnerMessage(command, params) {
+		var msg = JSON.stringify({
+			command: command,
+			params: params
+		});
+
+		var inner = document.getElementById('sandbox-frame');
+		inner.contentWindow.postMessage(msg, '*');
+	}
+	
 	var CommandProcs = {
 		openDownloadServiceWindow: function() {
 
@@ -36,6 +46,7 @@
 				 minHeight: 240,
 
 				}, function(win){
+					win.contentWindow.sendInnerMessage = sendInnerMessage;
 					win.contentWindow.targetURL = params.url;
 				});
 		}

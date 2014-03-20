@@ -123,10 +123,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.initTimeRange(); // Set invalid time range at first
 			
 			this.sourceLoader = loader;
-			this.movingData = new mobmap.MovingData();
+			this.newMovingData();
 
 			this.eventDispatcher().trigger(LayerEvent.LoadWillStart, this);
 			loader.startFullLoad(this);
+		},
+		
+		newMovingData: function() {
+			this.movingData = new mobmap.MovingData();
+			return this.movingData;
 		},
 
 		getSourceFileName: function() {
