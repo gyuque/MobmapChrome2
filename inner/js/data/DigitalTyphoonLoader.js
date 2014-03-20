@@ -4,6 +4,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 
 	function DigitalTyphoonLoader(targetLayer) {
+		this.fileName = null;
+		this.typhoonId = null;
+		
 		this.targetLayer = targetLayer;
 		targetLayer.sourceLoader = this;
 	}
@@ -11,12 +14,16 @@ if (!window.mobmap) { window.mobmap={}; }
 	DigitalTyphoonLoader.prototype = {
 		loadFromObject: function(geojsonObject) {
 			this.fileName = geojsonObject.properties.display_name;
+			this.typhoonId = parseInt( geojsonObject.properties.id , 10);
 			
 			var lyr = this.targetLayer;
+			lyr.initTimeRange();
 			lyr.newMovingData();
 			lyr.eventDispatcher().trigger(mobmap.LayerEvent.LoadWillStart, lyr);
 			
 			this.readFeatures( geojsonObject.features );
+			
+			lyr.finishLoading();
 		},
 		
 		readFeatures: function(featureList) {
@@ -32,7 +39,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			var lng = parseFloat(g.coordinates[0]);
 			var lat = parseFloat(g.coordinates[1]);
 			
-			console.log(lat, lng)
+			var props = featureSource.properties;
+			var t = parseInt(props.time, 10);
+			
+			var record = mobmap.MovingData.createEmptyRecord();
+			record._id   = this.typhoonId;
+			record._time = t;
+			record.x     = lng;
+			record.y     = lat;
+			
+			this.targetLayer.registerNewMovingObjectRecord(record);
 		}
 	}
 	

@@ -163,8 +163,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			// Copy data from CSV fields to record object
 			this.sourceLoader.applyAttributeMapToFieldList(fields, record);
+			this.registerNewMovingObjectRecord(record);
+		},
+		
+		registerNewMovingObjectRecord: function(record) {
 			this.movingData.register(record);
-			
 			this.updateDataTimeRange(record._time);
 		},
 		
@@ -172,7 +175,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (t < this.dataTimeRange.start) {
 				this.dataTimeRange.start = t;
 			}
-			
+
 			if (t > this.dataTimeRange.end) {
 				this.dataTimeRange.end = t;
 			}
@@ -183,12 +186,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		csvloaderLoadFinish: function() {
+			this.finishLoading();
+		},
+		
+		finishLoading: function() {
 			this.dataReady = true;
 			this.movingData.close();
-			registerAdditionalAttributes(this.movingData, this.sourceLoader.attrMap);
 			
+			if (this.sourceLoader.attrMap) {
+				registerAdditionalAttributes(this.movingData, this.sourceLoader.attrMap);
+			}
+
 			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
-			//console.log(this.movingData)
 		},
 		
 		getNumOfMarkerVariations: function() {
