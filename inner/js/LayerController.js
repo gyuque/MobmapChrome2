@@ -113,6 +113,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			lyr._lctrlObserved = true;
 			lyr.eventDispatcher().
 			 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
+			 bind(LE.LoadError, this.onLayerLoadError.bind(this)).
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
@@ -147,6 +148,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		redrawMap: function() {
 			if (this.ownerApp) { this.ownerApp.redrawMap();}
+		},
+		
+		onLayerLoadError: function(e, sourceLayer) {
+			if (this.ownerApp) {
+				this.ownerApp.removeBadLayer(sourceLayer);
+			}
 		},
 		
 		onLayerMarkerOptionsChange: function(sourceLayer, e) {

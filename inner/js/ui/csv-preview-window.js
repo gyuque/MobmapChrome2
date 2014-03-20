@@ -82,7 +82,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var chkIgnore = createCheckbox();
 			var lbIgnore = createWrapperLabel(chkIgnore, "Ignore first line"); 
-			this.jIgnoreFirstLineCheck = $(chkIgnore);
+			this.jIgnoreFirstLineCheck = $(chkIgnore).
+			 hide().
+			 click( this.onIgnoreFirstCheckClick.bind(this) );
 			
 			containerElement.appendChild(lbIgnore);
 			buttonContainer.appendChild(loadButton);
@@ -92,6 +94,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		onFullLoadClick: function() {
 			this.csvLoader.setIgnoreFirstLine( this.getIgnoreFirstChecked() );
 			this.ownerApp.loadCSVWithLoader(this.csvLoader);
+		},
+		
+		onIgnoreFirstCheckClick: function() {
+			var currentVal = this.getIgnoreFirstChecked();
+			this.previewTable.setIgnoreFirstLineStyle(currentVal);
 		},
 		
 		getIgnoreFirstChecked: function() {
@@ -129,6 +136,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.previewTable = new CSVPreviewTable(previewRecords, this);
 				var table = this.previewTable.generateTable();
 				this.previewContainer.appendChild(table);
+				this.jIgnoreFirstLineCheck.show();
 
 				// Show initial status
 				this.previewTable.showSetting(this.attrMap);
@@ -212,6 +220,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			}).bind(this) );
 		},
 		
+		setIgnoreFirstLineStyle: function(ig) {
+			var j = this.jTable;
+			if (!j) {return;}
+
+			if (ig) {
+				j.addClass('ignore-first');
+			} else {
+				j.removeClass('ignore-first');
+			}
+		},
+		
 		onPickerClick: function(element) {
 			var attrName = element.getAttribute(DATAATTR_ANAME);
 			var colIndex = parseInt( element.getAttribute(DATAATTR_COLI) , 10);
@@ -255,7 +274,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var len = ls.length;
 			for (var i = 0;i < len;++i) {
 				var fields = ls[i];
-				var tr = $H('tr');
+				var tr = $H('tr', 'mm-csv-preview-datarow-'+i);
 				this.dataRows.push(tr);
 				
 				this.addDataRowColumns(tr, fieldsCount, fields, i+1);

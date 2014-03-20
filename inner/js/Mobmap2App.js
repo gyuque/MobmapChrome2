@@ -231,12 +231,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			loader.loadFromObject(j);
 		},
 		
+		removeBadLayer: function(targetLayer) {
+			this.getCurrentProject().removeLayerAndNotify(targetLayer);
+			this.loadErrorDialog.showDialog();
+		},
+		
 		meshldrctrl_AfterLoadFinish: function(controller) {
 		},
 		
 		meshldrctrl_ErrorOccurred: function(controller, err, targetLayer) {
-			this.getCurrentProject().removeLayerAndNotify(targetLayer);
-			this.loadErrorDialog.showDialog();
+			this.removeBadLayer(targetLayer);
 		},
 		
 		confirmLayerDelete: function(targetLayer) {

@@ -106,3 +106,9 @@ tr[data-attr-row-name="y"]    td:hover { background-color: #ddf; }
 .a-specified-cfloat input {
 	background-color: #cfd4c4;
 }
+
+.ignore-first tr.mm-csv-preview-datarow-0 td[data-sample-col] {
+	background-color: #eee !important;
+	color: transparent !important;
+	text-shadow: 0 0 3px #777;
+}

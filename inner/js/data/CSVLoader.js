@@ -75,7 +75,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		setIgnoreFirstLine: function(ig) {
-			console.log("ToDo: implement", ig);
+			this.baseLoader.ignoreFirstLineEnabled = ig;
 		}
 	};
 	
@@ -180,6 +180,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Base ---------------------------------------------------
 	function HugeCSVLoader(inFile) {
+		this.ignoreFirstLineEnabled = false;
 		this.inputFile = inFile;
 		this.inputBytes = null;
 		this.loadJob = {
@@ -293,7 +294,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.loadJob.currentPos = ++pos;
 //			console.log(pos);
 			try {
-				this.loadJob.listenerObject.csvloaderReadLine(temp_fields, this.loadJob.lineno-1);
+				if (this.ignoreFirstLineEnabled && this.loadJob.lineno === 1) {
+					// SKIP
+				} else {
+					this.loadJob.listenerObject.csvloaderReadLine(temp_fields, this.loadJob.lineno-1);
+				}
 			} catch(e) {
 				if (this.loadJob.listenerObject.csvloaderLineError) {
 					this.loadJob.listenerObject.csvloaderLineError(e);

@@ -12,6 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		LoadWillStart: 'mm-layer-model-event-load-will-start',
 		LoadProgressChange: 'mm-layer-model-event-load-progress-change',
 		LoadFinish: 'mm-layer-model-event-load-progress-finish',
+		LoadError: 'mm-layer-model-event-load-error',
 		VisibilityChange: 'mm-layer-model-event-visibility-change',
 		RequestDelete: 'mm-layer-model-event-request-delete',
 		Destroy: 'mm-layer-model-event-destroy'
@@ -183,6 +184,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		csvloaderLineError: function(e) {
 			console.log("Loader error at MMLayer#csvloaderLineError", e)
+			this.eventDispatcher().trigger(LayerEvent.LoadError, this);
 		},
 		
 		csvloaderLoadFinish: function() {
