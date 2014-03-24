@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.darkMapType = null;
 		this.pointingMode = PMODE_DEFAULT;
 		this.nowCapturingDrag = false;
+		this.prevRenderTargetTime = -1;
 
 		// Preview overlays
 		this.selectionPolygonpath = null;
@@ -138,11 +139,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetTime = targetProject.currentDateTime;
 			var sec = targetTime.getCurrentTimeAsInt();
 			
+			var dt = sec - this.prevRenderTargetTime;
+			var timeDir = (dt > 0) ? 1 : (dt < 0) ? -1 : 0;
+			
 			// ----------------------------------------------------------------------------
 			//  Rendering routine is not here.
 			//  Event observer will render overlays.
-			this.eventDispatcher().trigger(MapPane.NEED_OVERLAYS_RENDER_EVENT, [this, sec]);
+			this.eventDispatcher().trigger(MapPane.NEED_OVERLAYS_RENDER_EVENT, [this, sec, timeDir]);
 			// ----------------------------------------------------------------------------
+			
+			this.prevRenderTargetTime = sec;
 		},
 		
 		enterDragSelectionMode: function() {

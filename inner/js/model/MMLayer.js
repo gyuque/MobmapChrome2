@@ -21,6 +21,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var LayerCapability = {
 		MarkerRenderable: 0x01,
 		MeshRenderable  : 0x02,
+		TyphoonMarkerRecommended: 0x04,
 		SpatialSelectable: 0x10
 	};
 

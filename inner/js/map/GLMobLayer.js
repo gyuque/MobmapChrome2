@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 function installMobLayer(pkg) {
 	'use strict';
 	var kZeroPt = null;
+	var SharedCloudImage = null;
 	var tempPt1 = {x:0,y:0};
 	var tempPt2 = {x:0,y:0};
 
@@ -21,6 +22,7 @@ function installMobLayer(pkg) {
 		
 		// WebGL objects ------------------------------
 		this.gl = null;
+		this.shaderType = GLMobLayer.ShaderType.Normal;
 		this.vertexShader   = null;
 		this.fragmentShader = null;
 		this.shaderProgram  = null;
@@ -34,6 +36,7 @@ function installMobLayer(pkg) {
 		
 		// Default values
 		this.visible = true;
+		this.timeDirection = 0;
 		this.generatedListeners = [];
 		this.targetPane = 'overlayLayer';
 		this.canvasOffset = {x: 0, y:0};
@@ -52,11 +55,27 @@ function installMobLayer(pkg) {
 		console.log("Generated new GLMobLayer");
 	}
 	
+	GLMobLayer.ShaderType = {
+		Normal: 0,
+		Typhoon: 1
+	};
+	
+	GLMobLayer.ensureSharedCloudImage = function(callback) {
+		if (!SharedCloudImage) {
+			SharedCloudImage = new Image();
+			SharedCloudImage.onload = function() { callback(SharedCloudImage); } ;
+			SharedCloudImage.src = CloudImageDataURI;
+		} else {
+			callback(SharedCloudImage);
+		}
+	};
+	
 	// Inherit
 	GLMobLayer.prototype = new google.maps.OverlayView();
 
 	GLMobLayer.overlaybase_setVisibility = function(v) { this.visible = v; };
 	GLMobLayer.prototype.setVisibility = GLMobLayer.overlaybase_setVisibility;
+	GLMobLayer.prototype.setTimeDirection = function(timeDirection) { this.timeDirection = timeDirection; };
 	
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {
@@ -107,9 +126,27 @@ function installMobLayer(pkg) {
 	};
 
 	GLMobLayer.prototype.initializeGLObjects = function(gl) {
-		var vs_source = FillTestVertexShader;
-		var fs_source = FillTestFragmentShader;
+		if (this.shaderType === GLMobLayer.ShaderType.Normal) {
+			this.compileNormalMarkerShader(gl);
+		} else {
+			this.compileTyphoonMarkerShader(gl);
+		}
+		
+		this.setupShaderProgram(gl,
+			this.vertexShader,
+			this.fragmentShader);
+		this.setupGLBuffers(gl);
+	};
 
+	GLMobLayer.prototype.compileNormalMarkerShader = function(gl) {
+		this.compileShaderPair(gl, FillTestVertexShader, FillTestFragmentShader);
+	};
+	
+	GLMobLayer.prototype.compileTyphoonMarkerShader = function(gl) {
+		this.compileShaderPair(gl, FillTestVertexShader, TyphoonFragmentShader);
+	};
+
+	GLMobLayer.prototype.compileShaderPair = function(gl, vs_source, fs_source) {
 		// Vertex shader
 		var vs = gl.createShader(gl.VERTEX_SHADER);
 		gl.shaderSource(vs, vs_source);
@@ -124,9 +161,6 @@ function installMobLayer(pkg) {
 		
 		this.vertexShader = vs;
 		this.fragmentShader = fs;
-		
-		this.setupShaderProgram(gl, vs, fs);
-		this.setupGLBuffers(gl);
 	};
 	
 	GLMobLayer.prototype.setupShaderProgram = function(gl, vs, fs) {
@@ -148,6 +182,7 @@ function installMobLayer(pkg) {
 		var a_tb  = gl.getAttribLocation(prg, 'aTextureBase');
 		var u_tex = gl.getUniformLocation(prg, 'texture');
 		var u_validUV = gl.getUniformLocation(prg, 'validUV');
+		var u_animationT = gl.getUniformLocation(prg, 'animationT');
 		var u_trans = gl.getUniformLocation(prg, 'transform');
 
 		this.shaderParams.vertexPosition = a_pos;
@@ -156,6 +191,10 @@ function installMobLayer(pkg) {
 		this.shaderParams.texture        = u_tex;
 		this.shaderParams.validUV        = u_validUV;
 		this.shaderParams.transform      = u_trans;
+		this.shaderParams.animationT     = u_animationT;
+		
+		this.shaderParams.taPrevTime = -9999;
+		this.shaderParams.taCurrentAngle = 0;
 	};
 	
 	GLMobLayer.prototype.setupGLBuffers = function(gl) {
@@ -283,7 +322,11 @@ function installMobLayer(pkg) {
 		gl.uniform1i(this.shaderParams.texture, 0);
 		gl.uniformMatrix4fv(this.shaderParams.transform, false, this.markerTransformMatrix);
 
-		this.calcMarkerUVRange(gl, this.shaderParams.validUV);
+		if (this.shaderType === GLMobLayer.ShaderType.Normal) {
+			this.calcMarkerUVRange(gl, this.shaderParams.validUV);
+		} else {
+			this.advanceTyphoonAnimation(gl);
+		}
 	};
 	
 	GLMobLayer.prototype.calcMarkerUVRange = function(gl, loc) {
@@ -326,13 +369,32 @@ function installMobLayer(pkg) {
 		var trisLimit = Math.floor(this.bufferCapacityInVertices / 3);
 		// console.log("rendering "+len+" marker polygons");
 		
+		var is_typhoon = (this.shaderType === GLMobLayer.ShaderType.Typhoon);
 		var texWidth = this.markerTextureConf.originalWidth;
 		var texHeight = this.markerTextureConf.originalHeight;
 		var u_width = this.markerTextureConf.chipWidth / texWidth;
 		var v_height = this.markerTextureConf.chipHeight / texHeight;
+		if (is_typhoon) {
+			u_width = 0.5; // Fix u coord
+		}
 
 		var tempBounds = this.tempBounds;
 		this.calcCurrnetBounds(tempBounds, 16);
+		
+		var spriteCX, spriteCY, spriteW2, spriteH2;
+
+		if (!is_typhoon)
+		{
+			spriteCX = 7;
+			spriteCY = 7;
+			spriteW2 = 32;
+			spriteH2 = 32;
+		} else {
+			spriteCX = 63;
+			spriteCY = 63;
+			spriteW2 = 256;
+			spriteH2 = 256;
+		}
 
 		for (var i = 0;i < len;++i) {
 			var mk = m_arr[i];
@@ -344,9 +406,9 @@ function installMobLayer(pkg) {
 			var cy = 7;
 
 			// Append positions
-			vlist[vi  ] = sx - cx       ;  vlist[vi+1] = sy - cy         ;
-			vlist[vi+2] = vlist[vi] + 32;  vlist[vi+3] = vlist[vi+1]     ;
-			vlist[vi+4] = vlist[vi]     ;  vlist[vi+5] = vlist[vi+1] + 32;
+			vlist[vi  ] = sx - spriteCX       ;  vlist[vi+1] = sy - spriteCY         ;
+			vlist[vi+2] = vlist[vi] + spriteW2;  vlist[vi+3] = vlist[vi+1]           ;
+			vlist[vi+4] = vlist[vi]           ;  vlist[vi+5] = vlist[vi+1] + spriteH2;
 			vi += 6;
 			
 			// Append texture coordinates (fixed + variable = final UV)
@@ -370,6 +432,29 @@ function installMobLayer(pkg) {
 				vi = txi = bi = triCount = 0;
 			}
 		}
+	};
+	
+	GLMobLayer.prototype.advanceTyphoonAnimation = function(gl) {
+		var params = this.shaderParams;
+		var curTime = (new Date()) - 0;
+		var dt = curTime - params.taPrevTime;
+		if (dt >= 1000) {
+			// Don't animate
+		} else {
+			if (dt < 2) {dt = 2;}
+			if (this.timeDirection > 0) {
+				params.taCurrentAngle += dt >> 1;
+			} else if (this.timeDirection < 0) {
+				params.taCurrentAngle -= dt >> 1;
+			}
+			
+			if (params.taCurrentAngle >= 1000) { params.taCurrentAngle -= 1000; }
+			else if (params.taCurrentAngle < 0) { params.taCurrentAngle += 1000; }
+		}
+		
+		params.taPrevTime = curTime;
+		gl.uniform1f(this.shaderParams.animationT, params.taCurrentAngle / 1000.0);
+		this.timeDirection = 0;
 	};
 	
 	GLMobLayer.prototype.drawBufferedPrimitives = function(gl) {
@@ -490,11 +575,15 @@ function installMobLayer(pkg) {
 	};
 	
 	GLMobLayer.prototype.setMarkerImage = function(img) {
-		if (!this.gl) { return false; }
-		this.destroyMarkerTexture();
+		var texconf = this.markerTextureConf;
 		
-		this.markerTextureConf.originalWidth  = img.width - 0;
-		this.markerTextureConf.originalHeight = img.height - 0;
+		if (!this.gl) { return false; }
+		if (texconf.sourceImage === img) { return false; }
+		this.destroyMarkerTexture();
+
+		texconf.sourceImage    = img;
+		texconf.originalWidth  = img.width - 0;
+		texconf.originalHeight = img.height - 0;
 		
 		var tex = GLMobLayer.createTextureObject(this.gl, img);
 		this.markerTexture = tex;
@@ -511,6 +600,14 @@ function installMobLayer(pkg) {
 		gl.bindTexture(gl.TEXTURE_2D, tex);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourceImage);
 		gl.generateMipmap(gl.TEXTURE_2D);
+		
+		if (this.shaderType === GLMobLayer.ShaderType.Typhoon) {
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		} else {
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		}
 		
 		return tex;
 	};
@@ -710,6 +807,7 @@ function installMobLayer(pkg) {
 	}
 	
 	function MarkerTextureConfiguration() {
+		this.sourceImage    = null;
 		this.originalWidth  = 1;
 		this.originalHeight = 1;
 		this.chipWidth      = 16;
@@ -749,7 +847,33 @@ function installMobLayer(pkg) {
 		" gl_FragColor  = texel;",
 		"}"
 	].join("\n");
+
+	var TyphoonFragmentShader = [
+		"precision mediump float;",
+		"uniform sampler2D texture;",
+		"uniform float animationT;",
+		"varying vec2 vTextureCoord;",
+		"varying vec2 vTextureBase;",
+		"void main(void) {",
+		" if (vTextureCoord.x > 0.5 || vTextureCoord.y > 0.5) {discard;} ",
+		" vec2 uv = vTextureCoord * 4.0 - vec2(1.0, 1.0);",
+		" float radius = length(uv);",
+		" float diag1 = abs( uv.x - uv.y);",
+		" float diag2 = abs(-uv.x - uv.y);",
+		" if (radius > 1.0) {discard;} ",
+		" float angle = atan(uv.y, uv.x); ",
+		" vec2 c_uv = vec2( (angle/3.141592658979)*0.5 + 0.5 - radius*0.2 + animationT, radius*0.5 + animationT); ",
+		" vec4 texel = texture2D(texture, c_uv);",
+		" float alpha = texel.r*1.6 * (1.0 - radius - sin(radius*6.0-0.3-angle)*0.2);",
+		" float diag_min = min(diag1, diag2) * 30.0;",
+		" if (radius < 0.075) { gl_FragColor = vec4(1,diag_min,diag_min,1); }",
+		" else { gl_FragColor  = vec4(texel.rgb*alpha, alpha); }",
+		"}"
+	].join("\n");
 	
+	var CloudImageDataURI = 'data:image/png;base64,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';
+		
 	pkg.MapBounds = function() {
 		this.lngMin = 0;
 		this.latMin = 0;

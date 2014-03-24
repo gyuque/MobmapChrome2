@@ -25,8 +25,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			return d.getCurrentTime();
 		},
 
-		addMovingObjectLayer: function() {
+		addMovingObjectLayer: function(additionalCapFlag) {
 			var lyr = new mobmap.MovingObjectLayer();
+			if (additionalCapFlag) {
+				lyr.capabilities |= additionalCapFlag;
+			}
+			
 			this.appendLayerAndNotify(lyr);
 			return lyr;
 		},

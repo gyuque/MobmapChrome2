@@ -225,7 +225,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var j = JSON.parse(source);
 
 			this.layersView.hideWelcomeBox();
-			var newLayer = this.currentProject.addMovingObjectLayer();
+			var newLayer = this.currentProject.addMovingObjectLayer( mobmap.LayerCapability.TyphoonMarkerRecommended );
 			
 			var loader = new mobmap.DigitalTyphoonLoader(newLayer);
 			loader.loadFromObject(j);

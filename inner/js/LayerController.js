@@ -80,6 +80,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		createMovingObjectsOverlay: function(lyr) {
 			var mapOverlay = new mobmap.GLMobLayer();
+			if (lyr.capabilities & mobmap.LayerCapability.TyphoonMarkerRecommended) {
+				mapOverlay.shaderType = mobmap.GLMobLayer.ShaderType.Typhoon;
+			}
+			
 			mapOverlay.canvasReadyCallback = this.onGLLayerReady.bind(this);
 			var mapPane = this.ownerApp.getMapPane();
 			var gmap = mapPane.getGoogleMaps();
@@ -255,7 +259,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			mapPane.eventDispatcher().bind(mobmap.MapPane.NEED_OVERLAYS_RENDER_EVENT, this.onMapPaneNeedsOverlaysRender.bind(this));
 		},
 		
-		onMapPaneNeedsOverlaysRender: function(e, senderMapPane, targetTimeSec) {
+		onMapPaneNeedsOverlaysRender: function(e, senderMapPane, targetTimeSec, timeDirection) {
 			var ls = this.mapOverlayList;
 			var len = ls.length;
 			
@@ -264,6 +268,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				var layer   = ls[i].ownerObject;
 				
 				if (layer.shouldRenderAsPoints) {
+					overlay.setTimeDirection(timeDirection);
 					this.fillMarkerPool(overlay, layer, targetTimeSec);
 				} else if (overlay.setPickTime) {
 					overlay.resetRenderedRegion();
@@ -307,7 +312,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var mk_pool = overlay.getTopMarkerPool();
 			mk_pool.clear();
 			
-			this.applyGeneratedMarkerOfLayer(overlay, sourceLayer); // dirty only
+			this.prepareOverlayMarkerImage(overlay, sourceLayer); // dirty only
 			
 			// Get prepared pick pool (create if not ready)
 			var pickPool = this.ensureOverlayPickPool(overlay);
@@ -349,7 +354,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			overlay.resetRenderedRegion();
 			overlay.renderGL();
 		},
-	
+		
+		prepareOverlayMarkerImage: function(overlay, sourceLayer) {
+			if (!(sourceLayer.capabilities & mobmap.LayerCapability.TyphoonMarkerRecommended)) {
+				// Normal marker
+				this.applyGeneratedMarkerOfLayer(overlay, sourceLayer); // dirty only
+			} else {
+				// Typhoon marker
+				mobmap.GLMobLayer.ensureSharedCloudImage( overlay.setMarkerImage.bind(overlay) );
+			}
+		},
+
 		applyGeneratedMarkerOfLayer: function(targetLayer, layer) {
 			var mg = layer.markerGenerator;
 			if (!mg.dirty) {
