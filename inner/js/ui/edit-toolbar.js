@@ -18,6 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.groupColumnMap = {};
 		this.addPresetColumns();
 		this.selectionButtonNameMap = this.addSelectionButtons('sel');
+		this.gateButtonNameMap = this.addGateButtons('gate');
 	}
 	
 	MobmapEditToolBar.prototype = {
@@ -37,13 +38,27 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
-		addSelectionButtons: function(colName, buttonList) {
+		addSelectionButtons: function(colName) {
+			return this.addButtons(colName, [
+					['sel_clear', 0],
+					['sel_rect', 1]
+				],
+				this.observeSelectionButton.bind(this)
+			);
+		},
+		
+		addGateButtons: function(colName) {
+			return this.addButtons(colName, [
+					['gate_line', 5]
+				],
+				this.observeGateButton.bind(this)
+			);
+		},
+		
+		addButtons: function(colName, buttonList, callback) {
 			var generatedButtonMap = {};
 			var targetCol = this.groupColumnMap[colName];
-			var ls = [
-				['sel_clear', 0],
-				['sel_rect', 1]
-			];
+			var ls = buttonList;
 			
 			for (var i in ls) {
 				var buttonData = ls[i];
@@ -55,7 +70,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				generatedButtonMap[bname] = btnObj;
 				
 				targetCol.appendChild(btnObj.element);
-				this.observeSelectionButton(btnObj);
+				if (callback) {
+					callback(btnObj);
+				}
 			}
 			
 			return generatedButtonMap;
@@ -65,6 +82,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			btnObj.eventDispatcher().
 			 click(this.onSelectionButtonClick.bind(this, btnObj)).
 			 mousedown(this.onSelectionButtonMousedown.bind(this, btnObj));
+		},
+		
+		observeGateButton: function(btnObj) {
+			
 		},
 		
 		addGroupColumn: function(name, initialText) {
