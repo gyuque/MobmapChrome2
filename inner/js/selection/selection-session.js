@@ -5,7 +5,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	var SelectionSessionType = {
 		Unknown: 0,
-		Rect: 1
+		Rect: 1,
+		LineGate: 11
 	};
 	
 	var SelectionSessionBase = {
@@ -96,6 +97,33 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 
+
+	// ------------------------------------
+	function LineGateSession()  {
+		
+	}
+	
+	LineGateSession.prototype = {
+		// Common API
+		getType: function() {
+			return SelectionSessionType.LineGate;
+		},
+		
+		isDraggingSelectionRecommended: function() {
+			return true;
+		},
+		
+		isRectangleFeedbackRecommended: function() {
+			return false;
+		},
+		
+		makeIDCollection: function(targetProject) {
+			
+		}
+	};
+	
+
 	aGlobal.mobmap.SelectionSessionType = SelectionSessionType;
 	aGlobal.mobmap.RectSelectionSession = RectSelectionSession;
+	aGlobal.mobmap.LineGateSession = LineGateSession;
 })(window);

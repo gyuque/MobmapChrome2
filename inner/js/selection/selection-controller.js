@@ -14,6 +14,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.currentSelectionSession;
 		},
 		
+		getCurrentSessionType: function() {
+			if (!this.currentSelectionSession) {
+				return mobmap.SelectionSessionType.Unknown;
+			}
+			
+			return this.currentSelectionSession.getType();
+		},
+		
 		clear: function(suppress_event) {
 			var prj = this.ownerApp.getCurrentProject();
 			prj.forEachLayer(function(index, layer){
@@ -45,6 +53,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.fireNewSession();
 			this.currentSelectionSession = new mobmap.RectSelectionSession();
+			this.fireAfterNewSession();
+		},
+		
+		startLineGateSession: function() {
+			this.disposeCurrentSession();
+
+			this.fireNewSession();
+			this.currentSelectionSession = new mobmap.LineGateSession();
 			this.fireAfterNewSession();
 		},
 		

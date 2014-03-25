@@ -119,6 +119,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onGateButtonClick: function(btnObj, e) {
 			switch(btnObj.name) {
 			case 'gate_line':
+				this.onGateButtonDown();
 				break;
 			}
 		},
@@ -137,6 +138,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onGateButtonDown: function() {
+			var c = this.getOwnerSelectionController();
+			if (c) {
+				c.startLineGateSession();
+			}
+		},
+		
 		deselectSelectionRectButton: function() {
 			var c = this.getOwnerSelectionController();
 			if (c) { return c.cancelSessionIfType(mobmap.SelectionSessionType.Rect, true); }
@@ -149,6 +157,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		// Responder methods for controller
+		selWillDisposeCurrentSession: function(selController) {
+		},
+		
 		selDidStartNewSession: function(selController) {
 			var currentType = mobmap.SelectionSessionType.Unknown;
 			var sess = selController.getCurrentSession();
