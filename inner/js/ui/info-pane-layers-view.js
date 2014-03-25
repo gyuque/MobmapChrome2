@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var kMenuNameAttr = "data-menuitem-name";
 	var kMenuItemNameMOCSV = "add-movobjs-csv";
 	var kMenuItemNameMeshCSV = "add-mesh-csv";
+	var kMenuItemNameDigitalTyphoon = "add-digital-typhoon";
 
 	function LayersView(containerElement) {
 		this.ownerApp = null;
@@ -74,6 +75,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			li_mesh.setAttribute(kMenuNameAttr, kMenuItemNameMeshCSV);
 			li_mesh.appendChild( $T('Mesh CSV') );
 			ls_newLayers.appendChild(li_mesh);
+			var li_ty = $H('li');
+			li_ty.setAttribute(kMenuNameAttr, kMenuItemNameDigitalTyphoon);
+			li_ty.appendChild( $T('Digital Typhoon') );
+			ls_newLayers.appendChild(li_ty);
 
 			el.appendChild(li_add);
 			this.containerElement.appendChild(el);
@@ -92,6 +97,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			switch(itemName) {
 			case kMenuItemNameMOCSV: return this.onLayerMenuAddMovingObjectsCSVSelect();
 			case kMenuItemNameMeshCSV: return this.onLayerMenuAddMeshCSVSelect();
+			case kMenuItemNameDigitalTyphoon: return this.onLayerMenuAddDigitalTyphoon();
 			}
 		},
 		
@@ -101,6 +107,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerMenuAddMeshCSVSelect: function() {
 			this.ownerApp.loadLocalCSVMeshData();
+		},
+
+		onLayerMenuAddDigitalTyphoon: function() {
+			this.ownerApp.loadDigitalTyphoon();
 		},
 		
 		// - - - - - - - - - - - - - - - - - - - - -

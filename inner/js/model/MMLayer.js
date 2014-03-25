@@ -48,6 +48,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataReady = false;
 		
 		this.shouldRenderAsPoints = true;
+		this.typhoonMarkerOptions = {
+			showCloud: true
+		};
 	}
 
 
@@ -147,6 +150,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else {
 				return name + " (? IDs)";
 			}
+		},
+		
+		setTyphoonMarkerOptionShowCloud: function(s) {
+			if (this.typhoonMarkerOptions.showCloud !== s) {
+				this.typhoonMarkerOptions.showCloud = s;
+				this.fireMarkerOptionsChange();
+			}
+		},
+		
+		fireMarkerOptionsChange: function() {
+			this._markerOptions.fire();
 		},
 		
 		// CSV Loader Listener functions <<<<<<<<<<<<<<<<<

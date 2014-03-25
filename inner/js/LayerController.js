@@ -269,6 +269,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				if (layer.shouldRenderAsPoints) {
 					overlay.setTimeDirection(timeDirection);
+					overlay.setShowTyphoonCloud(layer.typhoonMarkerOptions.showCloud);
 					this.fillMarkerPool(overlay, layer, targetTimeSec);
 				} else if (overlay.setPickTime) {
 					overlay.resetRenderedRegion();

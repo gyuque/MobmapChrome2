@@ -22,6 +22,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			jDispBox: null
 		};
 		
+		this.checkShowTyphoonCloud = null;
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
 		
@@ -31,6 +32,11 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	MarkerConfigurationPanel.prototype = {
 		configurePanelContent: function() {
+			if (this.boundLayer.capabilities & mobmap.LayerCapability.TyphoonMarkerRecommended) {
+				this.configureTyphoonMarkerPanelContent();
+				return;
+			}
+			
 			var cc = this.expandablePanel.closedContentElement;
 			cc.innerHTML = '';
 			cc.appendChild( this.markerGenerator.previewCanvas );
@@ -44,6 +50,55 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.buildMarkerAttrBindOptions(ec);
 		},
 		
+		configureTyphoonMarkerPanelContent: function() {
+			var cc = this.expandablePanel.closedContentElement;
+			cc.innerHTML = '';
+			
+			var t_icon = document.createElement('img');
+			t_icon.src = "images/typhoon-data-icon.png";
+			cc.appendChild(t_icon);
+			
+			// expanded
+			var ec = this.expandablePanel.expandedContentElement;
+			ec.innerHTML = '';
+			
+			var t_icon2 = document.createElement('img');
+			t_icon2.src = t_icon.src;
+			ec.appendChild( t_icon2 );
+			
+			var cloud_chk = createCheckbox('mm-typhoon-marker-option', 'mm-typhoon-marker-option-cloud');
+			var lab = $H('label', 'mm-typhoon-marker-option-label');
+			lab.appendChild(cloud_chk);
+			lab.appendChild( $T('Cloud animation') );
+			ec.appendChild(lab);
+			this.checkShowTyphoonCloud = cloud_chk;
+			
+			$(cloud_chk).click(this.onShowTyphoonCloudCheckClick.bind(this));
+		},
+
+		getShowTyphoonCloudCheckValue: function() {
+			if (!this.checkShowTyphoonCloud) { return false; }
+			return !!(this.checkShowTyphoonCloud.checked);
+		},
+		
+		syncShowTyphoonCloudCheckValue: function() {
+			if (!this.checkShowTyphoonCloud) { return; }
+			
+			var newVal = this.boundLayer.typhoonMarkerOptions.showCloud;
+			var curVal = this.getShowTyphoonCloudCheckValue();
+
+			if (newVal != curVal) {
+				this.checkShowTyphoonCloud.checked = newVal;
+			}
+		},
+		
+		onShowTyphoonCloudCheckClick: function() {
+			var lyr = this.boundLayer;
+			lyr.setTyphoonMarkerOptionShowCloud(
+				this.getShowTyphoonCloudCheckValue()
+			);
+		},
+
 		buildMarkerColumnsSlider: function(containerElement) {
 			var outerBox = $H('div', 'mm-marker-variation-slider-outer');
 
@@ -156,6 +211,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		getAttrNameToBind: function() {
+			if (!this.attrBindComboElement) { return null; }
 			return this.attrBindComboElement.value;
 		},
 
@@ -187,7 +243,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Additional properties
 		clearAdditionalPropertyList: function() {
-			this.attrBindComboElement.innerHTML = '';
+			if (this.attrBindComboElement) {
+				this.attrBindComboElement.innerHTML = '';
+			}
 		},
 		
 		addAdditionalPropertyName: function(attrName) {
@@ -207,6 +265,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.checkVaryingTypeRadio(vtype);
 				}
 			}
+			
+			this.syncShowTyphoonCloudCheckValue();
 		}
 	};
 	

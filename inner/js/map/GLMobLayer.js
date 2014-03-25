@@ -37,6 +37,7 @@ function installMobLayer(pkg) {
 		// Default values
 		this.visible = true;
 		this.timeDirection = 0;
+		this.showTyphoonCloud = true;
 		this.generatedListeners = [];
 		this.targetPane = 'overlayLayer';
 		this.canvasOffset = {x: 0, y:0};
@@ -76,6 +77,7 @@ function installMobLayer(pkg) {
 	GLMobLayer.overlaybase_setVisibility = function(v) { this.visible = v; };
 	GLMobLayer.prototype.setVisibility = GLMobLayer.overlaybase_setVisibility;
 	GLMobLayer.prototype.setTimeDirection = function(timeDirection) { this.timeDirection = timeDirection; };
+	GLMobLayer.prototype.setShowTyphoonCloud = function(s) { this.showTyphoonCloud = s; };
 	
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {
@@ -435,6 +437,12 @@ function installMobLayer(pkg) {
 	};
 	
 	GLMobLayer.prototype.advanceTyphoonAnimation = function(gl) {
+		if (!this.showTyphoonCloud) {
+			gl.uniform1f(this.shaderParams.animationT, -99.0);
+			this.timeDirection = 0;
+			return;
+		}
+
 		var params = this.shaderParams;
 		var curTime = (new Date()) - 0;
 		var dt = curTime - params.taPrevTime;
@@ -861,11 +869,14 @@ function installMobLayer(pkg) {
 		" float diag1 = abs( uv.x - uv.y);",
 		" float diag2 = abs(-uv.x - uv.y);",
 		" if (radius > 1.0) {discard;} ",
+		" if (radius > 0.075 && animationT < -98.0) {discard;} ",
 		" float angle = atan(uv.y, uv.x); ",
-		" vec2 c_uv = vec2( (angle/3.141592658979)*0.5 + 0.5 - radius*0.2 + animationT, radius*0.5 + animationT); ",
+		" float pi = 3.141592658979; ",
+		" vec2 c_uv = vec2( (angle/pi)*0.5 + 0.5 - radius*0.2 + animationT, radius*0.5 + animationT); ",
 		" vec4 texel = texture2D(texture, c_uv);",
-		" float alpha = texel.r*1.6 * (1.0 - radius - sin(radius*6.0-0.3-angle)*0.2);",
+		" float alpha = texel.r*1.8 * (1.0 - radius - sin(radius*6.0+0.5-angle)*0.2);",
 		" float diag_min = min(diag1, diag2) * 30.0;",
+		" if (alpha < 0.5) { alpha *= 0.5; } ",
 		" if (radius < 0.075) { gl_FragColor = vec4(1,diag_min,diag_min,1); }",
 		" else { gl_FragColor  = vec4(texel.rgb*alpha, alpha); }",
 		"}"
