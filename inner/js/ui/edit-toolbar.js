@@ -80,12 +80,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		observeSelectionButton: function (btnObj) {
 			btnObj.eventDispatcher().
-			 click(this.onSelectionButtonClick.bind(this, btnObj)).
-			 mousedown(this.onSelectionButtonMousedown.bind(this, btnObj));
+			 click(this.onSelectionButtonClick.bind(this, btnObj));
+			 // mousedown(this.onSelectionButtonMousedown.bind(this, btnObj));
 		},
 		
 		observeGateButton: function(btnObj) {
-			
+			btnObj.eventDispatcher().
+			 click(this.onGateButtonClick.bind(this, btnObj));
 		},
 		
 		addGroupColumn: function(name, initialText) {
@@ -115,9 +116,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
-		onSelectionButtonMousedown: function(btnObj, e) {
+		onGateButtonClick: function(btnObj, e) {
+			switch(btnObj.name) {
+			case 'gate_line':
+				break;
+			}
 		},
 		
+		// ------------------------------------------------
 		onSelectionClearButtonClick: function() {
 			if (this.ownerApp) {
 				this.ownerApp.clearSelection();
