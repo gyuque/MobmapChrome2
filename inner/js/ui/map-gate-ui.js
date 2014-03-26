@@ -3,11 +3,18 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	
+	var ONMAPBTN_SHADOW = "./images/onmapbutton-shadow.png";
+	var ONMAPBTN_OK  = "./images/onmapbutton-chk.png";
+	var ONMAPBTN_X   = "./images/onmapbutton-x.png";
+	var ONMAPBTN_DIR = "./images/onmapbutton-dir.png";
+
+	
 	function MapGateUI(gmap) {
 		mobmap.mm_initMapButtonsLayer(mobmap);
 		
 		this.gmap = gmap;
 		this.lineOverlay = null;
+		this.buttonsOverlay = null;
 		this.pathArray = [null, null];
 		
 		this.setupOverlays(gmap);
@@ -15,8 +22,26 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	MapGateUI.prototype = {
 		setupOverlays: function(gmap) {
+			this.setupOnMapButtons(gmap);
 			this.setupLineOverlay(gmap);
 			this.setupDirectionIconOverlay(gmap);
+		},
+		
+		setupOnMapButtons: function(gmap) {
+			this.buttonsOverlay = new mobmap.MapButtonsLayer();
+			this.buttonsOverlay.setMap(gmap);
+			this.buttonsOverlay.observeMapEvents(gmap);
+			this.buttonsOverlay.eventDispatcher().bind(mobmap.MapButtonsLayer.MAPBUTTONEVENT_CLICK, this.onOnmapButtonClick.bind(this));
+			
+			var btnOK  = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_OK, ONMAPBTN_SHADOW, 'ok');
+			var btnDir = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_DIR, ONMAPBTN_SHADOW, 'dir');
+			var btnX   = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_X, ONMAPBTN_SHADOW, 'cancel');
+
+			this.buttonsOverlay.addButton(btnOK);
+			this.buttonsOverlay.addButton(btnDir);
+			this.buttonsOverlay.addButton(btnX);
+			
+			this.buttonsOverlay.hideAll();
 		},
 		
 		setupLineOverlay: function(gmap) {
@@ -44,6 +69,29 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.lineOverlay.setPath(this.pathArray);
 			this.lineOverlay.setVisible(true);
+
+			var endPt = this.getUpperPoint();
+			this.buttonsOverlay.setCenterLatLng(endPt.lat(), endPt.lng());
+			this.buttonsOverlay.showAll();
+		},
+		
+		hide: function() {
+			this.lineOverlay.setVisible(false);
+			this.buttonsOverlay.hideAll();
+		},
+		
+		getUpperPoint: function() {
+			var p1 = this.pathArray[0];
+			var p2 = this.pathArray[1];
+			
+			return (p1.lat() > p2.lat()) ? p1 : p2;
+		},
+		
+		onOnmapButtonClick: function(e, button) {
+			switch(button.name) {
+			case 'cancel':
+				this.hide(); break;
+			}
 		}
 	};
 	
