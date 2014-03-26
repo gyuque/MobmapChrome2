@@ -56,6 +56,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var t_icon = document.createElement('img');
 			t_icon.src = "images/typhoon-data-icon.png";
+			t_icon.width = t_icon.height = 16;
 			cc.appendChild(t_icon);
 			
 			// expanded

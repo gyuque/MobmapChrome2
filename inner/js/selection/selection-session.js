@@ -10,7 +10,20 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	var SelectionSessionBase = {
-		
+		installTwoPointsSessionAPI: function(proto) {
+			proto.setStartPos = function(lat, lng) {
+				this.startPos.lat = lat;
+				this.startPos.lng = lng;
+			};
+			
+			proto.setEndPos = function(lat, lng) {
+				this.endPos.lat = lat;
+				this.endPos.lng = lng;
+			};
+
+			proto.getStartPos = function() { return this.startPos; };
+			proto.getEndPos = function() { return this.endPos; };
+		}
 	};
 
 
@@ -31,6 +44,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		isRectangleFeedbackRecommended: function() {
 			return true;
+		},
+
+		isLineFeedbackRecommended: function() {
+			return false;
 		},
 
 		makeIDCollection: function(targetProject) {
@@ -74,33 +91,16 @@ if (!window.mobmap) { window.mobmap={}; }
 					targetSelPool.addId(objId, true);
 				}
 			}
-		},
-
-		// - - - - - - - - - -
-		
-		setStartPos: function(lat, lng) {
-			this.startPos.lat = lat;
-			this.startPos.lng = lng;
-		},
-		
-		setEndPos: function(lat, lng) {
-			this.endPos.lat = lat;
-			this.endPos.lng = lng;
-		},
-		
-		getStartPos: function() {
-			return this.startPos;
-		},
-		
-		getEndPos: function() {
-			return this.endPos;
 		}
 	};
 
+	SelectionSessionBase.
+	 installTwoPointsSessionAPI(RectSelectionSession.prototype);
 
 	// ------------------------------------
 	function LineGateSession()  {
-		
+		this.startPos = new mobmap.MMLatLng();
+		this.endPos = new mobmap.MMLatLng();
 	}
 	
 	LineGateSession.prototype = {
@@ -116,12 +116,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		isRectangleFeedbackRecommended: function() {
 			return false;
 		},
+
+		isLineFeedbackRecommended: function() {
+			return true;
+		},
 		
 		makeIDCollection: function(targetProject) {
 			
 		}
 	};
-	
+
+	SelectionSessionBase.
+	 installTwoPointsSessionAPI(LineGateSession.prototype);
 
 	aGlobal.mobmap.SelectionSessionType = SelectionSessionType;
 	aGlobal.mobmap.RectSelectionSession = RectSelectionSession;

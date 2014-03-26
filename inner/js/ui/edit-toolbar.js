@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.addPresetColumns();
 		this.selectionButtonNameMap = this.addSelectionButtons('sel');
 		this.gateButtonNameMap = this.addGateButtons('gate');
+		this.allButtonNameMap = this.makeAllButtonNameMap(this.selectionButtonNameMap, this.gateButtonNameMap);
 	}
 	
 	MobmapEditToolBar.prototype = {
@@ -76,6 +77,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return generatedButtonMap;
+		},
+		
+		makeAllButtonNameMap: function(src1, src2, src3) {
+			var i;
+			var m = {};
+			if (src1) { for (i in src1) { m[i]=src1[i]; } }
+			if (src2) { for (i in src2) { m[i]=src2[i]; } }
+			if (src3) { for (i in src3) { m[i]=src3[i]; } }
+			
+			return m;
 		},
 		
 		observeSelectionButton: function (btnObj) {
@@ -177,14 +188,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		updateSelectionButtonsState: function(currentSessionType) {
 			var sel_name = null;
 			switch(currentSessionType) {
-				case mobmap.SelectionSessionType.Rect:  sel_name = 'sel_rect'; break;
+				case mobmap.SelectionSessionType.Rect:      sel_name = 'sel_rect';  break;
+				case mobmap.SelectionSessionType.LineGate:  sel_name = 'gate_line'; break;
 			}
 			
-			var setButtonNames = ['sel_rect'];
+			var setButtonNames = ['sel_rect', 'gate_line'];
 			var len = setButtonNames.length;
 			for (var i = 0;i < len;++i) {
 				var targetName = setButtonNames[i];
-				var btn = this.selectionButtonNameMap[targetName];
+				var btn = this.allButtonNameMap[targetName];
 				btn.setSelectedStyle(targetName === sel_name);
 			}
 		}

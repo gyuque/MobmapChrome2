@@ -8,6 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var PMODE_DRAG_SEL = 1;
 	
 	var SEL_FEEDBACK_RECT = 0;
+	var SEL_FEEDBACK_LINE = 1;
 
 	function MapPane(containerElement) {
 		this.gmap = null;
@@ -18,8 +19,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.prevRenderTargetTime = -1;
 
 		// Preview overlays
-		this.selectionPolygonpath = null;
+		this.selectionPolygonpath    = null;
 		this.selectionPreviewPolygon = null;
+		this.selectionLinepath    = null;
+		this.selectionPreviewLine = null;
 
 		this.initialLocation = {
 			zoom: 8,
@@ -32,7 +35,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.setupGoogleMaps();
 		this.setupCaptureEvents();
-		this.setupSelectionPolygon();
+		this.setupSelectionViews();
 	}
 	
 	MapPane.NEED_OVERLAYS_RENDER_EVENT = "mappane-needs-overalys-render";
@@ -150,7 +153,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.prevRenderTargetTime = sec;
 		},
-		
+
 		enterDragSelectionMode: function() {
 			this.pointingMode = PMODE_DRAG_SEL;
 			this.changePointerStyle();
@@ -255,6 +258,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (selSession.isRectangleFeedbackRecommended()) {
 				this.updateSelectionFeedback(SEL_FEEDBACK_RECT, selSession.getStartPos(), selSession.getEndPos());
 			}
+			
+			if (selSession.isLineFeedbackRecommended()) {
+				this.updateSelectionFeedback(SEL_FEEDBACK_LINE, selSession.getStartPos(), selSession.getEndPos());
+			}
 		},
 		
 		selWillCommitSession: function(selController, selSession) {
@@ -262,6 +269,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		// Selection feedback views = = =
+		
+		setupSelectionViews: function() {
+			this.setupSelectionPolygon();
+			this.setupSelectionLine();
+		},
 
 		setupSelectionPolygon: function() {
 			this.selectionPolygonpath = [];
@@ -272,29 +284,50 @@ if (!window.mobmap) { window.mobmap={}; }
 				fillColor: "#0000dd",
 				fillOpacity: 0.3
 			});
-			
+
 			this.selectionPreviewPolygon.setMap(this.gmap);
 			this.selectionPreviewPolygon.setVisible(false);
 		},
 		
+		setupSelectionLine: function() {
+			this.selectionLinepath = [];
+			this.selectionPreviewLine = new google.maps.Polyline({
+				strokeColor: "#0000dd",
+				strokeOpacity: 1,
+				strokeWeight: 2
+			});
+
+			this.selectionPreviewLine.setMap(this.gmap);
+			this.selectionPreviewLine.setVisible(false);
+		},
+		
 		updateSelectionFeedback: function(feedbackType, location1, location2) {
+			var pa;
 			if (feedbackType === SEL_FEEDBACK_RECT) {
-				this.selectionPolygonpath.length = 0;
-				this.selectionPolygonpath.push(new google.maps.LatLng( location1.lat, location1.lng ));
-				this.selectionPolygonpath.push(new google.maps.LatLng( location2.lat, location1.lng ));
-				this.selectionPolygonpath.push(new google.maps.LatLng( location2.lat, location2.lng ));
-				this.selectionPolygonpath.push(new google.maps.LatLng( location1.lat, location2.lng ));
+				pa = this.selectionPolygonpath;
+				setRectPathVertices(pa, location1, location2);
 				
-				this.selectionPreviewPolygon.setPath(this.selectionPolygonpath);
+				this.selectionPreviewPolygon.setPath(pa);
 				this.selectionPreviewPolygon.setVisible(true);
 
 				// XXX: Force redraw polygon
+				this.onContainerResize();
+			} else if (feedbackType === SEL_FEEDBACK_LINE) {
+				pa = this.selectionLinepath;
+				pa.length = 0;
+				pa.push(new google.maps.LatLng( location1.lat, location1.lng ));
+				pa.push(new google.maps.LatLng( location2.lat, location2.lng ));
+				
+				this.selectionPreviewLine.setPath(pa);
+				this.selectionPreviewLine.setVisible(true);
+				
 				this.onContainerResize();
 			}
 		},
 		
 		clearSelectionFeedbackRect: function() {
 			this.selectionPreviewPolygon.setVisible(false);
+			this.selectionPreviewLine.setVisible(false);
 		},
 		
 		// Utility functions
@@ -314,6 +347,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			pt.screenY = sy;
 			return pt;
 		}
+	};
+	
+	function setRectPathVertices(pa, location1, location2) {
+		pa.length = 0;
+		pa.push(new google.maps.LatLng( location1.lat, location1.lng ));
+		pa.push(new google.maps.LatLng( location2.lat, location1.lng ));
+		pa.push(new google.maps.LatLng( location2.lat, location2.lng ));
+		pa.push(new google.maps.LatLng( location1.lat, location2.lng ));
 	};
 
 	// +++ Export +++
