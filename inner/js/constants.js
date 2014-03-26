@@ -23,3 +23,9 @@ var AttributeType = {
 	CFLOAT:  2,
 	INTEGER: 3
 };
+
+var GateDirection = {
+	Forward      : 1,
+	Back         : 2,
+	Bidirectional: 3
+};

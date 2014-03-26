@@ -9,19 +9,35 @@ if (!window.mobmap) { window.mobmap={}; }
 	var ONMAPBTN_DIR = "./images/onmapbutton-dir.png";
 
 	
-	function MapGateUI(gmap) {
+	function MapGateUI(gmap, listener) {
 		mobmap.mm_initMapButtonsLayer(mobmap);
+		this.resetDirection();
 		
 		this.gmap = gmap;
 		this.lineOverlay = null;
+		this.directionIconOverlay = null;
 		this.buttonsOverlay = null;
 		this.pathArray = [null, null];
+		this.listener = listener;
 		
 		this.setupOverlays(gmap);
 	}
 	
 	MapGateUI.prototype = {
+		resetDirection: function() {
+			this.direction = GateDirection.Bidirectional;
+		},
+		
+		toggleDirection: function() {
+			if (this.direction === GateDirection.Bidirectional) {
+				this.direction = GateDirection.Forward;
+			} else {
+				++this.direction;
+			}
+		},
+		
 		setupOverlays: function(gmap) {
+			this.arrowDynamicIcon = new mobmap.ArrowDynamicIcon();
 			this.setupOnMapButtons(gmap);
 			this.setupLineOverlay(gmap);
 			this.setupDirectionIconOverlay(gmap);
@@ -56,7 +72,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		setupDirectionIconOverlay: function(gmap) {
+			this.directionIconOverlay = new google.maps.Marker();
 			
+			this.directionIconOverlay.setMap(gmap);
+			this.directionIconOverlay.setVisible(false);
 		},
 		
 		setEnds: function(e1, e2) {
@@ -73,11 +92,28 @@ if (!window.mobmap) { window.mobmap={}; }
 			var endPt = this.getUpperPoint();
 			this.buttonsOverlay.setCenterLatLng(endPt.lat(), endPt.lng());
 			this.buttonsOverlay.showAll();
+			
+			this.configureArrow();
+			this.updateDirectionIcon();
 		},
 		
 		hide: function() {
 			this.lineOverlay.setVisible(false);
+			this.directionIconOverlay.setVisible(false);
 			this.buttonsOverlay.hideAll();
+		},
+		
+		updateDirectionIcon: function() {
+			this.calcGateAngle();
+			
+			var p1 = this.pathArray[0];
+			var p2 = this.pathArray[1];
+			var midPt = new google.maps.LatLng( (p1.lat() + p2.lat()) / 2.0, (p1.lng() + p2.lng()) / 2.0 );
+
+			this.arrowDynamicIcon.updateBitmap();
+			this.directionIconOverlay.setIcon( this.arrowDynamicIcon.generateIcon() );
+			this.directionIconOverlay.setPosition(midPt);
+			this.directionIconOverlay.setVisible(true);
 		},
 		
 		getUpperPoint: function() {
@@ -87,10 +123,43 @@ if (!window.mobmap) { window.mobmap={}; }
 			return (p1.lat() > p2.lat()) ? p1 : p2;
 		},
 		
+		calcGateAngle: function() {
+			var p1 = this.pathArray[0];
+			var p2 = this.pathArray[1];
+			
+			var dy = p2.lat() - p1.lat();
+			var dx = p2.lng() - p1.lng();
+			
+			var a = Math.atan2(dy, dx);
+			this.arrowDynamicIcon.angle = a;
+			return a;
+		},
+		
 		onOnmapButtonClick: function(e, button) {
 			switch(button.name) {
+			case 'ok':
+				this.onOK(); break;
 			case 'cancel':
 				this.hide(); break;
+			case 'dir':
+				this.changeDirectionAndRedraw(); break;
+			}
+		},
+		
+		changeDirectionAndRedraw: function() {
+			this.toggleDirection();
+			this.configureArrow();
+			this.updateDirectionIcon();
+		},
+		
+		configureArrow: function() {
+			this.arrowDynamicIcon.enableFwdArrow  = (this.direction !== GateDirection.Back);
+			this.arrowDynamicIcon.enableBackArrow = (this.direction !== GateDirection.Forward);
+		},
+		
+		onOK: function() {
+			if (this.listener && this.listener.gateuiOnOK) {
+				this.listener.gateuiOnOK(this);
 			}
 		}
 	};
@@ -268,3 +337,108 @@ window.mobmap.mm_initMapButtonsLayer = (function(pkg) {
 	// Export
 	pkg.MapButtonsLayer = MapButtonsLayer;
 });
+
+
+(function(pkg) {
+	'use strict';
+	var DI_SIZE = 25;
+	
+	function ArrowDynamicIcon() {
+		this.canvas = document.createElement("canvas");
+		this.canvas.width = DI_SIZE;
+		this.canvas.height = DI_SIZE;
+		this.g = this.canvas.getContext("2d");
+		
+		this.icon = {};
+		this.generateIcon();
+		
+		this.angle = 0;
+		this.enableFwdArrow  = true;
+		this.enableBackArrow = true;
+	}
+	
+	ArrowDynamicIcon.prototype = {
+		generateIcon: function() {
+			this.icon.anchor = new google.maps.Point(DI_SIZE >> 1, DI_SIZE >> 1);
+			this.icon.url = this.canvas.toDataURL();
+			
+			return this.icon;
+		},
+		
+		updateBitmap: function() {
+			this.clear();
+			
+			this.g.lineCap = 'square';
+			this.g.lineJoin = 'miter';
+			this.g.strokeStyle = "#00d";
+			this.g.lineWidth = 4;
+			this.renderArrowLines();
+			
+			this.g.strokeStyle = "#fff";
+			this.g.lineWidth = 2;
+			this.renderArrowLines();
+		},
+		
+		renderArrowLines: function() {
+			var r = 10;
+			var cx = DI_SIZE >> 1;
+			var cy = DI_SIZE >> 1;
+			
+			this.makeArrowPath(this.angle, r, cx, cy);
+			this.g.stroke();
+
+			if (this.enableFwdArrow) {
+				this.makeCapPath(Math.PI + this.angle, r, cx, cy);
+				this.g.stroke();
+			}
+
+			if (this.enableBackArrow) {
+				this.makeCapPath(this.angle, r, cx, cy);
+				this.g.stroke();
+			}
+		},
+		
+		makeArrowPath: function(a, r, cx, cy) {
+			r -= 1;
+			
+			var x1 = -Math.sin(a) * r + cx;
+			var y1 = -Math.cos(a) * r + cy;
+			
+			var x2 = Math.sin(a) * r + cx;
+			var y2 = Math.cos(a) * r + cy;
+
+			var g = this.g;
+			
+			g.beginPath();
+			g.moveTo(x1, y1);
+			g.lineTo(x2, y2);
+		},
+		
+		makeCapPath: function(a, r, cx, cy) {
+			var a0 = a + 0.5;
+			var a2 = a - 0.5;
+			var dr = r - 2;
+			
+			var x1 = Math.sin(a) * r + cx;
+			var y1 = Math.cos(a) * r + cy;
+			
+			var x0 = Math.sin(a0) * dr + cx;
+			var y0 = Math.cos(a0) * dr + cy;
+			
+			var x2 = Math.sin(a2) * dr + cx;
+			var y2 = Math.cos(a2) * dr + cy;
+
+			var g = this.g;
+			g.beginPath();
+			g.moveTo(x0, y0);
+			g.lineTo(x1, y1);
+			g.lineTo(x2, y2);
+		},
+		
+		clear: function() {
+			this.g.clearRect(0, 0, DI_SIZE, DI_SIZE);
+		}
+	};
+	
+	pkg.ArrowDynamicIcon = ArrowDynamicIcon;
+})(mobmap);

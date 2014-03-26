@@ -333,8 +333,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		putGate: function(end1, end2) {
+			this.gateUI.resetDirection();
 			this.gateUI.setEnds(end1, end2);
 			this.gateUI.show();
+		},
+		
+		gateuiOnOK: function() {
+			
 		},
 		
 		// Utility functions
