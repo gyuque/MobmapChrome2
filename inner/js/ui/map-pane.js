@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.selectionPreviewPolygon = null;
 		this.selectionLinepath    = null;
 		this.selectionPreviewLine = null;
+		this.gateUI = null;
 
 		this.initialLocation = {
 			zoom: 8,
@@ -273,6 +274,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setupSelectionViews: function() {
 			this.setupSelectionPolygon();
 			this.setupSelectionLine();
+			this.gateUI = new mobmap.MapGateUI(this.gmap);
 		},
 
 		setupSelectionPolygon: function() {
@@ -328,6 +330,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		clearSelectionFeedbackRect: function() {
 			this.selectionPreviewPolygon.setVisible(false);
 			this.selectionPreviewLine.setVisible(false);
+		},
+		
+		putGate: function(end1, end2) {
+			this.gateUI.setEnds(end1, end2);
+			this.gateUI.show();
 		},
 		
 		// Utility functions

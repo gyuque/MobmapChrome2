@@ -122,7 +122,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		makeIDCollection: function(targetProject) {
-			
+			// Do nothing here.
+			// Actual selection will be done later.
+		},
+		
+		doAfterCommit: function(app) {
+			app.getMapPane().putGate(
+				this.getStartPos(),
+				this.getEndPos()
+			);
 		}
 	};
 

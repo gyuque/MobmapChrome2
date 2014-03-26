@@ -96,6 +96,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				this.fireBeforeCommitSession(this.currentSelectionSession);
 				this.currentSelectionSession.makeIDCollection(prj);
+				
+				if (this.currentSelectionSession.doAfterCommit) {
+					this.currentSelectionSession.doAfterCommit(this.ownerApp);
+				}
 			}
 
 			this.disposeCurrentSession(true);
