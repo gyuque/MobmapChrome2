@@ -24,6 +24,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MapGateUI.prototype = {
+		getStartLocation: function() { return this.pathArray[0] || null; },		
+		getEndLocation:   function() { return this.pathArray[1] || null; },
+		getGateDirection: function() { return this.direction; },
+
 		resetDirection: function() {
 			this.direction = GateDirection.Bidirectional;
 		},
@@ -122,7 +126,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return (p1.lat() > p2.lat()) ? p1 : p2;
 		},
-		
+
 		calcGateAngle: function() {
 			var p1 = this.pathArray[0];
 			var p2 = this.pathArray[1];
@@ -163,6 +167,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		}
 	};
+	
+	MapGateUI.isEndsValid = function(e1, e2) {
+		if (isNumbersNear(e1.lat, e2.lat) && isNumbersNear(e1.lng, e2.lng)) {
+			return false;
+		}
+			
+		return true;
+	}
 	
 	aGlobal.mobmap.MapGateUI = MapGateUI;
 })(window);
@@ -370,6 +382,11 @@ window.mobmap.mm_initMapButtonsLayer = (function(pkg) {
 			
 			this.g.lineCap = 'square';
 			this.g.lineJoin = 'miter';
+
+			this.g.strokeStyle = "rgba(0,0,100,0.4)";
+			this.g.lineWidth = 5;
+			this.renderArrowLines();
+			
 			this.g.strokeStyle = "#00d";
 			this.g.lineWidth = 4;
 			this.renderArrowLines();

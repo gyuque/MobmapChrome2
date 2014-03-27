@@ -274,7 +274,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setupSelectionViews: function() {
 			this.setupSelectionPolygon();
 			this.setupSelectionLine();
-			this.gateUI = new mobmap.MapGateUI(this.gmap);
+			this.gateUI = new mobmap.MapGateUI(this.gmap, this);
 		},
 
 		setupSelectionPolygon: function() {
@@ -333,13 +333,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		putGate: function(end1, end2) {
-			this.gateUI.resetDirection();
-			this.gateUI.setEnds(end1, end2);
-			this.gateUI.show();
+			if (mobmap.MapGateUI.isEndsValid(end1, end2)) {
+				this.gateUI.resetDirection();
+				this.gateUI.setEnds(end1, end2);
+				this.gateUI.show();
+			}
 		},
 		
-		gateuiOnOK: function() {
+		gateuiOnOK: function(sourceGateUI) {
+			var e1  = sourceGateUI.getStartLocation();
+			var e2  = sourceGateUI.getEndLocation();
+			var dir = sourceGateUI.getGateDirection();
 			
+			this.
+			 ownerApp.
+			 getSelectionController().
+			 runGateSelection(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir);
 		},
 		
 		// Utility functions

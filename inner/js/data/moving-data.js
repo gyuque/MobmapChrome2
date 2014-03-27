@@ -98,6 +98,10 @@ if (!window.mobmap) window.mobmap={};
 			tl.pickAt(null, outRecord, seconds, this.extraProps);
 		},
 		
+		getTimeListOfId: function(objId) {
+			return this.idMap[objId] || null;
+		},
+		
 		isKeyframe: function(objId, seconds) {
 			var tl = this.idMap[objId];
 			if (!tl) { return false; }

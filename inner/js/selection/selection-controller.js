@@ -14,6 +14,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.currentSelectionSession;
 		},
 		
+		getTargetLayerList: function() {
+			var prj = this.ownerApp.getCurrentProject();
+			if (!prj) { return null; }
+			
+			return prj.getLayerList();
+		},
+		
 		getCurrentSessionType: function() {
 			if (!this.currentSelectionSession) {
 				return mobmap.SelectionSessionType.Unknown;
@@ -129,6 +136,15 @@ if (!window.mobmap) { window.mobmap={}; }
 					recv[methodName](this, arg1, arg2);
 				}
 			}
+		},
+		
+		// Gate selection
+		
+		runGateSelection: function(lat1, lng1, lat2, lng2, direction) {
+			var job = new GateSelectionJob(this,
+				lat1, lng1, lat2, lng2, direction);
+				
+			job.run();
 		}
 	};
 	
@@ -140,6 +156,91 @@ if (!window.mobmap) { window.mobmap={}; }
 		selDidStartNewSession         : false,
 		selDidUpdateSession           : false,
 		selWillCommitSession          : false
+	};
+	
+	// GATE
+	function GateSelectionJob(owner, lat1, lng1, lat2, lng2, direction) {
+		this.end1 = {lat:lat1, lng:lng1};
+		this.end2 = {lat:lat2, lng:lng2};
+		this.direction = direction;
+		this.owner = owner;
+		this.chunkSize = 2000;
+		
+		this.targetLayerIndex = -1;
+		this.objectIndex = -1;
+		this.objectIDList = [];
+	}
+	
+	GateSelectionJob.prototype = {
+		run: function() {
+			if (this.objectIndex < 0) {
+				var nextLayer = this.setupNextLayer();
+				this.objectIndex = 0;
+				this.makeObjectIDList(nextLayer);
+				
+				if (!nextLayer) {
+					// Finished all layers
+				}
+			}
+			
+			this.processChunk();
+		},
+		
+		processChunk: function() {
+			var idList = this.objectIDList;
+			var idCount = this.objectIDList.length;
+			var shouldContinue = true;
+			
+			var targetLayer = this.owner.getTargetLayerList().getLayerAt(this.targetLayerIndex);
+			var mdat = targetLayer.movingData;
+			
+			for (var i = 0;i < this.chunkSize;++i) {
+				var targetIndex = this.objectIndex;
+				if (targetIndex >= idCount) {
+					shouldContinue = false;
+					break;
+				}
+				
+				// --------------------------
+				// Process one object or person
+				var oid = idList[targetIndex];
+				var tl = mdat.getTimeListOfId(oid);
+				
+				//console.log(oid, tl.getRecordList().length)
+
+				// --------------------------
+				++this.objectIndex;
+			}
+			
+			return shouldContinue;
+		},
+
+		setupNextLayer: function() {
+			while(1) {
+				++this.targetLayerIndex;
+			
+				var ll = this.owner.getTargetLayerList();
+				if (this.targetLayerIndex >= ll.getCount()) {
+					return null;
+				}
+			
+				var lyr = ll.getLayerAt( this.targetLayerIndex );
+				if (lyr.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+					return lyr;
+				}
+			}
+		},
+		
+		makeObjectIDList: function(targetLayer) {
+			var ls = this.objectIDList;
+			ls.length = 0;
+			
+			var mo = targetLayer.movingData;
+			if (!mo) { return; }
+			
+			var idMap = mo.idMap;
+			for (var oid in idMap) { ls.push(oid); }
+		}
 	};
 
 	aGlobal.mobmap.SelectionController = SelectionController;

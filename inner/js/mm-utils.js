@@ -13,6 +13,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		return o;
 	};
 
+	aGlobal.isNumbersNear = function(a, b) {
+		var d = a - b;
+		return (d > -0.000001 && d < 0.000001);
+	};
+
 	aGlobal.createCheckbox = function(cls, id) {
 		var check = $H('input', cls, id);
 		check.type = 'checkbox';
