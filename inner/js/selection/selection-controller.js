@@ -171,12 +171,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.end2 = {lat:lat2, lng:lng2};
 		this.direction = direction;
 		this.owner = owner;
-		this.chunkSize = 12000;
+		this.chunkSize = 2000;
 		this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
 		
 		this.targetLayerIndex = -1;
 		this.objectIndex = -1;
 		this.objectIDList = [];
+		
+		this.tickClosure = this.tick.bind(this);
 	}
 	
 	GateSelectionJob.prototype = {
@@ -191,7 +193,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
-			this.processChunk();
+			this.tick();
+		},
+		
+		tick: function() {
+			if (this.processChunk()) {
+				setTimeout(this.tickClosure, 9);
+			}
 		},
 		
 		processChunk: function() {

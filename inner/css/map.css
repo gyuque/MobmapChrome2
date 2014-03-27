@@ -1,3 +1,7 @@
 .on-selection>div>div>div {
 	cursor: crosshair !important;
 }
+
+.onmap-button-image:active {
+	padding-top: 1px;
+}
