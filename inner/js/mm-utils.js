@@ -281,4 +281,38 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 
+	aGlobal.testSegmentCross = (function() {
+		function matchDir(x1, y1, x2, y2, x3, y3, x4, y4, timeDir) {
+			// Rotate x/y
+			var dx1 = -(y2 - y1);
+			var dy1 = x2 - x1;
+
+			var dx2 = x4 - x3;
+			var dy2 = y4 - y3;
+
+			var dp = dx1 * dx2 + dy1 * dy2;
+			if (!timeDir) { dp = -dp; }
+
+			return dp;
+		}
+
+		return function (x1, y1, x2, y2, x3, y3, x4, y4, timeDir) {
+		//console.log(x1, y1, x2, y2, x3, y3, x4, y4)
+			if (
+					((x1 - x2) * (y3 - y1) + (y1 - y2) * (x1 - x3)) *
+					((x1 - x2) * (y4 - y1) + (y1 - y2) * (x1 - x4)) <= 0
+				) {
+
+				if (
+						((x3 - x4) * (y1 - y3) + (y3 - y4) * (x3 - x1)) *
+		            	((x3 - x4) * (y2 - y3) + (y3 - y4) * (x3 - x2)) <= 0
+				) {
+					return matchDir(x1, y1, x2, y2, x3, y3, x4, y4, timeDir);
+				}
+			}
+
+			return null;
+		} ;
+	})();
+
 })(window);

@@ -247,6 +247,10 @@ if (!window.mobmap) window.mobmap={};
 			return this.recordList.length < 1;
 		},
 
+		hasMoreTwoEnds: function() {
+			return this.recordList.length > 1;
+		},
+
 		pickAt: function(pickPool, pickedRec, seconds, extraProps, pickIndex) {
 			var ls = this.recordList;
 			var len = ls.length;

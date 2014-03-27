@@ -21,6 +21,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return prj.getLayerList();
 		},
 		
+		getSelectedTimeRage: function() {
+			var prj = this.ownerApp.getCurrentProject();
+			if (!prj) { return null; }
+			
+			return prj.timeRangeSelection.getFirstSelection();
+		},
+		
 		getCurrentSessionType: function() {
 			if (!this.currentSelectionSession) {
 				return mobmap.SelectionSessionType.Unknown;
@@ -164,7 +171,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.end2 = {lat:lat2, lng:lng2};
 		this.direction = direction;
 		this.owner = owner;
-		this.chunkSize = 2000;
+		this.chunkSize = 12000;
+		this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
 		
 		this.targetLayerIndex = -1;
 		this.objectIndex = -1;
@@ -191,8 +199,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var idCount = this.objectIDList.length;
 			var shouldContinue = true;
 			
+			var selectedTimeRange = this.owner.getSelectedTimeRage();
 			var targetLayer = this.owner.getTargetLayerList().getLayerAt(this.targetLayerIndex);
 			var mdat = targetLayer.movingData;
+			var anySelected = false;
 			
 			for (var i = 0;i < this.chunkSize;++i) {
 				var targetIndex = this.objectIndex;
@@ -205,11 +215,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				// Process one object or person
 				var oid = idList[targetIndex];
 				var tl = mdat.getTimeListOfId(oid);
-				
+				if (this.runGateOnTimedList(targetLayer, tl, selectedTimeRange, oid)) {
+					anySelected = true;
+				}
 				//console.log(oid, tl.getRecordList().length)
 
 				// --------------------------
 				++this.objectIndex;
+			}
+			
+			if (anySelected) {
+				targetLayer.localSelectionPool.fire();
 			}
 			
 			return shouldContinue;
@@ -240,6 +256,117 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var idMap = mo.idMap;
 			for (var oid in idMap) { ls.push(oid); }
+		},
+		
+		runGateOnTimedList: function(layer, timedList, selectedTimeRange, objectID) {
+			if (!timedList.hasMoreTwoEnds()) { return false; }
+			
+			var minT = layer.dataTimeRange.start;
+			var maxT = layer.dataTimeRange.end;
+			
+			if (selectedTimeRange) {
+				minT = selectedTimeRange.start;
+				maxT = selectedTimeRange.end;
+			}
+			
+			var recordList = timedList.getRecordList();
+			var firstRecord = recordList[0];
+			var lastRecord  = recordList[ recordList.length-1 ];
+
+			var recMinTime = firstRecord._time;
+			var recMaxTime = lastRecord._time;
+
+			// Find start point
+			var nextIndex = 0;
+			var currentRecord = null;
+			var indexOverMin = this.gateFindStartSection(minT, recordList);
+			if (indexOverMin < 0) {
+				return false;
+			} else if (indexOverMin > 0) {
+				var prevRec = recordList[indexOverMin - 1];
+				nextIndex = indexOverMin;
+				
+				if (prevRec._time === minT) {
+					currentRecord = prevRec;
+					//console.log("PASS1");
+				} else {
+					currentRecord = this.tempPickRecord;
+					timedList.pickIntpRecord(this.tempPickRecord, recordList, indexOverMin-1, indexOverMin, minT, null);
+					//console.log("PASS2");
+				}
+			} else {
+				// From the first
+			}
+
+			// Loop in timelist
+			var tlIndex = nextIndex-1;
+			var segmentPrevRecord = null;
+			var selp = layer.localSelectionPool;
+			for (;;) {
+				if (currentRecord && segmentPrevRecord) {
+					if (this.doCrossTestBetweenRecords(segmentPrevRecord, currentRecord)) {
+						selp.addId(objectID, true);
+						//console.log("SEL")
+						return true;
+					}
+				//	console.log("    "+ segmentPrevRecord.y +","+ segmentPrevRecord.x+"  "+segmentPrevRecord._time+
+				//	"   ->  "+ currentRecord.y +","+ currentRecord.x+"  "+currentRecord._time);
+				}
+				
+				++tlIndex;
+				if (tlIndex >= recordList.length) {
+					break;
+				}
+				
+				segmentPrevRecord = currentRecord;
+				currentRecord = recordList[tlIndex];
+				
+				// Is interpolation needed?
+				if (tlIndex > 0) {
+					if (currentRecord._time > maxT) {
+						currentRecord = this.tempPickRecord;
+						timedList.pickIntpRecord(this.tempPickRecord, recordList, tlIndex-1, tlIndex, maxT, null);
+					}
+				}
+			}
+			
+			return false;
+		},
+
+		doCrossTestBetweenRecords: function(rec1, rec2) {
+			var g1 = this.end1;
+			var g2 = this.end2;
+
+			var enableDirection = (this.direction !== GateDirection.Bidirectional);
+			var invDir = (this.direction === GateDirection.Back) ? -1 : 1;
+
+			var xres = testSegmentCross(
+						g1.lng, g1.lat,
+						g2.lng, g2.lat,
+						rec1.x, rec1.y,
+						rec2.x, rec2.y, true);
+
+			if (xres !== null) {
+				if (enableDirection &&(xres * invDir) < 0) {
+					return false;
+				}
+
+				return true;
+			}
+
+			return false;
+		},
+
+		gateFindStartSection: function(gateMinTime, recordList) {
+			var len = recordList.length;
+			for (var i = 0;i < len;++i) {
+				var rec = recordList[i];
+				if (rec._time > gateMinTime) {
+					return i;
+				}
+			}
+			
+			return -1;
 		}
 	};
 
