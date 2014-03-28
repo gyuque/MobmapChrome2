@@ -185,12 +185,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		run: function() {
 			if (this.objectIndex < 0) {
 				var nextLayer = this.setupNextLayer();
-				this.objectIndex = 0;
-				this.makeObjectIDList(nextLayer);
-				
 				if (!nextLayer) {
 					// Finished all layers
+					return;
 				}
+
+				this.objectIndex = 0;
+				this.makeObjectIDList(nextLayer);
 			}
 			
 			this.tick();
@@ -199,6 +200,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		tick: function() {
 			if (this.processChunk()) {
 				setTimeout(this.tickClosure, 9);
+			} else {
+				this.objectIndex = -1;
+				this.run();
 			}
 		},
 		
