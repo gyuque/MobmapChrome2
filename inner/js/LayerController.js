@@ -30,12 +30,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ll = senderProject.layerList;
 			var len = ll.getCount();
 			
-			for (var i = 0;i < len;++i) {
+			var removedElements = []
+			var i;
+			for (i = 0;i < len;++i) {
 				var lyr = ll.getLayerAt(i);
 				var mapOverlay = this.findMapOverlayFor(lyr);
 				if (mapOverlay && mapOverlay.canvas) {
-					console.log(mapOverlay.canvas.parentNode === paneElement)
+					if (mapOverlay.canvas.parentNode === paneElement) {
+						mapOverlay.canvas.parentNode.removeChild(mapOverlay.canvas);
+						removedElements.push(mapOverlay.canvas);
+					}
 				}
+			}
+
+			for (i in removedElements) {
+				paneElement.appendChild(removedElements[i]);
 			}
 		},
 		
