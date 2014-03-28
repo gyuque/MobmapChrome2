@@ -64,6 +64,8 @@
 	font-size: 13px;
 }
 
+.mm-layer-view-item-box {background-color: rgba(255,255,255,0.8);}
+
 .mm-layer-view-item-box h3 {
 	font-size: 11px;
 	margin: 1px;
@@ -88,6 +90,28 @@
 	cursor: pointer;
 	background: url(../images/eyes.png) no-repeat top left;
 }
+
+.mm-layer-down-button {
+	position: absolute;
+	top: 1px;
+	right: 36px;
+	cursor: pointer;
+	opacity: 0;
+}
+
+.mm-layer-up-button {
+	position: absolute;
+	top: 1px;
+	right: 53px;
+	cursor: pointer;
+	opacity: 0;
+}
+
+.mm-layer-view-item-box:hover .mm-layer-down-button { opacity: 0.7; }
+.mm-layer-view-item-box:hover .mm-layer-down-button:active { opacity: 1; }
+.mm-layer-view-item-box:hover .mm-layer-up-button { opacity: 0.7; }
+.mm-layer-view-item-box:hover .mm-layer-up-button:active { opacity: 1; }
+
 
 .layer-visibility-toggle.selected {
 	background-position: top right;

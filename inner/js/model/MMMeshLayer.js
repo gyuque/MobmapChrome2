@@ -48,6 +48,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		setParentEventElement: mobmap.MMLayerBase.setParentEventElement,
 		hasPrimaryView: mobmap.MMLayerBase.hasPrimaryView,
 		requestDelete: mobmap.MMLayerBase.requestDelete,
+		requestGoDown: mobmap.MMLayerBase.requestGoDown,
+		requestGoUp:   mobmap.MMLayerBase.requestGoUp,
 		destroy: mobmap.MMLayerBase.destroy,
 		toggleVisibility: mobmap.MMLayerBase.toggleVisibility,
 		setVisibility: mobmap.MMLayerBase.setVisibility,

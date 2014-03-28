@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MMProject.LAYERLIST_CHANGE = "mmprj-event-layerlist-change";
+	MMProject.LAYERLIST_ORDER_SWAP = "mmprj-event-layerlist-order-swap";
 	
 	MMProject.prototype = {
 		eventDispatcher: function() {
@@ -18,6 +19,27 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getLayerList: function() {
 			return this.layerList;
+		},
+		
+		moveDownLayer: function(targetLayer) {
+			var li = this.getLayerList().findLayerIndex(targetLayer);
+			if (li < 1) {
+				return;
+			}
+			
+			this.getLayerList().swapLayer(li, li-1);
+			this.eventDispatcher().trigger(MMProject.LAYERLIST_ORDER_SWAP, [this, li, li-1]);
+		},
+		
+		moveUpLayer: function(targetLayer) {
+			var ls = this.getLayerList();
+			var li = ls.findLayerIndex(targetLayer);
+			if (li < 0 || li >= (ls.getCount()-1)) {
+				return;
+			}
+			
+			this.getLayerList().swapLayer(li+1, li);
+			this.eventDispatcher().trigger(MMProject.LAYERLIST_ORDER_SWAP, [this, li+1, li]);
 		},
 		
 		getCurrentTimeInSeconds: function() {
@@ -102,6 +124,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.array[i] || null;
 		},
 		
+		findLayerIndex: function(layerObj) {
+			return this.array.indexOf(layerObj);
+		},
+		
 		appendOnTop: function(newLayer) {
 			if (this.alreadyExists(newLayer)) {
 				return;
@@ -131,7 +157,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.array.splice(i, 1);
 			
 			return true;
-		}
+		},
+		
+		swapLayer: function(i1, i2) {
+			var old1 = this.array[i1];
+			this.array[i1] = this.array[i2];
+			this.array[i2] = old1;
+		} 
 	};
 	// ----------------------------
 	

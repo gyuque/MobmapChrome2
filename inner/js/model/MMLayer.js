@@ -15,6 +15,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		LoadError: 'mm-layer-model-event-load-error',
 		VisibilityChange: 'mm-layer-model-event-visibility-change',
 		RequestDelete: 'mm-layer-model-event-request-delete',
+		RequestGoDown: 'mm-layer-model-event-request-go-down',
+		RequestGoUp: 'mm-layer-model-event-request-go-up',
 		Destroy: 'mm-layer-model-event-destroy'
 	};
 	
@@ -80,6 +82,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.eventDispatcher().trigger(LayerEvent.RequestDelete, this);
 	}
 	
+	function layerbase_requestGoDown() { this.eventDispatcher().trigger(LayerEvent.RequestGoDown, this); }
+	function layerbase_requestGoUp() { this.eventDispatcher().trigger(LayerEvent.RequestGoUp, this); }
+	
 	function layerbase_destroy() {
 		this.eventDispatcher().trigger(LayerEvent.Destroy, this);
 		layerbase_removeAllEventHandlers.apply(this);
@@ -111,6 +116,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		setParentEventElement: layerbase_setParentEventElement,
 		hasPrimaryView: layerbase_hasPrimaryView,
 		requestDelete: layerbase_requestDelete,
+		requestGoDown: layerbase_requestGoDown,
+		requestGoUp:   layerbase_requestGoUp,
 		destroy: layerbase_destroy,
 		toggleVisibility: layerbase_toggleVisibility,
 		setVisibility: layerbase_setVisibility,
@@ -247,6 +254,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		setParentEventElement: layerbase_setParentEventElement,
 		hasPrimaryView: layerbase_hasPrimaryView,
 		requestDelete: layerbase_requestDelete,
+		requestGoDown: layerbase_requestGoDown,
+		requestGoUp:   layerbase_requestGoUp,
 		destroy: layerbase_destroy,
 		toggleVisibility: layerbase_toggleVisibility,
 		setVisibility: layerbase_setVisibility

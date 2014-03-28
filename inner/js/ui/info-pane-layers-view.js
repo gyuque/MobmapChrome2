@@ -41,6 +41,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (prj) {
 				var ed = prj.eventDispatcher();
 				ed.bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this));
+				ed.bind(mobmap.MMProject.LAYERLIST_ORDER_SWAP, this.onLayerListOrderSwap.bind(this));
 			}
 		},
 
@@ -50,6 +51,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerListChange: function() {
 			this.updateLayerViews();
+		},
+		
+		onLayerListOrderSwap: function(e, layerList, i1, i2) {
+			if (i1 > i2) {
+				this.startSwapAnimation(i1, i2);
+			} else {
+				this.startSwapAnimation(i2, i1);
+			}
 		},
 		
 		generateItemsContainer: function() {
@@ -202,7 +211,40 @@ if (!window.mobmap) { window.mobmap={}; }
 		requestAddLocalCSVLayer: function() {
 			this.ownerApp.loadLocalCSVMovingData();
 		},
-		
+
+		startSwapAnimation: function(i1, i2) {
+			var dmy1 = document.createElement('span');
+			var dmy2 = document.createElement('span');
+			var elementList = $(this.itemsContainerElement).find('.mm-layer-view-item-box');
+			var len = elementList.length;
+			
+			var el1 = elementList[len-1 - i1];
+			var el2 = elementList[len-1 - i2];
+			
+			var j1 = $(el1);
+			var j2 = $(el2);
+			var up_d = j1.offset().top - j2.offset().top;
+			var down_d = (j2.offset().top + j2.outerHeight() - j1.outerHeight()) - j1.offset().top;
+			var parentNode = this.itemsContainerElement;
+			
+			j1.css('position', 'relative').animate({top: down_d}, 200);
+			j2.css('position', 'relative').animate({top: up_d}, {
+				duration: 200,
+				complete: function() {
+					// Reset position
+					j1.css('position', 'static');
+					j1.css('top', '');
+					j2.css('position', 'static');
+					j2.css('top', '');
+					
+					parentNode.replaceChild(dmy1, el1);
+					parentNode.replaceChild(dmy2, el2);
+					parentNode.replaceChild(el2, dmy1);
+					parentNode.replaceChild(el1, dmy2);
+				}
+			});
+		},
+
 		// ------------------------------
 		updateLayerViews: function() {
 			var nextInView = null;
@@ -375,8 +417,18 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			var v_btn = generateLayerVisibilityButton();
 			containerElement.appendChild(v_btn.element);
+
+			var img_down = $H('img', 'mm-layer-down-button');
+			img_down.src = 'images/down-icon.png';
+			containerElement.appendChild(img_down);
+
+			var img_up = $H('img', 'mm-layer-up-button');
+			img_up.src = 'images/up-icon.png';
+			containerElement.appendChild(img_up);
 			
 			$(img).click(this.onLayerDeleteButtonClick.bind(this));
+			$(img_down).click(this.onLayerDownButtonClick.bind(this));
+			$(img_up).click(this.onLayerUpButtonClick.bind(this));
 			v_btn.eventDispatcher().click(this.onLayerVisibilityButtonClick.bind(this));
 			this.visibilityButton = v_btn;
 		},
@@ -463,6 +515,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerDeleteButtonClick: function() {
 			this.boundLayer.requestDelete();
+		},
+		
+		onLayerDownButtonClick: function() {
+			this.boundLayer.requestGoDown();
+		},
+		
+		onLayerUpButtonClick: function() {
+			this.boundLayer.requestGoUp();
 		},
 		
 		onLayerVisibilityButtonClick: function() {

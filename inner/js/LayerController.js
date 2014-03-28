@@ -14,9 +14,29 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(
 				mobmap.MMProject.LAYERLIST_CHANGE,
 				this.onProjectLayerlistChange.bind(this)
+			 ).
+			 bind(
+				mobmap.MMProject.LAYERLIST_ORDER_SWAP,
+				this.onProjectLayerlistSwap.bind(this)
 			 );
 			
 			this.checkLayerList(prj);
+		},
+		
+		onProjectLayerlistSwap: function(e, senderProject) {
+			var ov = this.getTopLayerOverlay();
+			var paneElement = ov.getPanes()[ov.targetPane];
+			
+			var ll = senderProject.layerList;
+			var len = ll.getCount();
+			
+			for (var i = 0;i < len;++i) {
+				var lyr = ll.getLayerAt(i);
+				var mapOverlay = this.findMapOverlayFor(lyr);
+				if (mapOverlay && mapOverlay.canvas) {
+					console.log(mapOverlay.canvas.parentNode === paneElement)
+				}
+			}
 		},
 		
 		onProjectLayerlistChange: function(e, senderProject) {
@@ -119,6 +139,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
 			 bind(LE.LoadError, this.onLayerLoadError.bind(this)).
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
+			 bind(LE.RequestGoDown, this.onLayerRequestGoDown.bind(this)).
+			 bind(LE.RequestGoUp, this.onLayerRequestGoUp.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
@@ -215,6 +237,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerDestroy: function(e, sourceLayer) {
 			if (this.ownerApp) {
 				this.destroyOverlayForLayer(sourceLayer);
+			}
+		},
+		
+		onLayerRequestGoDown: function(e, sourceLayer) {
+			if (this.ownerApp) {
+				this.ownerApp.getCurrentProject().moveDownLayer(sourceLayer);
+			}
+		},
+
+		onLayerRequestGoUp: function(e, sourceLayer) {
+			if (this.ownerApp) {
+				this.ownerApp.getCurrentProject().moveUpLayer(sourceLayer);
 			}
 		},
 		
