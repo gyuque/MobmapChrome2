@@ -11,6 +11,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	MMProject.LAYERLIST_CHANGE = "mmprj-event-layerlist-change";
 	MMProject.LAYERLIST_ORDER_SWAP = "mmprj-event-layerlist-order-swap";
+	MMProject.LAYERLIST_SWAP_FAIL = "mmprj-event-layerlist-swap-fail";
 	
 	MMProject.prototype = {
 		eventDispatcher: function() {
@@ -24,6 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		moveDownLayer: function(targetLayer) {
 			var li = this.getLayerList().findLayerIndex(targetLayer);
 			if (li < 1) {
+				this.notifySwapFail(li, -1);
 				return;
 			}
 			
@@ -35,11 +37,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ls = this.getLayerList();
 			var li = ls.findLayerIndex(targetLayer);
 			if (li < 0 || li >= (ls.getCount()-1)) {
+				this.notifySwapFail(li, 1);
 				return;
 			}
 			
 			this.getLayerList().swapLayer(li+1, li);
 			this.eventDispatcher().trigger(MMProject.LAYERLIST_ORDER_SWAP, [this, li+1, li]);
+		},
+		
+		notifySwapFail: function(layerIndex, direction) {
+			if (layerIndex >= 0) {
+				this.eventDispatcher().trigger(MMProject.LAYERLIST_SWAP_FAIL, [this, layerIndex, direction]);
+			}
 		},
 		
 		getCurrentTimeInSeconds: function() {
@@ -63,8 +72,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			return lyr;
 		},
 		
+		addExploreLayer: function() {
+			var lyr = new mobmap.MMExploreLayer();
+			this.insertBottomLayerAndNotify(lyr);
+			return lyr;
+		},
+		
 		appendLayerAndNotify: function(lyr) {
 			this.layerList.appendOnTop(lyr);
+			this.triggerEvent(MMProject.LAYERLIST_CHANGE);
+			return lyr;
+		},
+		
+		insertBottomLayerAndNotify: function(lyr) {
+			this.layerList.insertToBottom(lyr);
 			this.triggerEvent(MMProject.LAYERLIST_CHANGE);
 			return lyr;
 		},
@@ -129,15 +150,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		appendOnTop: function(newLayer) {
+			this.insertNewLayer(newLayer);
+		},
+		
+		insertToBottom: function(newLayer) {
+			this.insertNewLayer(newLayer, true);
+		},
+		
+		insertNewLayer: function(newLayer, toBottom) {
 			if (this.alreadyExists(newLayer)) {
-				return;
+				return false;
 			}
 
 			newLayer.setOwnerList(this);
 			newLayer.setParentEventElement(this.parentEventElement);
-			this.array.push(newLayer);
+			
+			if (toBottom) {
+				this.array.unshift(newLayer);
+			} else {
+				// on top
+				this.array.push(newLayer);
+			}
 			
 			console.log("Number of layers: ", this.array.length);
+			return true;
 		},
 		
 		alreadyExists: function(lyr) {
@@ -163,7 +199,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			var old1 = this.array[i1];
 			this.array[i1] = this.array[i2];
 			this.array[i2] = old1;
-		} 
+		},
+		
+		countExploreLayers: function() {
+			return this.countLayersWithCapabilities(mobmap.LayerCapability.ExploreOtherLayer);
+		},
+
+		countMovingObjectLayers: function() {
+			return this.countLayersWithCapabilities(mobmap.LayerCapability.MarkerRenderable);
+		},
+		
+		countLayersWithCapabilities: function(mask) {
+			var count = 0;
+			for (var i in this.array) {
+				if (0 !== (this.array[i].capabilities & mask)) {
+					++count;
+				}
+			}
+			
+			return count;
+		}
 	};
 	// ----------------------------
 	

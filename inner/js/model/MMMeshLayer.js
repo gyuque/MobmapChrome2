@@ -43,17 +43,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	MMMeshLayer.CELL_APPEARANCE_CHANGE = "mm-mesh-layer-event-cell-appearance-change";
 	
 	MMMeshLayer.prototype = {
-		eventDispatcher: mobmap.MMLayerBase.eventDispatcher,
-		setOwnerList: mobmap.MMLayerBase.setOwnerList,
-		setParentEventElement: mobmap.MMLayerBase.setParentEventElement,
-		hasPrimaryView: mobmap.MMLayerBase.hasPrimaryView,
-		requestDelete: mobmap.MMLayerBase.requestDelete,
-		requestGoDown: mobmap.MMLayerBase.requestGoDown,
-		requestGoUp:   mobmap.MMLayerBase.requestGoUp,
-		destroy: mobmap.MMLayerBase.destroy,
-		toggleVisibility: mobmap.MMLayerBase.toggleVisibility,
-		setVisibility: mobmap.MMLayerBase.setVisibility,
-
 		setMeshData: function(md) {
 			this.meshData = md;
 		},
@@ -123,6 +112,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.eventDispatcher().trigger(MMMeshLayer.CELL_APPEARANCE_CHANGE, this);
 		}
 	};
+	
+	mobmap.InstallMMLayerBaseMethods(MMMeshLayer.prototype);
 	
 	MMMeshLayer.ColorRule = function(jEventElement) {
 		this.jEventElement = jEventElement;

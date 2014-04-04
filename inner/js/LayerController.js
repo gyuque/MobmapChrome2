@@ -18,7 +18,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(
 				mobmap.MMProject.LAYERLIST_ORDER_SWAP,
 				this.onProjectLayerlistSwap.bind(this)
-			 );
+			 ).
+			 bind(
+				mobmap.MMProject.LAYERLIST_SWAP_FAIL,
+				this.onProjectLayerlistSwapFail.bind(this)
+			);
 			
 			this.checkLayerList(prj);
 		},
@@ -48,6 +52,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onProjectLayerlistSwapFail: function(e, senderProject, layerIndex, moveDirection) {
+		},
+		
 		onProjectLayerlistChange: function(e, senderProject) {
 			this.checkLayerList(senderProject);
 		},
@@ -65,6 +72,22 @@ if (!window.mobmap) { window.mobmap={}; }
 					// Create and connect map overlay
 					mapOverlay = this.createNewOverlayForLayer(lyr);
 				}
+			}
+			
+			this.addExploreLayerIfNeeded(prj);
+		},
+		
+		addExploreLayerIfNeeded: function(prj) {
+			var ll = prj.layerList;
+			var len = ll.getCount();
+			
+			var already_exists = (ll.countExploreLayers() > 0);
+			if (already_exists) {
+				return;
+			}
+			
+			if (ll.countMovingObjectLayers() > 0) {
+				console.log("NEED");
 			}
 		},
 

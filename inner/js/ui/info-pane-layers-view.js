@@ -40,8 +40,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var prj = this.ownerApp.getCurrentProject();
 			if (prj) {
 				var ed = prj.eventDispatcher();
-				ed.bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this));
-				ed.bind(mobmap.MMProject.LAYERLIST_ORDER_SWAP, this.onLayerListOrderSwap.bind(this));
+				ed.
+				 bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this)).
+				 bind(mobmap.MMProject.LAYERLIST_ORDER_SWAP, this.onLayerListOrderSwap.bind(this)).
+				 bind(mobmap.MMProject.LAYERLIST_SWAP_FAIL, this.onLayerListSwapFail.bind(this));
 			}
 		},
 
@@ -59,6 +61,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else {
 				this.startSwapAnimation(i2, i1);
 			}
+		},
+
+		onLayerListSwapFail: function(e, senderProject, layerIndex, moveDirection) {
+			this.doSwapFailAnimation(layerIndex, moveDirection);
 		},
 		
 		generateItemsContainer: function() {
@@ -241,6 +247,23 @@ if (!window.mobmap) { window.mobmap={}; }
 					parentNode.replaceChild(dmy2, el2);
 					parentNode.replaceChild(el2, dmy1);
 					parentNode.replaceChild(el1, dmy2);
+				}
+			});
+		},
+
+		doSwapFailAnimation: function(layerIndex, moveDirection) {
+			var elementList = $(this.itemsContainerElement).find('.mm-layer-view-item-box');
+			var el = elementList[elementList.length-1 - layerIndex] || null;
+			if (!el) { return; }
+			
+			var movePos = (moveDirection > 0) ? '-4px' : '4px';
+			
+			var j = $(el);
+			j.css('position', 'relative').css('top', movePos).animate({top: 0}, {
+				duration: 150,
+				complete: function() {
+					j.css('position', 'static');
+					j.css('top', '');
 				}
 			});
 		},

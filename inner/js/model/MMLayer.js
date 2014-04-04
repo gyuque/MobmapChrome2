@@ -24,7 +24,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		MarkerRenderable: 0x01,
 		MeshRenderable  : 0x02,
 		TyphoonMarkerRecommended: 0x04,
-		SpatialSelectable: 0x10
+		SpatialSelectable: 0x10,
+		FixOnBottom: 0x100,
+		ExploreOtherLayer: 0x200
 	};
 
 	function MovingObjectLayer() {
@@ -106,11 +108,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	}
 
-	// - - - - - - - - - - - - - - - - - - - -
-
-	MovingObjectLayer.prototype = {
-		// Common methods
-		// Delegate to base functions
+	aGlobal.mobmap.MMLayerBase = {
 		eventDispatcher: layerbase_eventDispatcher,
 		setOwnerList: layerbase_setOwnerList,
 		setParentEventElement: layerbase_setParentEventElement,
@@ -120,8 +118,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		requestGoUp:   layerbase_requestGoUp,
 		destroy: layerbase_destroy,
 		toggleVisibility: layerbase_toggleVisibility,
-		setVisibility: layerbase_setVisibility,
-		
+		setVisibility: layerbase_setVisibility
+	};
+
+	aGlobal.mobmap.InstallMMLayerBaseMethods = function(targetPrototype) {
+		var base = aGlobal.mobmap.MMLayerBase;
+		for (var i in base) if (base.hasOwnProperty(i)) {
+			targetPrototype[i] = base[i];
+		}
+	};
+
+	// - - - - - - - - - - - - - - - - - - - -
+
+	MovingObjectLayer.prototype = {
 		initTimeRange: function() {
 			this.dataTimeRange.start = Number.MAX_VALUE;
 			this.dataTimeRange.end   = -1;
@@ -239,6 +248,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 
+	mobmap.InstallMMLayerBaseMethods(MovingObjectLayer.prototype);
+
 	function registerAdditionalAttributes(targetMD, sourceAttrMap) {
 		sourceAttrMap.forEachAttribute(function(attrName, meta){
 			if (!isMMRequiredAttribute(attrName)) {
@@ -248,18 +259,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		});
 	}
 
-	aGlobal.mobmap.MMLayerBase = {
-		eventDispatcher: layerbase_eventDispatcher,
-		setOwnerList: layerbase_setOwnerList,
-		setParentEventElement: layerbase_setParentEventElement,
-		hasPrimaryView: layerbase_hasPrimaryView,
-		requestDelete: layerbase_requestDelete,
-		requestGoDown: layerbase_requestGoDown,
-		requestGoUp:   layerbase_requestGoUp,
-		destroy: layerbase_destroy,
-		toggleVisibility: layerbase_toggleVisibility,
-		setVisibility: layerbase_setVisibility
-	};
 	
 	aGlobal.mobmap.LayerCapability = LayerCapability;
 	aGlobal.mobmap.LayerEvent = LayerEvent;
