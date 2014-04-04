@@ -291,6 +291,11 @@ if (!window.mobmap) { window.mobmap={}; }
 					
 					lv.updateSelectionCount();
 					console.log("Needs view"); // This layer needs new view.
+					
+					// Explore layer doesn't have to load data.
+					if (layer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
+						lv.setLayerReady(true);
+					}
 				}
 				
 				if (!layer._lvObserved) {
@@ -457,8 +462,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		makeLayerTypeString: function() {
-			if (this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+			var caps = this.boundLayer.capabilities;
+			if (caps & mobmap.LayerCapability.MarkerRenderable) {
 				return "Moving objects";
+			} else if (caps & mobmap.LayerCapability.ExploreOtherLayer) {
+				return "Explore";
 			} else {
 				return "Mesh";
 			}

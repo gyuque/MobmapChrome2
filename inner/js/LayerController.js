@@ -87,7 +87,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			if (ll.countMovingObjectLayers() > 0) {
-				console.log("NEED");
+				prj.addExploreLayer();
 			}
 		},
 
@@ -125,6 +125,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		createNewOverlayForLayer: function(lyr) {
 			if (lyr.capabilities & mobmap.LayerCapability.MarkerRenderable) {
 				return this.createMovingObjectsOverlay(lyr);
+			} else if (lyr.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
+				return this.createExploreOverlay(lyr);
 			} else {
 				return this.createMeshOverlay(lyr);
 			}
@@ -156,6 +158,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			mapOverlay.ownerObject = lyr;
 			this.mapOverlayList.push(mapOverlay);
 			return mapOverlay;
+		},
+		
+		createExploreOverlay: function() {
+			var mapPane = this.ownerApp.getMapPane();
+			return mobmap.ExploreMapType.installMapType( mapPane.getGoogleMaps() );
 		},
 
 		// ==============================================

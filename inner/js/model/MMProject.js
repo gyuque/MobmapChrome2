@@ -23,20 +23,31 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		moveDownLayer: function(targetLayer) {
-			var li = this.getLayerList().findLayerIndex(targetLayer);
+			var ls = this.getLayerList();
+			var li = ls.findLayerIndex(targetLayer);
+
 			if (li < 1) {
+				// This layer is on the bottom
 				this.notifySwapFail(li, -1);
 				return;
 			}
 			
-			this.getLayerList().swapLayer(li, li-1);
+			if (!!(ls.getLayerAt(li-1).capabilities & mobmap.LayerCapability.FixOnBottom)) {
+				// Previous layer is fixed.
+				this.notifySwapFail(li, -1);
+				return;
+			}
+			
+			ls.swapLayer(li, li-1);
 			this.eventDispatcher().trigger(MMProject.LAYERLIST_ORDER_SWAP, [this, li, li-1]);
 		},
 		
 		moveUpLayer: function(targetLayer) {
+			var is_fixed = !!(targetLayer.capabilities & mobmap.LayerCapability.FixOnBottom);
+			
 			var ls = this.getLayerList();
 			var li = ls.findLayerIndex(targetLayer);
-			if (li < 0 || li >= (ls.getCount()-1)) {
+			if (li < 0 || li >= (ls.getCount()-1) || is_fixed) {
 				this.notifySwapFail(li, 1);
 				return;
 			}

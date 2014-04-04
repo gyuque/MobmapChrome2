@@ -25,7 +25,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	MMExploreLayer.prototype = {
-		
+		hasTimeRange: function() {
+			return false;
+		}
 	};
 	
 	mobmap.InstallMMLayerBaseMethods(MMExploreLayer.prototype);
