@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function LayerController(ownerApp) {
 		this.ownerApp = ownerApp;
 		this.mapOverlayList = [];
+		this.exploreMapType = null;
 	}
 
 	LayerController.prototype = {
@@ -160,9 +161,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			return mapOverlay;
 		},
 		
-		createExploreOverlay: function() {
+		createExploreOverlay: function(lyr) {
 			var mapPane = this.ownerApp.getMapPane();
-			return mobmap.ExploreMapType.installMapType( mapPane.getGoogleMaps() );
+			var x = mobmap.ExploreMapType.installMapType( mapPane.getGoogleMaps() );
+			x.ownerObject = lyr;
+			this.exploreMapType = x;
+			return x;
 		},
 
 		// ==============================================
@@ -323,6 +327,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (ls[i].ownerObject === layerModel) {
 					return ls[i];
 				}
+			}
+			
+			if (this.exploreMapType && this.exploreMapType.ownerObject === layerModel) {
+				return this.exploreMapType;
 			}
 			
 			return null;

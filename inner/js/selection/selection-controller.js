@@ -39,7 +39,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		clear: function(suppress_event) {
 			var prj = this.ownerApp.getCurrentProject();
 			prj.forEachLayer(function(index, layer){
-				layer.localSelectionPool.clear(suppress_event);
+				if (layer.capabilities & mobmap.LayerCapability.SpatialSelectable) {
+					layer.localSelectionPool.clear(suppress_event);
+				}
 			});
 		},
 		

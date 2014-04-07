@@ -586,7 +586,7 @@ function installMobLayer(pkg) {
 		var texconf = this.markerTextureConf;
 		
 		if (!this.gl) { return false; }
-		if (texconf.sourceImage === img) { return false; }
+		if (!!img.src && texconf.sourceImage === img) { return false; }
 		this.destroyMarkerTexture();
 
 		texconf.sourceImage    = img;

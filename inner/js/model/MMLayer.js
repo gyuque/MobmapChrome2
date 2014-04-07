@@ -156,6 +156,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		getSourceFileName: function() {
+			if (!this.sourceLoader) {
+				return "unknown";
+			}
+			
 			return this.sourceLoader.fileName;
 		},
 		

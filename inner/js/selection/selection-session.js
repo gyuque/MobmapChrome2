@@ -58,6 +58,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			for (var i = 0;i < len;++i) {
 				var lyr = ls.getLayerAt(i);
+				if ((lyr.capabilities & mobmap.LayerCapability.SpatialSelectable) === 0) {
+					continue;
+				}
+				
 				var selp = lyr.localSelectionPool;
 				selp.clear(true);
 

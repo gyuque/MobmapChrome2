@@ -43,7 +43,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				ed.
 				 bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this)).
 				 bind(mobmap.MMProject.LAYERLIST_ORDER_SWAP, this.onLayerListOrderSwap.bind(this)).
-				 bind(mobmap.MMProject.LAYERLIST_SWAP_FAIL, this.onLayerListSwapFail.bind(this));
+				 bind(mobmap.MMProject.LAYERLIST_SWAP_FAIL, this.onLayerListSwapFail.bind(this)).
+				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this));
 			}
 		},
 
@@ -53,6 +54,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerListChange: function() {
 			this.updateLayerViews();
+			this.updateExploreTargets();
+		},
+		
+		onAnyLayerLoadFinish: function() {
+			this.updateExploreTargets();
 		},
 		
 		onLayerListOrderSwap: function(e, layerList, i1, i2) {
@@ -269,6 +275,36 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		// ------------------------------
+		updateExploreTargets: function() {
+			var prj = this.ownerApp.getCurrentProject();
+			var ls = prj.layerList;
+			var len = ls.getCount();
+			var targetLayerList = [];
+			var i, layer;
+			
+			// Make target list
+			for (i = 0;i < len;++i) {
+				layer = ls.getLayerAt(i);
+
+				if (layer.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+					var lid = layer.layerId;
+					var desc = layer.getShortDescription();
+					
+					targetLayerList.push({id:lid, desc:desc});
+				}
+			}
+			
+			// Send target list to explore layer
+			for (i = 0;i < len;++i) {
+				layer = ls.getLayerAt(i);
+				if (layer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
+					if (layer.hasPrimaryView()) {
+						layer.primaryView.setExploreTargetList(targetLayerList);
+					}
+				}
+			}
+		},
+		
 		updateLayerViews: function() {
 			var nextInView = null;
 			
@@ -379,6 +415,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.subCaptionElement = null;
 		this.markerPanel = null;
 		this.meshPanel = null;
+		this.explorePanel = null;
 		
 		this.visibilityButton = null;
 		this.jSelCountIndicator = null;
@@ -392,7 +429,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	LayerItemView.prototype = {
 		build: function() {
 			var use_marker = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable);
-			var use_mesh = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MeshRenderable);
+			var use_mesh   = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MeshRenderable);
+			var use_exp    = !!(this.boundLayer.capabilities & mobmap.LayerCapability.ExploreOtherLayer);
 			
 			// Caption ---------------------
 			var caption = $H('h3');
@@ -428,6 +466,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (use_mesh) {
 				this.buildMeshConfigurationPanel();
+			}
+			
+			if (use_exp) {
+				this.buildExploreConfigurationPanel();
 			}
 		},
 		
@@ -484,6 +526,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.appendChild(this.meshPanel.element);
 		},
 		
+		buildExploreConfigurationPanel: function() {
+			this.explorePanel = new mobmap.ExploreConfigurationPanel(this.boundLayer);
+			this.explorePanel.hide();
+			this.element.appendChild(this.explorePanel.element);
+		},
+		
 		setSubCaption: function(label) {
 			$(this.subCaptionElement).text(label);
 		},
@@ -505,8 +553,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		toggleVisibilities: function() {
 			if (this.layerReady) {
 				this.hideProgress();
-				if (this.markerPanel) { this.markerPanel.show(); }
-				if (this.meshPanel) { this.meshPanel.show(); }
+				if (this.markerPanel ) { this.markerPanel.show();  }
+				if (this.meshPanel   ) { this.meshPanel.show();    }
+				if (this.explorePanel) { this.explorePanel.show(); }
 			}
 		},
 		
@@ -542,6 +591,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else {
 				this.jSelCountIndicator.hide();
 			}
+		},
+		
+		setExploreTargetList: function(targetLayerList) {
+			this.explorePanel.setTargetList(targetLayerList);
 		},
 		
 		onLayerDeleteButtonClick: function() {
