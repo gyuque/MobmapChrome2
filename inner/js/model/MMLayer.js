@@ -166,7 +166,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		getShortDescription: function() {
 			var name = this.getSourceFileName();
 			if (this.dataReady) {
-				return name + " ("+ (this.movingData.countIds()) +" IDs)";
+				var n = this.movingData.countIds();
+				var postfix = (n > 1) ? " IDs)" : " ID)";
+				return name + " ("+ n + postfix;
 			} else {
 				return name + " (? IDs)";
 			}
