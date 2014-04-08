@@ -35,15 +35,17 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.selectElementTargets = sel;
 			this.jSelectElementTargets = $(sel).change( this.onTargetSelectChange.bind(this) );
+			this.addNoneTargetOption();
 		},
 		
 		onTargetSelectChange: function() {
 			var val = parseInt(this.jSelectElementTargets.val(), 10);
-			console.log(val);
+			this.boundLayer.setTargetLayerId(val);
 		},
 
 		setTargetList: function(targetLayerList) {
 			this.clearTargetSelectItems();
+			this.addNoneTargetOption();
 			
 			var len = targetLayerList.length;
 			for (var i = 0;i < len;++i) {
@@ -56,6 +58,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			this.onTargetSelectChange();
+		},
+		
+		addNoneTargetOption: function() {
+			var opt = $H('option');
+			opt.appendChild( $T('(None)') );
+			opt.value = -1;
+			
+			this.selectElementTargets.appendChild(opt);
 		},
 		
 		clearTargetSelectItems: function() {

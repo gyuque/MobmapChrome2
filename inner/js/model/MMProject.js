@@ -22,6 +22,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.layerList;
 		},
 		
+		getLayerById: function(layerId) {
+			var ls = this.getLayerList();
+			if (!ls) { return null; }
+			
+			return ls.getLayerById(layerId);
+		},
+		
 		moveDownLayer: function(targetLayer) {
 			var ls = this.getLayerList();
 			var li = ls.findLayerIndex(targetLayer);
@@ -154,6 +161,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getLayerAt: function(i) {
 			return this.array[i] || null;
+		},
+		
+		getLayerById: function(layerId) {
+			var ls = this.array;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				if (ls[i].layerId === layerId) {
+					return ls[i];
+				}
+			}
+			
+			return null;
 		},
 		
 		findLayerIndex: function(layerObj) {

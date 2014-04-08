@@ -10,10 +10,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataSoure = null;
 	}
 	
-	ExploreMapType.prototype = {
-		
-	};
-
 	ExploreMapType.installMapType = function(targetGMap) {
 		var mt = new ExploreMapType(targetGMap);
 		targetGMap.overlayMapTypes.insertAt(0, mt);
@@ -32,7 +28,20 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		return tileElement;
 	};
-
+	
+	ExploreMapType.prototype.setDataSource = function(ds) {
+		if (this.dataSoure === ds) {
+			return;
+		}
+		
+		// Check implementation
+		if (ds) {
+			checkPolylineDatasourceImplementation(ds);
+		}
+		
+		this.dataSoure = ds;
+	};
+	
 	// -- Utilities
 	
 	function setCanvasSize(el, w, h) {
@@ -42,6 +51,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		el.width = Math.floor(w);
 		el.height = Math.floor(h);
+	}
+	
+	
+	var PolylineDatasourceMethods = [
+		'tpCountPolylines'
+	];
+	
+	function checkPolylineDatasourceImplementation(obj) {
+		for (var i in PolylineDatasourceMethods) {
+			var name = PolylineDatasourceMethods[i];
+			if (! obj[name] ) {
+				throw "Datasource object must implement " + name;
+			}
+		}
 	}
 
 	aGlobal.mobmap.ExploreMapType = ExploreMapType;

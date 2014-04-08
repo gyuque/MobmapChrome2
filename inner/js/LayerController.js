@@ -79,6 +79,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addExploreLayerIfNeeded: function(prj) {
+//return; // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 			var ll = prj.layerList;
 			var len = ll.getCount();
 			
@@ -185,6 +186,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.RequestGoDown, this.onLayerRequestGoDown.bind(this)).
 			 bind(LE.RequestGoUp, this.onLayerRequestGoUp.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
+			 bind(LE.ExploreTargetSet, this.onLayerExploreTargetSet.bind(this)).
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
@@ -292,6 +294,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerRequestGoUp: function(e, sourceLayer) {
 			if (this.ownerApp) {
 				this.ownerApp.getCurrentProject().moveUpLayer(sourceLayer);
+			}
+		},
+		
+		onLayerExploreTargetSet: function(e, sourceLayer, newIndex) {
+			var prj = this.ownerApp.getCurrentProject();
+			if (!prj) { return; }
+			
+			var mt = this.findMapOverlayFor(sourceLayer);
+			var t_id = sourceLayer.targetLayerId;
+			var target_layer = prj.getLayerById(t_id);
+
+			if (mt) {
+				mt.setDataSource(target_layer);
 			}
 		},
 		

@@ -21,12 +21,23 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataReady = false;
 		this.sourceLoader = null;
 		
-		this.targetLayer = null;
+		this.targetLayerId = -1;
 	}
 	
 	MMExploreLayer.prototype = {
 		hasTimeRange: function() {
 			return false;
+		},
+		
+		setTargetLayerId: function(layer_id) {
+			if (this.targetLayerId !== layer_id) {
+				this.targetLayerId = layer_id;
+				this.fireTargetSet(layer_id);
+			}
+		},
+
+		fireTargetSet: function(newTargetId) {
+			this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreTargetSet, [this, newTargetId]);
 		}
 	};
 	

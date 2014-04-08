@@ -17,7 +17,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		RequestDelete: 'mm-layer-model-event-request-delete',
 		RequestGoDown: 'mm-layer-model-event-request-go-down',
 		RequestGoUp: 'mm-layer-model-event-request-go-up',
-		Destroy: 'mm-layer-model-event-destroy'
+		Destroy: 'mm-layer-model-event-destroy',
+		ExploreTargetSet: 'mm-layer-model-event-explore-target-set'
 	};
 	
 	var LayerCapability = {
@@ -48,6 +49,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.sourceLoader = null;
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.movingData = null;
+		this.tp_count_cache = -1;
 		this.localSelectionPool = new mobmap.SelectionPool();
 		this.dataReady = false;
 		
@@ -251,6 +253,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (i < 0) { i = 0; }
 
 			return i;
+		},
+		
+		// Polyline datasource API
+		
+		tpCountPolylines: function() {
+			if (this.tp_count_cache < 0) {
+				this.tp_count_cache = this.movingData.countIds()
+			}
+			
+			return this.tp_count_cache;
 		}
 	};
 
