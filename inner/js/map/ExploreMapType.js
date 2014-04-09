@@ -6,11 +6,17 @@ if (!window.mobmap) { window.mobmap={}; }
 	function ExploreMapType(ownerMap) {
 		this.ownerMap = ownerMap;
 		this.ownerObject = null;
+		this.viewType = ExploreMapType.ViewType.Trajectory;
 		this.tileSize = new google.maps.Size(256, 256);
 		this.renderAtlas = new RenderAtlas(this.tileSize, ownerMap);
 		this.dataSoure = null;
 		google.maps.event.addListener(ownerMap, 'zoom_changed', this.onMapZoomChange.bind(this));
 	}
+	
+	ExploreMapType.ViewType = {
+		Trajectory: 0,
+		Marching: 1
+	};
 	
 	ExploreMapType.prototype.setVisibility = function(v) {
 		if (this.renderAtlas.currentVisibility === v) {

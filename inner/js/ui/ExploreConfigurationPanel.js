@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ec = this.expandablePanel.expandedContentElement;
 			ec.innerHTML = '';
 			this.buildExpandedPanelContent(ec);
+			$(ec).find('input[name=explore-type]').click(this.onViewTypeRadioClick.bind(this));
 		},
 		
 		buildExpandedPanelContent: function(containerElement) {
@@ -36,10 +37,43 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.selectElementTargets = sel;
 			this.jSelectElementTargets = $(sel).change( this.onTargetSelectChange.bind(this) );
 			this.addNoneTargetOption();
+			
+			this.addViewTypeRadio(containerElement);
 		},
 		
+		addViewTypeRadio: function(containerElement) {
+			var outer = $H('div');
+			
+			var xt_trj = generateRadioInLabel('Trajectory View', 'explore-type', 'mm-explore-type-radio-label');
+			var xt_mch = generateRadioInLabel('Marching View', 'explore-type', 'mm-explore-type-radio-label');
+			
+			outer.appendChild(xt_trj.label);
+			outer.appendChild(xt_mch.label);
+			
+			xt_trj.input.checked = true;
+			xt_trj.input.value = mobmap.ExploreMapType.ViewType.Trajectory;
+			xt_mch.input.value = mobmap.ExploreMapType.ViewType.Marching;
+			
+			containerElement.appendChild(outer);
+			return outer;
+		},
+		
+		onViewTypeRadioClick: function() {
+			this.sendViewTypeValue();
+		},
+		
+		sendViewTypeValue: function() {
+			var val = this.pickViewTypeRadioValue();
+			console.log(val)
+		},
+		
+		pickViewTypeRadioValue: function() {
+			return parseInt( $('input[name=explore-type]:checked').val() , 10);
+		},
+
 		onTargetSelectChange: function() {
 			var val = parseInt(this.jSelectElementTargets.val(), 10);
+			this.sendViewTypeValue();
 			this.boundLayer.setTargetLayerId(val);
 		},
 
