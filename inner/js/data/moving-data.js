@@ -98,6 +98,10 @@ if (!window.mobmap) window.mobmap={};
 			tl.pickAt(null, outRecord, seconds, this.extraProps);
 		},
 		
+		getFlattenTLArray: function() {
+			return this.tlList;
+		},
+		
 		getTimeListOfId: function(objId) {
 			return this.idMap[objId] || null;
 		},

@@ -263,6 +263,28 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return this.tp_count_cache;
+		},
+		
+		tpCountVerticesOfPolyline: function(polylineIndex) {
+			var md = this.movingData;
+			if (!md) { return 0;}
+			
+			var tls = md.getFlattenTLArray();
+			return tls[polylineIndex].getRecordList().length;
+		},
+		
+		tpGetVertexLatitude: function(polylineIndex, vertexIndex) {
+			var tls = this.movingData.getFlattenTLArray();
+			var recs = tls[polylineIndex].getRecordList();
+			
+			return recs[vertexIndex].y
+		},
+
+		tpGetVertexLongitude: function(polylineIndex, vertexIndex) {
+			var tls = this.movingData.getFlattenTLArray();
+			var recs = tls[polylineIndex].getRecordList();
+			
+			return recs[vertexIndex].x;
 		}
 	};
 
