@@ -30,7 +30,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		} else {
 			this.renderAtlas.clearAllTiles();
 		}
-	}
+	};
+
+	ExploreMapType.prototype.setViewType = function(v) {
+		if (this.viewType === v) {
+			return;
+		}
+		
+		this.viewType = v;
+	};
 
 	ExploreMapType.prototype.onMapZoomChange = function() {
 		this.renderAtlas.invalidateOffscreenCanvas();

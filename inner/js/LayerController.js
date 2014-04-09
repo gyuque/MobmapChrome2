@@ -187,6 +187,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.RequestGoUp, this.onLayerRequestGoUp.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 			 bind(LE.ExploreTargetSet, this.onLayerExploreTargetSet.bind(this)).
+			 bind(LE.ExploreViewTypeChange, this.onLayerExploreViewTypeChange.bind(this)).
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
@@ -308,6 +309,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (mt) {
 				mt.setDataSource(target_layer);
 			}
+		},
+		
+		onLayerExploreViewTypeChange: function(e, sourceLayer, newValue) {
+			console.log(sourceLayer,newValue)
 		},
 		
 		destroyOverlayForLayer: function(layer) {

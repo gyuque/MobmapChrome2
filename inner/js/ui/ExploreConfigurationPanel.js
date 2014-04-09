@@ -64,7 +64,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		sendViewTypeValue: function() {
 			var val = this.pickViewTypeRadioValue();
-			console.log(val)
+			this.boundLayer.setOverlayViewType(val);
 		},
 		
 		pickViewTypeRadioValue: function() {

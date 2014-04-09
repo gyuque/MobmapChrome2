@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MMExploreLayer() {
 		this.layerId = mobmap.layerGetNextId();
 		this.jElement = $(document.createElement('span'));
+		this.overlayViewType = mobmap.ExploreMapType.ViewType.Trajectory;
 		this.ownerList = null;
 		this.visible = true;
 		this.primaryView = null;
@@ -34,6 +35,15 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.targetLayerId = layer_id;
 				this.fireTargetSet(layer_id);
 			}
+		},
+		
+		setOverlayViewType: function(v) {
+			if (this.overlayViewType === v) {
+				return;
+			}
+			
+			this.overlayViewType = v;
+			this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreViewTypeChange, [this, v]);
 		},
 
 		fireTargetSet: function(newTargetId) {
