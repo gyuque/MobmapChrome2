@@ -312,7 +312,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerExploreViewTypeChange: function(e, sourceLayer, newValue) {
-			console.log(sourceLayer,newValue)
+			var ov = this.findMapOverlayFor(sourceLayer);
+			if (ov) {
+				ov.setViewType(newValue);
+			}
 		},
 		
 		destroyOverlayForLayer: function(layer) {

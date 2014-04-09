@@ -10,6 +10,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.tileSize = new google.maps.Size(256, 256);
 		this.renderAtlas = new RenderAtlas(this.tileSize, ownerMap);
 		this.dataSoure = null;
+		this.doMarchingAnimationClosure = this.doMarchingAnimation.bind(this);
+		
 		google.maps.event.addListener(ownerMap, 'zoom_changed', this.onMapZoomChange.bind(this));
 	}
 	
@@ -36,8 +38,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		if (this.viewType === v) {
 			return;
 		}
-		
+
 		this.viewType = v;
+		if (v === ExploreMapType.ViewType.Marching) {
+			this.doMarchingAnimation();
+		}
 	};
 
 	ExploreMapType.prototype.onMapZoomChange = function() {
@@ -97,6 +102,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		return cx +'_'+ cy;
 	};
 
+
+	ExploreMapType.prototype.doMarchingAnimation = function() {
+		if (this.viewType !== ExploreMapType.ViewType.Marching) {
+			return;
+		}
+
+		console.log(99)
+		
+		requestAnimationFrame(this.doMarchingAnimationClosure);
+	};
 
 
 
