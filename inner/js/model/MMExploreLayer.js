@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.sourceLoader = null;
 		
 		this.targetLayerId = -1;
+		this.targetObjectIds = [];
 	}
 	
 	MMExploreLayer.prototype = {
@@ -48,6 +49,23 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		fireTargetSet: function(newTargetId) {
 			this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreTargetSet, [this, newTargetId]);
+		},
+		
+		updateSelectedObjects: function(sourceLayer) {
+			if (this.targetLayerId === sourceLayer.layerId) {
+				this.clearTargetObjects();
+				this.fetchTargetObjectIds(sourceLayer);
+			}
+		},
+		
+		clearTargetObjects: function() {
+			this.targetObjectIds.length = 0;
+		},
+		
+		fetchTargetObjectIds: function(sourceLayer) {
+			var selp = sourceLayer.localSelectionPool;
+			var n = selp.count();
+			this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreTargetSelectionChange, this);
 		}
 	};
 	

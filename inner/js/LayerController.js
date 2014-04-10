@@ -208,12 +208,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				);
 			}
 			
-			if (lyr.localSelectionPool) {
-				lyr.localSelectionPool.eventDispatcher().bind(
-					mobmap.SelectionPool.CHANGE_EVENT,
-					this.onLayerSelectionPoolChange.bind(this, lyr)
-				);
-			}
+			this.observeSelectionChangeOfLayer(lyr);
 
 			return true;
 		},
@@ -233,10 +228,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerMarkerGeneratorConfigurationChange: function(sourceLayer, e) {
-			this.redrawMap();
-		},
-		
-		onLayerSelectionPoolChange: function(sourceLayer, e) {
 			this.redrawMap();
 		},
 		
@@ -488,6 +479,43 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (len < 1) { return null; }
 
 			return ls[len - 1];
+		},
+		
+		// ++ Selection observer ++
+		observeSelectionChangeOfLayer: function(targetLayer) {
+			if (this.hasLayerSelectionPool(targetLayer)) {
+				targetLayer.
+				 localSelectionPool.
+				  eventDispatcher().
+				   bind( mobmap.SelectionPool.CHANGE_EVENT, this.onLocalSelectionChange.bind(this, targetLayer) );
+			}
+		},
+		
+		unobserveSelectionChangeEvent: function(targetLayer) {
+			
+		},
+		
+		onLocalSelectionChange: function(sourceLayer, e) {
+			this.redrawMap();
+			this.notifySelectionChangeToExploreLayer(sourceLayer);
+		},
+		
+		hasLayerSelectionPool: function(targetLayer) {
+			return !!((targetLayer.capabilities & mobmap.LayerCapability.SpatialSelectable) &&
+			     targetLayer.localSelectionPool);
+		},
+		
+		notifySelectionChangeToExploreLayer: function(sourceLayer) {
+			var prj = this.ownerApp.getCurrentProject();
+			var ll = prj.layerList;
+			var len = ll.getCount();
+			
+			for (var i = 0;i < len;++i) {
+				var targetLayer = ll.getLayerAt(i);
+				if (targetLayer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
+					targetLayer.updateSelectedObjects(sourceLayer);
+				}
+			}
 		}
 	};
 
