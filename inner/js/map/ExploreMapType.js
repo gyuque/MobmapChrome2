@@ -42,6 +42,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.viewType = v;
 		if (v === ExploreMapType.ViewType.Marching) {
+			this.rebuildTrajectoryMap(false);
 			this.initMarchingView();
 			this.doMarchingAnimation();
 		} else {
@@ -85,6 +86,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		tileElement._cy = coord.y;
 		tileElement._lastRenderedIndex = -1;
 		tileElement._tileKey = tileKey;
+		this.writeTileBounds(tileElement, coord, zoom);
 
 		this.renderAtlas.addTile(tileKey, tileElement);
 		this.renderAtlas.setZoom(zoom);
@@ -92,6 +94,24 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.renderAtlas.transferOneTile(tileElement);
 
 		return tileElement;
+	};
+	
+	ExploreMapType.prototype.writeTileBounds = function(target, tileCoord, zoom) {
+		var wsize = Math.pow(2, zoom);
+		var wx = tileCoord.x * this.tileSize.width;
+		var wy = tileCoord.y * this.tileSize.height;
+		
+		var nx = wx / wsize;
+		var ny = wy / wsize;
+		
+		var proj = this.ownerMap.getProjection();
+		var latlng1 = proj.fromPointToLatLng( new google.maps.Point(nx, ny) );
+		var latlng2 = proj.fromPointToLatLng( new google.maps.Point(nx+this.tileSize.width/wsize, ny+this.tileSize.height/wsize) );
+
+		target._min_lat = latlng2.lat();
+		target._min_lng = latlng1.lng();
+		target._max_lat = latlng1.lat();
+		target._max_lng = latlng2.lng();
 	};
 	
 	ExploreMapType.prototype.releaseTile = function(tileToRemove) {
@@ -119,14 +139,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		return cx +'_'+ cy;
 	};
 
+	ExploreMapType.prototype.checkMarchingDataSource = function() {
+		var ds = this.dataSource;
+		if (!ds) { return false; }
+		if (!ds.capabilities) { return false; }
+
+		return (ds.capabilities & mobmap.LayerCapability.MarkerRenderable) !== 0 && !!(ds.movingData);
+	};
 
 	ExploreMapType.prototype.doMarchingAnimation = function() {
 		var idList = this.refTargetSelectedIDs;
-		if (this.viewType !== ExploreMapType.ViewType.Marching) { return; }
-		if (!idList || !this.dataSource) { return; }
+		if (this.viewType !== ExploreMapType.ViewType.Marching || !this.renderAtlas.currentVisibility) { return; }
+		if (!idList || !this.checkMarchingDataSource()) { return; }
 		if (idList.length !== 1) { return; }
 
-		console.log(99)
+		this.renderAtlas.renderOffscreenMarching(idList);
 		
 		requestAnimationFrame(this.doMarchingAnimationClosure);
 	};
@@ -168,6 +195,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.defaultStrokeStyle = '#35d';
 		this.renderNodes = false;
+		this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
 	}
 
 	RenderAtlas.prototype = {
@@ -256,11 +284,12 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			var cs = this.canvasStatus;
 			var ts = this.tilesState;
+			var nMargin = (this.ownerMapType.viewType === ExploreMapType.ViewType.Trajectory) ? 3 : 1;
 
-			cs.minCX = ts.minCX - 3;
-			cs.maxCX = ts.maxCX + 3;
-			cs.minCY = ts.minCY - 3;
-			cs.maxCY = ts.maxCY + 3;
+			cs.minCX = ts.minCX - nMargin;
+			cs.maxCX = ts.maxCX + nMargin;
+			cs.minCY = ts.minCY - nMargin;
+			cs.maxCY = ts.maxCY + nMargin;
 
 			var cw = (cs.maxCX - cs.minCX) * this.tileSize.width;
 			var ch = (cs.maxCY - cs.minCY) * this.tileSize.height;
@@ -299,6 +328,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var g = this.canvas.getContext('2d');
 			var shouldContinue = false;
 			var n = this.jobChunkSize;
+			if (this.jobFinishedCount === 0) {
+				n >>= 2;
+			}
+			
 			var plCount = ds.tpCountPolylines();
 			var plLastIndex = plCount - 1;
 			if (this.jobFinishedCount >= plLastIndex) {
@@ -372,7 +405,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.stroke();
 		},
 
-		transferOffscreenImage: function() {
+		transferOffscreenImage: function(force) {
 			if (!this.currentVisibility) { return; }
 
 			var tw = this.tileSize.width;
@@ -385,7 +418,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var k in m) if (m.hasOwnProperty(k)) {
 				var tileObject = m[k];
 				var lastRenderedPolylineIndex = this.jobFinishedCount - 1;
-				if (tileObject._lastRenderedIndex > lastRenderedPolylineIndex) {
+				if (!force && tileObject._lastRenderedIndex > lastRenderedPolylineIndex) {
 					continue;
 				}
 
@@ -403,6 +436,47 @@ if (!window.mobmap) { window.mobmap={}; }
 				tileObject._lastRenderedIndex = lastRenderedPolylineIndex;
 				g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
 
+			}
+		},
+		
+		transferVisibleTiles: function() {
+			if (!this.currentVisibility) { return; }
+
+			var mapBounds = this.ownerMap.getBounds();
+			var minLat = mapBounds.getSouthWest().lat();
+			var minLng = mapBounds.getSouthWest().lng();
+			var maxLat = mapBounds.getNorthEast().lat();
+			var maxLng = mapBounds.getNorthEast().lng();
+			
+			var tw = this.tileSize.width;
+			var th = this.tileSize.height;
+			var ox = this.canvasStatus.minCX;
+			var oy = this.canvasStatus.minCY;
+			var sourceImage = this.canvas;
+
+			var m = this.tileKeyMap;
+			for (var k in m) if (m.hasOwnProperty(k)) {
+				var tileObject = m[k];
+				
+				if (tileObject._max_lat < minLat ||
+					tileObject._min_lat > maxLat ||
+					tileObject._max_lng < minLng ||
+					tileObject._min_lng > maxLng) {
+						continue;
+				}
+
+				var cx = tileObject._cx;
+				var cy = tileObject._cy;
+				var g = tileObject.getContext('2d');
+				g.clearRect(0, 0, tw, th);
+
+				var rx = cx - ox;
+				var ry = cy - oy;
+				if (rx < 0 || ry < 0) {
+					continue;
+				}
+
+				g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
 			}
 		},
 
@@ -428,6 +502,61 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			tileObject._lastRenderedIndex = this.jobFinishedCount - 1;
 			g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
+		},
+		
+		renderOffscreenMarching: function(objIDlist) {
+			var cs = this.canvasStatus;
+			var g = this.canvas.getContext('2d');
+			g.clearRect(0, 0, cs.width, cs.height);
+			
+			var n = objIDlist.length;
+			for (var i = 0;i < n;++i) {
+				this.renderOffscreenMarchingOfObjectID(g, objIDlist[i]);
+			}
+			
+			this.transferVisibleTiles();
+		},
+		
+		renderOffscreenMarchingOfObjectID: function(g, objId) {
+			var currentT = (new Date()) - 0;
+			var ds = this.dataSource;
+			var mdat = ds.movingData;
+
+			var tl = mdat.getTimeListOfId(objId);
+			if (!tl) { return; }
+			
+			var reclist = tl.getRecordList();
+			if (reclist.length < 2) { return; }
+			
+			var firstRec = reclist[0];
+			var firstTime = firstRec._time;
+			var lastRec = reclist[ reclist.length - 1 ];
+			
+			var timeLen = lastRec._time - firstTime;
+
+			// map states
+			var tw = this.tileSize.width;
+			var th = this.tileSize.height;
+			var tox = (this.canvasStatus.minCX * tw);
+			var toy = (this.canvasStatus.minCY * th);
+			var pj = this.ownerMap.getProjection();
+			var wsize = Math.pow(2, this.currentZoom);
+			
+			var tempRec = this.tempPickRecord;
+			g.fillStyle = "#f00";
+			
+			var nAnts = Math.floor(timeLen / 300);
+			for (var i = 0;i < nAnts;++i) {
+				var offsetT = ((currentT % timeLen) + Math.floor((i/nAnts) * timeLen)) % timeLen;
+				
+				mdat.pickById(tempRec, firstTime + offsetT, objId);
+
+				var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(tempRec.y, tempRec.x) );
+				var sx = wPos.x * wsize - tox;
+				var sy = wPos.y * wsize - toy;
+			
+				g.fillRect(sx-2, sy-2, 5, 5);
+			}
 		}
 	}
 
