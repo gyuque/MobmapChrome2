@@ -8,9 +8,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.ownerObject = null;
 		this.viewType = ExploreMapType.ViewType.Trajectory;
 		this.tileSize = new google.maps.Size(256, 256);
-		this.renderAtlas = new RenderAtlas(this.tileSize, ownerMap);
+		this.renderAtlas = new RenderAtlas(this.tileSize, ownerMap, this);
 		this.refTargetSelectedIDs = null;
-		this.dataSoure = null;
+		this.dataSource = null;
 		this.doMarchingAnimationClosure = this.doMarchingAnimation.bind(this);
 		
 		google.maps.event.addListener(ownerMap, 'zoom_changed', this.onMapZoomChange.bind(this));
@@ -42,15 +42,31 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.viewType = v;
 		if (v === ExploreMapType.ViewType.Marching) {
+			this.initMarchingView();
 			this.doMarchingAnimation();
+		} else {
+			this.renderAtlas.clearAllTiles();
+			this.rebuildTrajectoryMap(false);
 		}
 	};
 
 	ExploreMapType.prototype.onMapZoomChange = function() {
-		this.renderAtlas.invalidateOffscreenCanvas();
 		this.renderAtlas.clear();
-		this.renderAtlas.resetJob();
-		this.renderAtlas.reserveJobNext(true);
+		this.rebuildTrajectoryMap(true);
+	};
+
+	ExploreMapType.prototype.initMarchingView = function() {
+		this.renderAtlas.clearAllTiles();
+	};
+
+	ExploreMapType.prototype.rebuildTrajectoryMap = function(delayRender) {
+		this.renderAtlas.invalidateOffscreenCanvas();
+		if (delayRender) {
+			this.renderAtlas.resetJob();
+			this.renderAtlas.reserveJobNext(true);
+		} else {
+			this.renderAtlas.updateCanvasSize();
+		}
 	};
 
 	ExploreMapType.installMapType = function(targetGMap) {
@@ -83,7 +99,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	ExploreMapType.prototype.setDataSource = function(ds) {
-		if (this.dataSoure === ds) {
+		if (this.dataSource === ds) {
 			return;
 		}
 		
@@ -92,7 +108,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			checkPolylineDatasourceImplementation(ds);
 		}
 		
-		this.dataSoure = ds;
+		this.dataSource = ds;
 		this.renderAtlas.clearAllTiles();
 		this.renderAtlas.dataSource = ds;
 		this.renderAtlas.resetJob();
@@ -107,7 +123,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	ExploreMapType.prototype.doMarchingAnimation = function() {
 		var idList = this.refTargetSelectedIDs;
 		if (this.viewType !== ExploreMapType.ViewType.Marching) { return; }
-		if (!idList) { return; }
+		if (!idList || !this.dataSource) { return; }
 		if (idList.length !== 1) { return; }
 
 		console.log(99)
@@ -121,7 +137,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	function RenderAtlas(tileSize, ownerMap) {
+	function RenderAtlas(tileSize, ownerMap, ownerMapType) {
 		this.currentVisibility = true;
 		this.consumeJobClosure = this.consumeJob.bind(this);
 
@@ -132,6 +148,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.tileSize = tileSize;
 		this.ownerMap = ownerMap;
+		this.ownerMapType = ownerMapType;
 		this.canvas = document.createElement('canvas');
 		this.tileKeyMap = {};
 		this.currentZoom = 1;
@@ -274,7 +291,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		consumeJob: function() {
 			this.nowJobRunning = false;
 			var ds = this.dataSource;
-			if (!ds || !this.currentVisibility) {
+			if (!ds || !this.currentVisibility ||
+				this.ownerMapType.viewType !== ExploreMapType.ViewType.Trajectory) {
 				return;
 			}
 
@@ -356,7 +374,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		transferOffscreenImage: function() {
 			if (!this.currentVisibility) { return; }
-			
+
 			var tw = this.tileSize.width;
 			var th = this.tileSize.height;
 			var ox = this.canvasStatus.minCX;
@@ -384,6 +402,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 				tileObject._lastRenderedIndex = lastRenderedPolylineIndex;
 				g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
+
 			}
 		},
 
