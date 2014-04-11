@@ -52,7 +52,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		updateSelectedObjects: function(sourceLayer) {
-			if (this.targetLayerId === sourceLayer.layerId) {
+			if (sourceLayer && this.targetLayerId === sourceLayer.layerId) {
 				this.clearTargetObjects();
 				this.fetchTargetObjectIds(sourceLayer);
 			}

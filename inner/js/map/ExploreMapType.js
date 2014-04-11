@@ -28,6 +28,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.renderAtlas.currentVisibility = v;
 		if (v) {
+			this.doMarchingAnimationClosure();
 			this.renderAtlas.resetJob();
 			this.renderAtlas.reserveJobNext();
 		} else {
@@ -129,6 +130,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 		
 		this.dataSource = ds;
+		this.referSelectionIfNeeded();
+		
 		this.renderAtlas.clearAllTiles();
 		this.renderAtlas.dataSource = ds;
 		this.renderAtlas.resetJob();
@@ -159,8 +162,18 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	ExploreMapType.prototype.referSelectedIDList = function(ls) {
+		if (this.viewType === ExploreMapType.ViewType.Marching) {
+			this.renderAtlas.clearAllTiles();
+		}
 		this.refTargetSelectedIDs = ls;
 		this.doMarchingAnimation();
+	};
+	
+	ExploreMapType.prototype.referSelectionIfNeeded = function() {
+		if (this.viewType === ExploreMapType.ViewType.Marching) {
+			//console.log( this.ownerObject.getTargetSelectedIDList()  )
+			this.referSelectedIDList( this.ownerObject.getTargetSelectedIDList() );
+		}
 	};
 
 
@@ -196,6 +209,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.defaultStrokeStyle = '#35d';
 		this.renderNodes = false;
 		this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
+		this.dirtyMap = {};
 	}
 
 	RenderAtlas.prototype = {
@@ -439,7 +453,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
-		transferVisibleTiles: function() {
+		transferVisibleDirtyTiles: function() {
 			if (!this.currentVisibility) { return; }
 
 			var mapBounds = this.ownerMap.getBounds();
@@ -453,6 +467,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ox = this.canvasStatus.minCX;
 			var oy = this.canvasStatus.minCY;
 			var sourceImage = this.canvas;
+			var sourceG = sourceImage.getContext('2d');
 
 			var m = this.tileKeyMap;
 			for (var k in m) if (m.hasOwnProperty(k)) {
@@ -468,15 +483,23 @@ if (!window.mobmap) { window.mobmap={}; }
 				var cx = tileObject._cx;
 				var cy = tileObject._cy;
 				var g = tileObject.getContext('2d');
-				g.clearRect(0, 0, tw, th);
 
 				var rx = cx - ox;
 				var ry = cy - oy;
+				
 				if (rx < 0 || ry < 0) {
 					continue;
 				}
 
+				if (!this.dirtyMap[makeDirtyMapKey(rx, ry)]) {
+					g.clearRect(0, 0, tw, th);
+					continue;
+				}
+
+				g.save();
+				g.globalCompositeOperation = 'copy';
 				g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
+				g.restore();
 			}
 		},
 
@@ -505,6 +528,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		renderOffscreenMarching: function(objIDlist) {
+			this.clearDirtyMap();
 			var cs = this.canvasStatus;
 			var g = this.canvas.getContext('2d');
 			g.clearRect(0, 0, cs.width, cs.height);
@@ -514,12 +538,14 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.renderOffscreenMarchingOfObjectID(g, objIDlist[i]);
 			}
 			
-			this.transferVisibleTiles();
+			this.transferVisibleDirtyTiles();
 		},
 		
 		renderOffscreenMarchingOfObjectID: function(g, objId) {
 			var currentT = (new Date()) - 0;
 			var ds = this.dataSource;
+			if (!ds) { return; }
+			
 			var mdat = ds.movingData;
 
 			var tl = mdat.getTimeListOfId(objId);
@@ -543,19 +569,72 @@ if (!window.mobmap) { window.mobmap={}; }
 			var wsize = Math.pow(2, this.currentZoom);
 			
 			var tempRec = this.tempPickRecord;
-			g.fillStyle = "#f00";
 			
-			var nAnts = Math.floor(timeLen / 300);
+			var nAnts = Math.floor(timeLen / 1000);
 			for (var i = 0;i < nAnts;++i) {
 				var offsetT = ((currentT % timeLen) + Math.floor((i/nAnts) * timeLen)) % timeLen;
 				
 				mdat.pickById(tempRec, firstTime + offsetT, objId);
-
+				var lat1 = tempRec.y;
+				var lng1 = tempRec.x;
 				var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(tempRec.y, tempRec.x) );
 				var sx = wPos.x * wsize - tox;
 				var sy = wPos.y * wsize - toy;
+				
+				mdat.pickById(tempRec, firstTime + offsetT + 1, objId);
+				var lat2 = tempRec.y;
+				var lng2 = tempRec.x;
+				
+				this.markDirtyAround(sx, sy);
+	
+				this.drawMarchingMarker(g, sx, sy, lng2-lng1, lat2-lat1);
+			}
+		},
+		
+		drawMarchingMarker: function(g, sx, sy, dx, dy) {
+			var angle = -99;
+			if (Math.abs(dx) >= 0.0000001 || Math.abs(dy) >= 0.0000001) {
+				angle = Math.atan2(-dy, dx);
+			}
 			
-				g.fillRect(sx-2, sy-2, 5, 5);
+			g.save();
+			g.fillStyle = '#abf';
+			if (angle < -9) {
+				g.beginPath();
+				g.arc(sx, sy, 4, 0, Math.PI*2, false);
+				g.fill();
+			} else {
+				g.translate(sx, sy);
+				g.rotate(angle);
+				g.beginPath();
+				g.moveTo(2, 0);
+				g.lineTo(-5, 3);
+				g.lineTo(-3, 0);
+				g.lineTo(-5, -3);
+				g.fill();
+			}
+			g.restore();
+		},
+		
+		markDirtyAround: function(sx, sy) {
+			this.markDirtyFromCanvasPos(sx - 8, sy - 8);
+			this.markDirtyFromCanvasPos(sx + 8, sy - 8);
+			this.markDirtyFromCanvasPos(sx - 8, sy + 8);
+			this.markDirtyFromCanvasPos(sx + 8, sy + 8);
+		},
+		
+		markDirtyFromCanvasPos: function(x, y) {
+			var tx = Math.floor(x / this.tileSize.width);
+			var ty = Math.floor(y / this.tileSize.height);
+			if (tx < 0 || ty < 0) { return; }
+			
+			this.dirtyMap[ makeDirtyMapKey(tx, ty) ] = true;
+		},
+		
+		clearDirtyMap: function() {
+			var m = this.dirtyMap;
+			for (var i in m) if (m.hasOwnProperty(i)) {
+				delete m[i];
 			}
 		}
 	}
@@ -586,6 +665,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				throw "Datasource object must implement " + name;
 			}
 		}
+	}
+	
+	function makeDirtyMapKey(x, y) {
+		return y * 1000 + x;
 	}
 
 	aGlobal.mobmap.ExploreMapType = ExploreMapType;

@@ -300,6 +300,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			if (mt) {
 				mt.setDataSource(target_layer);
+				this.notifySelectionChangeToExploreLayer(target_layer);
 			}
 		},
 		
