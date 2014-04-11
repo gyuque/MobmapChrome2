@@ -64,8 +64,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		fetchTargetObjectIds: function(sourceLayer) {
 			var selp = sourceLayer.localSelectionPool;
-			var n = selp.count();
+			selp.pushIDsToArray(this.targetObjectIds);
 			this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreTargetSelectionChange, this);
+		},
+		
+		getTargetSelectedIDList: function() {
+			return this.targetObjectIds;
 		}
 	};
 	

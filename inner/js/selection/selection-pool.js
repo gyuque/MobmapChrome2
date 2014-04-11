@@ -53,6 +53,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			for (var i in m) { ++n; }
 			return n;
+		},
+		
+		pushIDsToArray: function(outArray) {
+			var m = this.idmap;
+			for (var i in m) {
+				outArray.push(i);
+			}
 		}
 	};
 

@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.viewType = ExploreMapType.ViewType.Trajectory;
 		this.tileSize = new google.maps.Size(256, 256);
 		this.renderAtlas = new RenderAtlas(this.tileSize, ownerMap);
+		this.refTargetSelectedIDs = null;
 		this.dataSoure = null;
 		this.doMarchingAnimationClosure = this.doMarchingAnimation.bind(this);
 		
@@ -104,15 +105,20 @@ if (!window.mobmap) { window.mobmap={}; }
 
 
 	ExploreMapType.prototype.doMarchingAnimation = function() {
-		if (this.viewType !== ExploreMapType.ViewType.Marching) {
-			return;
-		}
+		var idList = this.refTargetSelectedIDs;
+		if (this.viewType !== ExploreMapType.ViewType.Marching) { return; }
+		if (!idList) { return; }
+		if (idList.length !== 1) { return; }
 
 		console.log(99)
 		
 		requestAnimationFrame(this.doMarchingAnimationClosure);
 	};
 
+	ExploreMapType.prototype.referSelectedIDList = function(ls) {
+		this.refTargetSelectedIDs = ls;
+		this.doMarchingAnimation();
+	};
 
 
 	function RenderAtlas(tileSize, ownerMap) {

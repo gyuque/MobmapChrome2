@@ -188,6 +188,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 			 bind(LE.ExploreTargetSet, this.onLayerExploreTargetSet.bind(this)).
 			 bind(LE.ExploreViewTypeChange, this.onLayerExploreViewTypeChange.bind(this)).
+			 bind(LE.ExploreTargetSelectionChange, this.onLayerExploreTargetSelectionChange.bind(this)).
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
@@ -306,6 +307,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ov = this.findMapOverlayFor(sourceLayer);
 			if (ov) {
 				ov.setViewType(newValue);
+			}
+		},
+		
+		onLayerExploreTargetSelectionChange: function(e, sourceLayer) {
+			var ov = this.findMapOverlayFor(sourceLayer);
+			if (ov) {
+				ov.referSelectedIDList( sourceLayer.getTargetSelectedIDList() );
 			}
 		},
 		
