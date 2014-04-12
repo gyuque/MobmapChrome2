@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function LayerMarkerOptions() {
 		this.jEventElement = $( createEventDummyElement() );
 		this.varyingType = LayerMarkerOptions.MV_NONE;
+		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 	}
 	
@@ -28,6 +29,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.boundAttributeName = a_name;
 				this.fire();
 			}
+		},
+		
+		setShowSelectedOnly: function(newVal) {
+			if (this.showSelectedOnly === newVal) { return; }
+			this.showSelectedOnly = newVal;
+			this.fire();
 		},
 		
 		fire: function() {

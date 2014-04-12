@@ -400,29 +400,32 @@ function installMobLayer(pkg) {
 
 		for (var i = 0;i < len;++i) {
 			var mk = m_arr[i];
-			this.projectionGrid.calc(mk);
+			if (mk.chipY >= 0) {
+				this.projectionGrid.calc(mk);
 
-			var sx = mk.screenX;
-			var sy = mk.screenY;
-			var cx = 7;
-			var cy = 7;
+				var sx = mk.screenX;
+				var sy = mk.screenY;
+				var cx = 7;
+				var cy = 7;
 
-			// Append positions
-			vlist[vi  ] = sx - spriteCX       ;  vlist[vi+1] = sy - spriteCY         ;
-			vlist[vi+2] = vlist[vi] + spriteW2;  vlist[vi+3] = vlist[vi+1]           ;
-			vlist[vi+4] = vlist[vi]           ;  vlist[vi+5] = vlist[vi+1] + spriteH2;
-			vi += 6;
+				// Append positions
+				vlist[vi  ] = sx - spriteCX       ;  vlist[vi+1] = sy - spriteCY         ;
+				vlist[vi+2] = vlist[vi] + spriteW2;  vlist[vi+3] = vlist[vi+1]           ;
+				vlist[vi+4] = vlist[vi]           ;  vlist[vi+5] = vlist[vi+1] + spriteH2;
+				vi += 6;
 			
-			// Append texture coordinates (fixed + variable = final UV)
-//			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
+				// Append texture coordinates (fixed + variable = final UV)
+	//			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
 
-			//   Fixed UV
-			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, u_width * 2.0, 1.0);
+				//   Fixed UV
+				txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, u_width * 2.0, 1.0);
 
-			//   Variable UV
-			bi += this.setMarkerTextureCoords(tblist, bi, mk.chipX / texWidth, mk.chipY / texHeight, 0.0, 0.0);
+				//   Variable UV
+				bi += this.setMarkerTextureCoords(tblist, bi, mk.chipX / texWidth, mk.chipY / texHeight, 0.0, 0.0);
 
-			++triCount;
+				++triCount;
+			}
+
 			if (
 				triCount >= trisLimit || // buffer is full
 				i === lastIndex // flush at last loop

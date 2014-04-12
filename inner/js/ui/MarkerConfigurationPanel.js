@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 		
 		this.checkShowTyphoonCloud = null;
+		this.checkShowSelectedOnly = null;
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
 		
@@ -48,6 +49,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.buildMarkerColumnsSlider(ec);
 			this.buildMarkerVaryOptions(ec);
 			this.buildMarkerAttrBindOptions(ec);
+			this.buildOtherOptions(ec);
 		},
 		
 		configureTyphoonMarkerPanelContent: function() {
@@ -197,6 +199,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(this.attrBindComboElement).change( this.onAttrBindSelChange.bind(this) );
 
 			containerElement.appendChild(fs);
+		},
+		
+		buildOtherOptions: function(containerElement) {
+			var pair_selonly = generateCheckboxInLabel('Show selected only', 'mm-markeroption-selonly', 'mm-markeroption-others');
+			containerElement.appendChild(pair_selonly.label);
+			this.checkShowSelectedOnly = pair_selonly.input;
+			
+			$(this.checkShowSelectedOnly).click(this.onShowSelectedOnlyCheckClick.bind(this));
+		},
+		
+		onShowSelectedOnlyCheckClick: function() {
+			this.sendSelOnly();
+		},
+		
+		sendSelOnly: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			var val = this.checkShowSelectedOnly.checked;
+			if (mo) {
+				mo.setShowSelectedOnly(val);
+			}
 		},
 		
 		onAttrBindSelChange: function() {

@@ -398,6 +398,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
 			if (!sourceLayer.dataReady) {return;}
+			var selOnly = sourceLayer._markerOptions.showSelectedOnly;
 
 			// Vary marker by attribute(if set) --------------------------------------
 			var boundAttrName = null;
@@ -434,6 +435,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < count;++i) {
 				var sourceRecord = src_array[i];
 				var marker_data = m_array[i];
+				
+				if (selOnly && anySelected) {
+					if (!selection_pl.isIDSelected(sourceRecord._id)) {
+						marker_data.chipY = -1;
+						continue;
+					}
+				}
 				
 				marker_data.lat = sourceRecord.y;
 				marker_data.lng = sourceRecord.x;
