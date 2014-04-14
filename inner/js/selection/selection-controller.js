@@ -127,7 +127,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		fireAfterNewSession: function() { this.callResponders('selDidStartNewSession'); },
 		fireAfterSessionStateUpdate: function(s) { this.callResponders('selDidUpdateSession',s); },
 		fireBeforeCommitSession: function(s) { this.callResponders('selWillCommitSession',s); },
-		
+		fireAfterGateProcess: function() { this.callResponders('selDidGateProcess'); },
+
 		callResponders: function(methodName, arg1, arg2) {
 			var required = SelectionControllerResponderMethodList[methodName] || false;
 			var ls = this.responders;
@@ -164,7 +165,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		selDidDisposeSession          : false,
 		selDidStartNewSession         : false,
 		selDidUpdateSession           : false,
-		selWillCommitSession          : false
+		selWillCommitSession          : false,
+		selDidGateProcess             : false
 	};
 	
 	// GATE
@@ -189,6 +191,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				var nextLayer = this.setupNextLayer();
 				if (!nextLayer) {
 					// Finished all layers
+					this.owner.fireAfterGateProcess();
 					return;
 				}
 

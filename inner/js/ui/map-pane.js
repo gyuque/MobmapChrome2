@@ -269,6 +269,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.clearSelectionFeedbackRect();
 		},
 		
+		selDidGateProcess: function(selController) {
+			this.ownerApp.closeGateBusyDialog();
+			this.gateUI.hide();
+		},
+		
 		// Selection feedback views = = =
 		
 		setupSelectionViews: function() {
@@ -344,6 +349,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var e1  = sourceGateUI.getStartLocation();
 			var e2  = sourceGateUI.getEndLocation();
 			var dir = sourceGateUI.getGateDirection();
+			
+			this.ownerApp.showGateBusyDialog();
 			
 			this.
 			 ownerApp.

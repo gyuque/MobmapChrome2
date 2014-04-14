@@ -22,7 +22,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.showDialogOnCenter('Load error');
 		}
 	}
-	
+
 	mobmap.MMDialogBaseInstallAPIs(LoadErrorDialog.prototype);
 	aGlobal.mobmap.LoadErrorDialog = LoadErrorDialog;
 })(window);

@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.meshLoaderCtrl = new mobmap.MeshLoaderController(this);
 		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
 		this.loadErrorDialog = new mobmap.LoadErrorDialog();
+		this.gateBusyDialog = new mobmap.GateBusyDialog();
 
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);
@@ -255,6 +256,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				pj.removeLayerAndNotify(targetLayer);
 			}
 		},
+		
+		showGateBusyDialog: function() { this.gateBusyDialog.showDialog(); },
+		closeGateBusyDialog: function() { this.gateBusyDialog.close(); },
 		
 		// Selection operations
 		clearSelection: function() {

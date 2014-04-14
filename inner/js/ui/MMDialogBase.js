@@ -36,14 +36,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.jElement.data("kendoWindow");
 		},
 		
-		showDialogOnCenter: function(title) {
-			this.jElement.kendoWindow({
+		showDialogOnCenter: function(title, dontAnimate) {
+			var opt = {
 				modal:true,
 				pinned: true,
 				width: 384,
 				height: 72,
 				title: title
-			});
+			};
+			
+			if (dontAnimate) {
+				opt.animation = false;
+			}
+			
+			this.jElement.kendoWindow(opt);
 			
 			var dialog = this.getDialog();
 			dialog.open();
@@ -72,7 +78,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.okCallback = null;
 			}
 
-			this.getDialog().close();
+			this.close();
 		},
 		
 		defaultOnCancel: function() {
@@ -80,6 +86,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				return this.onCancel();
 			}
 			
+			this.close();
+		},
+		
+		close: function() {
 			this.getDialog().close();
 		}
 	};
