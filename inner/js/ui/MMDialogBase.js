@@ -53,16 +53,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		addOKButton: function(labelText) {
 			var okButton = document.createElement('button');
 			this.buttonAreaElement.appendChild(okButton);
-			$(okButton).text(labelText || 'OK').click(this.onOK.bind(this));
+			$(okButton).text(labelText || 'OK').click(this.defaultOnOK.bind(this));
 		},
 		
 		addCancelButton: function(labelText) {
 			var cancelButton = document.createElement('button');
 			this.buttonAreaElement.appendChild(cancelButton);
-			$(cancelButton).text(labelText || 'Cancel').click(this.onCancel.bind(this));
+			$(cancelButton).text(labelText || 'Cancel').click(this.defaultOnCancel.bind(this));
 		},
 		
 		defaultOnOK: function() {
+			if (this.onOK) {
+				return this.onOK();
+			}
+			
 			if (this.okCallback) {
 				this.okCallback();
 				this.okCallback = null;
@@ -72,7 +76,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		defaultOnCancel: function() {
+			if (this.onCancel) {
+				return this.onCancel();
+			}
+			
 			this.getDialog().close();
 		}
 	};
+	
+	aGlobal.mobmap.MMDialogBaseInstallAPIs = function(proto) {
+		var base = aGlobal.mobmap.MMDialogBase;
+		for (var i in base) if (base.hasOwnProperty(i)) {
+			proto[i] = base[i];
+		}
+	};
+	
 })(window);

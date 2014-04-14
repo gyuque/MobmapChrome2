@@ -10,16 +10,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	DigitalTyphoonDialog.prototype = {
-		// base
-		initProperties: mobmap.MMDialogBase.initProperties,
-		buildView: mobmap.MMDialogBase.buildView,
-		getDialog: mobmap.MMDialogBase.getDialog,
-		showDialogOnCenter: mobmap.MMDialogBase.showDialogOnCenter,
-		addOKButton: mobmap.MMDialogBase.addOKButton,
-		addCancelButton: mobmap.MMDialogBase.addCancelButton,
-		onOK: mobmap.MMDialogBase.defaultOnOK,
-		onCancel: mobmap.MMDialogBase.defaultOnCancel,
-
 		ensureWindowElement: function() {
 			if (!this.element) {
 				this.buildView();
@@ -44,6 +34,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 	
-	
+	mobmap.MMDialogBaseInstallAPIs(DigitalTyphoonDialog.prototype);
 	aGlobal.mobmap.DigitalTyphoonDialog = DigitalTyphoonDialog;
 })(window);

@@ -9,16 +9,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	LayerDeleteDialog.prototype = {
-		// base
-		initProperties: mobmap.MMDialogBase.initProperties,
-		buildView: mobmap.MMDialogBase.buildView,
-		getDialog: mobmap.MMDialogBase.getDialog,
-		showDialogOnCenter: mobmap.MMDialogBase.showDialogOnCenter,
-		addOKButton: mobmap.MMDialogBase.addOKButton,
-		addCancelButton: mobmap.MMDialogBase.addCancelButton,
-		onOK: mobmap.MMDialogBase.defaultOnOK,
-		onCancel: mobmap.MMDialogBase.defaultOnCancel,
-
 		openWithLayer: function(targetLayer, callback) {
 			this.ensureWindowElement();
 
@@ -47,5 +37,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 	
+	mobmap.MMDialogBaseInstallAPIs(LayerDeleteDialog.prototype);
 	aGlobal.mobmap.LayerDeleteDialog = LayerDeleteDialog;
 })(window);
