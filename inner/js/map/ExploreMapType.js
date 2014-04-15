@@ -70,6 +70,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.renderAtlas.updateCanvasSize();
 		}
 	};
+	
+	ExploreMapType.prototype.isReferringAnySelection = function() {
+		if (!this.refTargetSelectedIDs) { return false; }
+		
+		return this.refTargetSelectedIDs.length > 0;
+	};
 
 	ExploreMapType.installMapType = function(targetGMap) {
 		var mt = new ExploreMapType(targetGMap);
@@ -162,18 +168,26 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	ExploreMapType.prototype.referSelectedIDList = function(ls) {
-		if (this.viewType === ExploreMapType.ViewType.Marching) {
-			this.renderAtlas.clearAllTiles();
-		}
+		this.renderAtlas.clearAllTiles();
+
 		this.refTargetSelectedIDs = ls;
-		this.doMarchingAnimation();
+		
+		// Update screen
+		if (this.viewType === ExploreMapType.ViewType.Trajectory) {
+			this.renderAtlas.resetJob();
+			this.renderAtlas.reserveJobNext();
+		} else {
+			this.doMarchingAnimation();
+		}
 	};
 	
 	ExploreMapType.prototype.referSelectionIfNeeded = function() {
-		if (this.viewType === ExploreMapType.ViewType.Marching) {
-			//console.log( this.ownerObject.getTargetSelectedIDList()  )
-			this.referSelectedIDList( this.ownerObject.getTargetSelectedIDList() );
+		var sel = null;
+		if (this.ownerObject) {
+			sel = this.ownerObject.getTargetSelectedIDList();
 		}
+		
+		this.referSelectedIDList(sel);
 	};
 
 
@@ -351,10 +365,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.jobFinishedCount >= plLastIndex) {
 				return;
 			}
+			
+			var anySelected = this.ownerMapType.isReferringAnySelection();
 
 			for (var i = 0;i < n;++i) {
 				var nextIndex = this.jobFinishedCount;
-				this.renderOffscreen(g, nextIndex);
+				this.renderOffscreen(g, nextIndex, anySelected);
 				//console.log(nextIndex)
 
 				if (++this.jobFinishedCount <= plLastIndex) {
@@ -382,8 +398,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
-		renderOffscreen: function(g, polylineIndex) {
+		renderOffscreen: function(g, polylineIndex, selectedOnly) {
 			var ds = this.dataSource;
+			if (selectedOnly) {
+				var objId = ds.tpGetOwnerObjectId(polylineIndex);
+				if (this.ownerMapType.refTargetSelectedIDs.indexOf(objId) < 0) {
+					return;
+				}
+			}
+			
 			var len = ds.tpCountVerticesOfPolyline(polylineIndex);
 			var pj = this.ownerMap.getProjection();
 			var wsize = Math.pow(2, this.currentZoom);
@@ -655,7 +678,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	var PolylineDatasourceMethods = [
 		'tpCountPolylines',
-		'tpCountVerticesOfPolyline'
+		'tpCountVerticesOfPolyline',
+		'tpGetOwnerObjectId'
 	];
 	
 	function checkPolylineDatasourceImplementation(obj) {

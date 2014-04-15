@@ -236,6 +236,7 @@ if (!window.mobmap) window.mobmap={};
 
 	function TimeList(objId) {
 		this.id = objId;
+		this.stringId = objId.toString();
 		this.recordList = [];
 
 		this.cahcedIndex = -1;

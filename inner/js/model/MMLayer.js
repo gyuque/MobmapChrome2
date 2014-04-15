@@ -287,6 +287,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			var recs = tls[polylineIndex].getRecordList();
 			
 			return recs[vertexIndex].x;
+		},
+
+		tpGetOwnerObjectId: function(polylineIndex) {
+			var tls = this.movingData.getFlattenTLArray();
+			
+			return tls[polylineIndex].stringId;
 		}
 	};
 
