@@ -293,16 +293,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 	
-	function makeFieldSetWithLegend(legendText) {
-		var fs = $H('fieldset');
-		var lg = $H('legend');
-
-		lg.appendChild( document.createTextNode(legendText) );
-		fs.appendChild(lg);
-
-		return fs;
-	}
-	
 	function makeComboWithLabel(container, labelText, labelClass) {
 		var cb = $H('select');
 		var lb = $H('label', labelClass);

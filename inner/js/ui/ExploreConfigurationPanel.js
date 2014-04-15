@@ -13,9 +13,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(this.element);
 		this.selectElementTargets = null;
 		this.jSelectElementTargets = null;
+		this.jTrajectoryColorPickerElement = null;
+		this.chkTrajectoryAddComposition = null;
 
 		this.selectedTargetId = -1;
 		this.configurePanelContent();
+		this.sendTrajectoryColor();
+		this.sendTrajectoryAddComposition();
 	}
 	
 	ExploreConfigurationPanel.prototype = {
@@ -23,6 +27,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ec = this.expandablePanel.expandedContentElement;
 			ec.innerHTML = '';
 			this.buildExpandedPanelContent(ec);
+			this.buildTrajectoryConfigPanel(ec);
 			$(ec).find('input[name=explore-type]').click(this.onViewTypeRadioClick.bind(this));
 		},
 		
@@ -39,6 +44,54 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.addNoneTargetOption();
 			
 			this.addViewTypeRadio(containerElement);
+		},
+		
+		buildTrajectoryConfigPanel: function(containerElement) {
+			var fieldSet = makeFieldSetWithLegend("Trajectory options");
+			containerElement.appendChild(fieldSet);
+
+			// Setup color picker
+			var pickerElement = $H('input');
+			fieldSet.appendChild(pickerElement);
+			this.jTrajectoryColorPickerElement = $(pickerElement);
+			this.jTrajectoryColorPickerElement.kendoColorPicker({
+				opacity: true,
+				change: this.onTrajectoryColorPickerChange.bind(this)
+			});
+			
+			this.setTrajectoryPickerColor(64,128,255, 1);
+			
+			// Composition option
+			var pair = generateCheckboxInLabel("Add composition", "mm-trajectory-composition", "mm-trajectory-composition-label");
+			fieldSet.appendChild(pair.label);
+			this.chkTrajectoryAddComposition = pair.input;
+			$(this.chkTrajectoryAddComposition).click(this.onTrajectoryAddCompositionChange.bind(this));
+		},
+		
+		onTrajectoryColorPickerChange: function() {
+			this.sendTrajectoryColor();
+		},
+
+		getTrajectoryColorPickerObject: function() {
+			return this.jTrajectoryColorPickerElement.data("kendoColorPicker");
+		},
+		
+		setTrajectoryPickerColor: function(r, g, b, a) {
+			var kc = kendo.Color.fromBytes(r,g,b,a);
+			this.getTrajectoryColorPickerObject().color( kc );
+		},
+		
+		sendTrajectoryColor: function() {
+			var val = this.getTrajectoryColorPickerObject().value();
+			this.boundLayer.setTrajectoryDefaultColor(val);
+		},
+		
+		onTrajectoryAddCompositionChange: function() {
+			this.sendTrajectoryAddComposition();
+		},
+		
+		sendTrajectoryAddComposition: function() {
+			this.boundLayer.setTrajectoryAddComposition( this.chkTrajectoryAddComposition.checked );
 		},
 		
 		addViewTypeRadio: function(containerElement) {

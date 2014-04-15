@@ -61,6 +61,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.renderAtlas.clearAllTiles();
 	};
 
+	ExploreMapType.prototype.getTrajectoryDefaultColor = function() {
+		if (!this.ownerObject) { return null;}
+		return this.ownerObject.trajectoryDefaultColor;
+	};
+	
+	ExploreMapType.prototype.getTrajectoryAddComposition = function() {
+		if (!this.ownerObject) { return null;}
+		return this.ownerObject.trajectoryAddComposition;
+	};
+
 	ExploreMapType.prototype.rebuildTrajectoryMap = function(delayRender) {
 		this.renderAtlas.invalidateOffscreenCanvas();
 		if (delayRender) {
@@ -138,8 +148,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataSource = ds;
 		this.referSelectionIfNeeded();
 		
-		this.renderAtlas.clearAllTiles();
 		this.renderAtlas.dataSource = ds;
+		this.restartTrajectoryDrawing();
+	};
+
+	ExploreMapType.prototype.restartTrajectoryDrawing = function() {
+		this.renderAtlas.clearAllTiles();
 		this.renderAtlas.resetJob();
 		this.renderAtlas.reserveJobNext();
 	};
@@ -371,10 +385,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			var anySelected = this.ownerMapType.isReferringAnySelection();
+			var defaultColor = this.ownerMapType.getTrajectoryDefaultColor();
 
+			g.save();
+			if (this.ownerMapType.getTrajectoryAddComposition()) {
+				g.globalCompositeOperation = 'lighter';
+			}
+			
 			for (var i = 0;i < n;++i) {
 				var nextIndex = this.jobFinishedCount;
-				this.renderOffscreen(g, nextIndex, anySelected);
+				this.renderOffscreen(g, nextIndex, anySelected, defaultColor);
 				//console.log(nextIndex)
 
 				if (++this.jobFinishedCount <= plLastIndex) {
@@ -383,6 +403,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					break;
 				}
 			}
+			g.restore();
 
 			this.transferOffscreenImage();
 			if (shouldContinue) {
@@ -402,7 +423,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
-		renderOffscreen: function(g, polylineIndex, selectedOnly) {
+		renderOffscreen: function(g, polylineIndex, selectedOnly, defaultColor) {
 			var ds = this.dataSource;
 			if (selectedOnly) {
 				var objId = ds.tpGetOwnerObjectId(polylineIndex);
@@ -422,7 +443,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			//console.log(tox, toy)
 			var render_nodes = this.renderNodes;
 
-			g.strokeStyle = this.defaultStrokeStyle;
+			g.strokeStyle = defaultColor || this.defaultStrokeStyle;
 			g.beginPath();
 			for (var i = 0;i < len;++i) {
 				var lat = ds.tpGetVertexLatitude(polylineIndex, i);

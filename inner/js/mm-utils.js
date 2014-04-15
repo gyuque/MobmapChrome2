@@ -106,7 +106,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return el;
 	};
-	
+
+	aGlobal.makeFieldSetWithLegend = function(legendText) {
+		var fs = $H('fieldset');
+		var lg = $H('legend');
+
+		lg.appendChild( document.createTextNode(legendText) );
+		fs.appendChild(lg);
+
+		return fs;
+	};
+
 	aGlobal.generateRadioInLabel = function(labelText, radio_name, label_class) {
 		return generateInputElementInLabel('radio', labelText, radio_name, label_class);
 	};

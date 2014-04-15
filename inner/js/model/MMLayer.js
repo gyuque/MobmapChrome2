@@ -20,6 +20,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		Destroy: 'mm-layer-model-event-destroy',
 		ExploreTargetSet: 'mm-layer-model-event-explore-target-set',
 		ExploreViewTypeChange: 'mm-layer-model-event-explore-viewtype-change',
+		ExploreViewOptionChange: 'mm-layer-model-event-explore-viewoption-change',
 		ExploreTargetSelectionChange: 'mm-layer-model-event-explore-target-selection-change'
 	};
 	

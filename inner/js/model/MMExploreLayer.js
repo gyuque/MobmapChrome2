@@ -24,6 +24,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.targetLayerId = -1;
 		this.targetObjectIds = [];
+		this.trajectoryDefaultColor = '#ff0';
+		this.trajectoryAddComposition = false;
 	}
 	
 	MMExploreLayer.prototype = {
@@ -50,7 +52,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		fireTargetSet: function(newTargetId) {
 			this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreTargetSet, [this, newTargetId]);
 		},
-		
+
+		fireViewOptionChange: function() {
+			this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreViewOptionChange, this);
+		},
+
 		updateSelectedObjects: function(sourceLayer) {
 			if (sourceLayer && this.targetLayerId === sourceLayer.layerId) {
 				this.clearTargetObjects();
@@ -70,6 +76,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getTargetSelectedIDList: function() {
 			return this.targetObjectIds;
+		},
+		
+		setTrajectoryDefaultColor: function(c) {
+			if (this.trajectoryDefaultColor !== c) {
+				this.trajectoryDefaultColor = c;
+				this.fireViewOptionChange();
+			}
+		},
+		
+		setTrajectoryAddComposition: function(enabled) {
+			if (this.trajectoryAddComposition !== enabled) {
+				this.trajectoryAddComposition = enabled;
+				this.fireViewOptionChange();
+			}
 		}
 	};
 	
