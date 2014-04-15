@@ -380,7 +380,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var plCount = ds.tpCountPolylines();
 			var plLastIndex = plCount - 1;
-			if (this.jobFinishedCount >= plLastIndex) {
+			if (this.jobFinishedCount > plLastIndex) {
 				return;
 			}
 			
@@ -391,7 +391,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.ownerMapType.getTrajectoryAddComposition()) {
 				g.globalCompositeOperation = 'lighter';
 			}
-			
+
 			for (var i = 0;i < n;++i) {
 				var nextIndex = this.jobFinishedCount;
 				this.renderOffscreen(g, nextIndex, anySelected, defaultColor);
