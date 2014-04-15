@@ -181,6 +181,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 	
+	ExploreMapType.prototype.isIDReffered = function(objId) {
+		return this.refTargetSelectedIDs.indexOf(objId) >= 0;
+	};
+	
 	ExploreMapType.prototype.referSelectionIfNeeded = function() {
 		var sel = null;
 		if (this.ownerObject) {
@@ -402,7 +406,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ds = this.dataSource;
 			if (selectedOnly) {
 				var objId = ds.tpGetOwnerObjectId(polylineIndex);
-				if (this.ownerMapType.refTargetSelectedIDs.indexOf(objId) < 0) {
+				if (!this.ownerMapType.isIDReffered(objId)) {
 					return;
 				}
 			}
