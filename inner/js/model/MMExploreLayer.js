@@ -26,7 +26,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.targetObjectIds = [];
 		this.trajectoryDefaultColor = '#ff0';
 		this.trajectoryAddComposition = false;
+		this.trajectoryColoringMode = MMExploreLayer.TrajectoryColoring.Fixed;
 	}
+	
+	MMExploreLayer.TrajectoryColoring = {
+		Fixed: 0,
+		Speed: 1
+	};
 	
 	MMExploreLayer.prototype = {
 		hasTimeRange: function() {
@@ -88,6 +94,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		setTrajectoryAddComposition: function(enabled) {
 			if (this.trajectoryAddComposition !== enabled) {
 				this.trajectoryAddComposition = enabled;
+				this.fireViewOptionChange();
+			}
+		},
+		
+		setTrajectoryColoringMode: function(m) {
+			if (this.trajectoryColoringMode !== m) {
+				this.trajectoryColoringMode = m;
 				this.fireViewOptionChange();
 			}
 		}

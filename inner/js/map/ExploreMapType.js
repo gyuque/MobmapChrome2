@@ -70,6 +70,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		if (!this.ownerObject) { return null;}
 		return this.ownerObject.trajectoryAddComposition;
 	};
+	
+	ExploreMapType.prototype.getTrajectoryColoringMode = function() {
+		if (!this.ownerObject) { return null;}
+		return this.ownerObject.trajectoryColoringMode;
+	};
 
 	ExploreMapType.prototype.rebuildTrajectoryMap = function(delayRender) {
 		this.renderAtlas.invalidateOffscreenCanvas();
