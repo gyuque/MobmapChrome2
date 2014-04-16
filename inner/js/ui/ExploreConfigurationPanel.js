@@ -49,6 +49,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		buildTrajectoryConfigPanel: function(containerElement) {
 			var fieldSet = makeFieldSetWithLegend("Trajectory options");
 			containerElement.appendChild(fieldSet);
+			//this.addTrajectoryColoringTypeRadio(fieldSet, "Color by speed", mobmap.MMExploreLayer.TrajectoryColoring.Speed);
+			//this.addTrajectoryColoringTypeRadio(fieldSet, "Fixed color", mobmap.MMExploreLayer.TrajectoryColoring.Fixed);
 
 			// Setup color picker
 			var pickerElement = $H('input');
@@ -66,6 +68,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			fieldSet.appendChild(pair.label);
 			this.chkTrajectoryAddComposition = pair.input;
 			$(this.chkTrajectoryAddComposition).click(this.onTrajectoryAddCompositionChange.bind(this));
+		},
+		
+		addTrajectoryColoringTypeRadio: function(containerElement, labelText, val) {
+			var pair = generateRadioInLabel(labelText, 'trajectory-coloring-type', 'mm-trajectory-coloring-type-label');
+			containerElement.appendChild(pair.label);
+			pair.input.value = val;
+			return pair;
 		},
 		
 		onTrajectoryColorPickerChange: function() {
