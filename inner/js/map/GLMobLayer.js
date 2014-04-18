@@ -409,9 +409,11 @@ function installMobLayer(pkg) {
 				var cy = 7;
 
 				// Append positions
-				vlist[vi  ] = sx - spriteCX       ;  vlist[vi+1] = sy - spriteCY         ;
-				vlist[vi+2] = vlist[vi] + spriteW2;  vlist[vi+3] = vlist[vi+1]           ;
-				vlist[vi+4] = vlist[vi]           ;  vlist[vi+5] = vlist[vi+1] + spriteH2;
+				var sx0 = sx - spriteCX;
+				var sy0 = sy - spriteCY;
+				vlist[vi  ] = sx0           ;  vlist[vi+1] = sy0           ;
+				vlist[vi+2] = sx0 + spriteW2;  vlist[vi+3] = sy0           ;
+				vlist[vi+4] = sx0           ;  vlist[vi+5] = sy0 + spriteH2;
 				vi += 6;
 			
 				// Append texture coordinates (fixed + variable = final UV)
@@ -832,10 +834,12 @@ function installMobLayer(pkg) {
 		"attribute vec2 aTextureBase;",
 		"varying vec2 vTextureCoord;",
 		"varying vec2 vTextureBase;",
+		"varying vec2 vTextureMovedCoord;",
 		"uniform mat4 transform;",
 		"void main(void) {",
 		" vTextureCoord = aTextureCoord;",
 		" vTextureBase  = aTextureBase;",
+		" vTextureMovedCoord = aTextureBase + aTextureCoord;",
 		" gl_Position = transform * vec4(aVertexPosition, 0.0, 1.0);",
 		"}"
 	].join("\n");
@@ -846,6 +850,7 @@ function installMobLayer(pkg) {
 		"uniform vec4 validUV;",
 		"varying vec2 vTextureCoord;",
 		"varying vec2 vTextureBase;",
+		"varying vec2 vTextureMovedCoord;",
 		"void main(void) {",
 //		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.06 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.19) {discard;}",
 //		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.12 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.38) {discard;}",
@@ -853,9 +858,9 @@ function installMobLayer(pkg) {
 		// rgba -> u1,v2,u2,v2
 		" if(vTextureCoord.x < validUV.r || vTextureCoord.y < 0.12 || vTextureCoord.x > validUV.b || vTextureCoord.y > 0.38) {discard;}",
 
-		" vec4 texel = texture2D(texture, vTextureCoord + vTextureBase);",
+		" gl_FragColor = texture2D(texture, vTextureMovedCoord);",
 //		" if (texel.z < 0.001) {discard;} ",
-		" gl_FragColor  = texel;",
+//		" gl_FragColor  = texel;",
 		"}"
 	].join("\n");
 
