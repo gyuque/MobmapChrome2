@@ -16,8 +16,31 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	DataDetailView.prototype = {
+		setApp: function(a) {
+			this.ownerApp = a;
+			this.observeApp();
+			this.observeProject();
+		},
+		
+		observeApp: function() {
+			var ed = this.ownerApp.eventDispatcher();
+			ed.bind(mobmap.Mobmap2App.PROJECT_SET_EVENT, this.onAppProjectSet.bind(this));
+		},
+
+		onAppProjectSet: function() {
+			this.observeProject();
+		},
+
+		observeProject: function() {
+			var prj = this.ownerApp.getCurrentProject();
+			if (prj) {
+				console.log("IMPLEMENT HERE");
+			}
+		},
+
 		buildView: function() {
 			this.dataSourceForGrid = new kendo.data.DataSource();
+			this.addTargetSelector( this.containerElement );
 			
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
 			this.jGridOuterElement = $(this.gridOuterElement);
@@ -33,6 +56,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.dataSourceForGrid.data( testdata );*/
 		},
 		
+		addTargetSelector: function(containerElement) {
+			var lab = $H('label');
+			var sel = $H('select');
+			
+			lab.appendChild( $T('Target: ') );
+			lab.appendChild( sel );
+			
+			containerElement.appendChild(lab);
+		},
+
 		getDataGridObject: function() {
 			return this.jGridOuterElement.data("kendoGrid");
 		}

@@ -313,6 +313,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.infoPane.setApp(this);
 			this.mapPane.setApp(this);
 			this.layersView.setApp(this);
+			this.dataView.setApp(this);
 		},
 
 		// Timeline bar UI events - - - - - - -
