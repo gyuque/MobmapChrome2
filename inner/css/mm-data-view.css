@@ -1,0 +1,4 @@
+div[data-itemname=data_detail] {
+	overflow-x: hidden;
+	overflow-y: auto;
+}

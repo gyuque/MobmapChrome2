@@ -25,6 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		prepareDefaultTabs: function() {
 			this.tabList.add("Layers", "layers");
 			this.tabList.add("Data", "data_detail");
+			this.tabList.add("Annotation", "ann");
 			
 			this.getLayerListBox().style.overflowX = 'hidden';
 			this.getLayerListBox().style.overflowY = 'auto';
