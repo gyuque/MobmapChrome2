@@ -34,8 +34,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeProject: function() {
 			var prj = this.ownerApp.getCurrentProject();
 			if (prj) {
-				console.log("IMPLEMENT HERE");
+				var ed = prj.eventDispatcher();
+				ed.bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this));
 			}
+		},
+		
+		onLayerListChange: function() {
+			console.log("IMPL HERE")
 		},
 
 		buildView: function() {
