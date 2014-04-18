@@ -437,8 +437,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
-			var len = ds.tpCountVerticesOfPolyline(polylineIndex);
-			var pj = this.ownerMap.getProjection();
+			var clr_mode = this.ownerMapType.getTrajectoryColoringMode();
+			var speed_clr = (clr_mode === mobmap.MMExploreLayer.TrajectoryColoring.Speed);
+			
 			var wsize = Math.pow(2, this.currentZoom);
 
 			var tw = this.tileSize.width;
@@ -446,8 +447,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tox = (this.canvasStatus.minCX * tw);
 			var toy = (this.canvasStatus.minCY * th);
 			//console.log(tox, toy)
-			var render_nodes = this.renderNodes;
+			//var render_nodes = this.renderNodes;
 
+			if (!speed_clr) {
+				this.drawTrajectoryLinesFixedColor(g, ds, polylineIndex, wsize, tox, toy, defaultColor);
+			} else {
+				this.drawTrajectoryLinesSpeedColor(g, ds, polylineIndex, wsize, tox, toy);
+			}
+		},
+		
+		drawTrajectoryLinesFixedColor: function(g, ds, polylineIndex, wsize, tox, toy, defaultColor) {
+			var len = ds.tpCountVerticesOfPolyline(polylineIndex);
+			var pj = this.ownerMap.getProjection();
+			
 			g.strokeStyle = defaultColor || this.defaultStrokeStyle;
 			g.beginPath();
 			for (var i = 0;i < len;++i) {
@@ -464,14 +476,66 @@ if (!window.mobmap) { window.mobmap={}; }
 					g.lineTo(sx, sy);
 				}
 
+/*
 				if (render_nodes) {
 					g.fillRect(sx-1, sy-1, 3, 3);
 				}
+*/
 			}
 
 			g.stroke();
 		},
 
+		drawTrajectoryLinesSpeedColor: function(g, ds, polylineIndex, wsize, tox, toy) {
+			var len = ds.tpCountVerticesOfPolyline(polylineIndex);
+			var pj = this.ownerMap.getProjection();
+			if (len < 2) {return;}
+			
+			var nSegments = len - 1;
+			var prevLat = ds.tpGetVertexLatitude(polylineIndex, 0);
+			var prevLng = ds.tpGetVertexLongitude(polylineIndex, 0);
+			var prevTime = ds.tpGetVertexTimestamp(polylineIndex, 0);
+
+			var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
+			var sx = wPos.x * wsize - tox;
+			var sy = wPos.y * wsize - toy;
+			var prevSX = sx;
+			var prevSY = sy;
+			
+			for (var i = 0;i < nSegments;++i) {
+				var lat = ds.tpGetVertexLatitude(polylineIndex, i+1);
+				var lng = ds.tpGetVertexLongitude(polylineIndex, i+1);
+				var time = ds.tpGetVertexTimestamp(polylineIndex, i+1);
+				var dTime = time - prevTime;
+				var dMeter = calcDistanceFromLatLng(lng, lat, prevLng, prevLat);
+				var velo = 0;
+				var colorComponent = 0;
+				if (dTime > 0.1) {
+					velo = dMeter / dTime;
+//					colorComponent = Math.floor(velo * 10.0);
+					colorComponent = Math.floor(velo * 50.0);
+					if (colorComponent > 255) { colorComponent = 255; }
+				}
+				
+				wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
+				sx = wPos.x * wsize - tox;
+				sy = wPos.y * wsize - toy;
+				
+//				g.strokeStyle = 'rgb('+ colorComponent +',0,255)';
+				g.strokeStyle = 'rgba(10,30,200,' +((255-colorComponent)/255.0)+ ')';
+				g.beginPath();
+				g.moveTo(prevSX, prevSY);
+				g.lineTo(sx, sy);
+				g.stroke();
+
+				prevLat = lat;
+				prevLng = lng;
+				prevTime = time;
+				prevSX = sx;
+				prevSY = sy;
+			}
+		},
+		
 		transferOffscreenImage: function(force) {
 			if (!this.currentVisibility) { return; }
 

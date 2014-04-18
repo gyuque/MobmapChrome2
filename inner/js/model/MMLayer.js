@@ -289,6 +289,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return recs[vertexIndex].x;
 		},
+		
+		tpGetVertexTimestamp: function(polylineIndex, vertexIndex) {
+			var tls = this.movingData.getFlattenTLArray();
+			var recs = tls[polylineIndex].getRecordList();
+			
+			return recs[vertexIndex]._time;
+		},
 
 		tpGetOwnerObjectId: function(polylineIndex) {
 			var tls = this.movingData.getFlattenTLArray();

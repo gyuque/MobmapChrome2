@@ -17,6 +17,24 @@ if (!window.mobmap) { window.mobmap={}; }
 		var d = a - b;
 		return (d > -0.000001 && d < 0.000001);
 	};
+	
+
+	aGlobal.calcDistanceFromLatLng = function(x1, y1, x2, y2) {
+		var DEG2RAD = Math.PI / 180.0;
+		x1 *= DEG2RAD;
+		y1 *= DEG2RAD;
+		x2 *= DEG2RAD;
+		y2 *= DEG2RAD;
+		var dx = Math.abs(x2-x1);
+		var dy = Math.abs(y2-y1);
+		var phi = dy*0.5 + y1;
+
+		var S = Math.sin(phi);
+		var M = 6335439.0 / (Math.sqrt( Math.pow( (1- 0.006674*S*S) , 3) ));
+		var N = 6378137.0 / Math.sqrt( 1- 0.006674*S*S );
+
+		return Math.sqrt( Math.pow(M*dy, 2) + Math.pow(N*Math.cos(phi)*dx ,2) );
+	};
 
 	aGlobal.createCheckbox = function(cls, id) {
 		var check = $H('input', cls, id);
