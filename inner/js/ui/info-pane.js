@@ -33,11 +33,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		setupTabstrip: function() {
-			this.jContainerElement.kendoTabStrip({animation: false});
+			this.jContainerElement.kendoTabStrip({animation: false, select: this.onSelectTab.bind(this) });
 		},
 		
 		selectFirstTab: function() {
 			this.getTabStripObject().select(0);
+		},
+		
+		onSelectTab: function(e) {
+			console.log(e.item, 'impl here')
 		},
 		
 		isDataTabSelected: function() {

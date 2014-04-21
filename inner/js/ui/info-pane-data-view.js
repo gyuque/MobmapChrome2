@@ -9,7 +9,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.gridOuterElement = null;
 		this.jGridOuterElement = null;
 		this.targetSelectElement = null;
+		this.currentTargetId = -1;
 		// -----------------
+		this.dataSourceArray = [];
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
 
@@ -56,7 +58,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		buildView: function() {
-			this.dataSourceForGrid = new kendo.data.DataSource();
+			this.dataSourceForGrid = new kendo.data.DataSource({data: this.dataSourceArray});
 			this.addTargetSelector( this.containerElement );
 			
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
@@ -64,13 +66,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.containerElement.appendChild(this.gridOuterElement);
 			this.jGridOuterElement.kendoGrid();
 			
-			this.getDataGridObject().setDataSource(this.dataSourceForGrid);
-			/*
-			var testdata = [];
-			for (var i = 0;i < 99;++i) {
-				testdata.push( {id: 'Test'+i, x:139.25+i*0.1, y:35.5+i*0.1} );
-			}
-			this.dataSourceForGrid.data( testdata );*/
+			var gr = this.getDataGridObject();
+			gr.setDataSource(this.dataSourceForGrid);
 		},
 		
 		addTargetSelector: function(containerElement) {
@@ -82,6 +79,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			containerElement.appendChild(lab);
 			this.targetSelectElement = sel;
+			
+			$(sel).change( this.onTargetSelectChange.bind(this) );
 		},
 
 		getDataGridObject: function() {
@@ -104,6 +103,44 @@ if (!window.mobmap) { window.mobmap={}; }
 					op.value = layer.layerId;
 					
 					this.targetSelectElement.appendChild(op);
+				}
+			}
+		},
+		
+		notifyMovingDataPicked: function(sourceLayer, pickedArray, count) {
+			if (sourceLayer.layerId !== this.currentTargetId) {
+				return;
+			}
+			
+			var arr = this.dataSourceArray;
+			arr.length = count;
+
+			for (var i = 0;i < count;++i) {
+				arr[i] = pickedArray[i];
+			}
+			
+			this.dataSourceForGrid.read();
+			
+			var gr = this.getDataGridObject();
+			gr.hideColumn("_pickIndex");
+			gr.hideColumn("_pickTime");
+			gr.hideColumn("_backKeyTime");
+			gr.hideColumn("_fwdKeyTime");
+
+//			console.log("renew", count)
+		},
+		
+		onTargetSelectChange: function() {
+			this.fetchTargetSelectValue();
+		},
+		
+		fetchTargetSelectValue: function() {
+			var v = parseInt(this.targetSelectElement.value);
+			if (this.currentTargetId !== v) {
+				this.currentTargetId = v;
+				
+				if (this.ownerApp) {
+					this.ownerApp.redrawMap();
 				}
 			}
 		}

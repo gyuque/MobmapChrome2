@@ -270,9 +270,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		notifyMovingDataPicked: function(sourceLayer, pickedArray, count) {
-			//this.dataView.notifyMovingDataPicked: function(sourceLayer, pickedArray, count) {
 			if (this.infoPane.isDataTabSelected()) {
-				
+				this.dataView.notifyMovingDataPicked(sourceLayer, pickedArray, count);
 			}
 		},
 		
