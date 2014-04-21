@@ -8,6 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataSourceForGrid = null;
 		this.gridOuterElement = null;
 		this.jGridOuterElement = null;
+		this.targetSelectElement = null;
 		// -----------------
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
@@ -35,12 +36,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			var prj = this.ownerApp.getCurrentProject();
 			if (prj) {
 				var ed = prj.eventDispatcher();
-				ed.bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this));
+				ed.
+				 bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this)).
+				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this));
 			}
 		},
 		
+		onAnyLayerLoadFinish: function() {
+			this.onLayerListChange();
+		},
+		
 		onLayerListChange: function() {
-			console.log("IMPL HERE")
+			var prj = this.ownerApp.getCurrentProject();
+			
+			this.clearTargetSelect();
+			if (prj) {
+				this.fillTargetSelect(prj.getLayerList());
+			}
 		},
 
 		buildView: function() {
@@ -69,10 +81,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			lab.appendChild( sel );
 			
 			containerElement.appendChild(lab);
+			this.targetSelectElement = sel;
 		},
 
 		getDataGridObject: function() {
 			return this.jGridOuterElement.data("kendoGrid");
+		},
+		
+		clearTargetSelect: function() {
+			this.targetSelectElement.innerHTML = '';
+		},
+		
+		fillTargetSelect: function(layerList) {
+			var len = layerList.getCount();
+			for (var i = 0;i < len;++i) {
+				var layer = layerList.getLayerAt(i);
+				if (layer.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+					var desc = layer.getShortDescription();
+					
+					var op = $H('option');
+					op.appendChild( $T(desc) );
+					op.value = layer.layerId;
+					
+					this.targetSelectElement.appendChild(op);
+				}
+			}
 		}
 	};
 
