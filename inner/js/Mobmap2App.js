@@ -269,6 +269,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.selectionController;
 		},
 		
+		notifyMovingDataPicked: function(sourceLayer, pickedArray, count) {
+			//this.dataView.notifyMovingDataPicked: function(sourceLayer, pickedArray, count) {
+			if (this.infoPane.isDataTabSelected()) {
+				
+			}
+		},
+		
 		// -----------------------------------------------------
 		// Screen builder
 		setupScreen: function() {

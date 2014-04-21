@@ -474,6 +474,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			overlay.resetRenderedRegion();
 			overlay.renderGL();
+			
+			if (this.ownerApp) {
+				this.ownerApp.notifyMovingDataPicked(sourceLayer, src_array, count);
+			}
 		},
 		
 		prepareOverlayMarkerImage: function(overlay, sourceLayer) {

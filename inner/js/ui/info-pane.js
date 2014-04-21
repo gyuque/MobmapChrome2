@@ -5,6 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	function InfoPane(containerElement) {
 		this.ownerApp = null;
+		this.li_dataView = null;
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
 		this.tabList = new TabList(this.containerElement);
@@ -24,7 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		prepareDefaultTabs: function() {
 			this.tabList.add("Layers", "layers");
-			this.tabList.add("Data", "data_detail");
+			this.li_dataView = this.tabList.add("Data", "data_detail");
 			this.tabList.add("Annotation", "ann");
 			
 			this.getLayerListBox().style.overflowX = 'hidden';
@@ -36,7 +37,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		selectFirstTab: function() {
-			this.jContainerElement.data("kendoTabStrip").select(0);
+			this.getTabStripObject().select(0);
+		},
+		
+		isDataTabSelected: function() {
+			var sel = this.getTabStripObject().select();
+			if (!sel) { return false; }
+			if (sel.length !== 1) { return false; }
+			
+			return (sel[0] === this.li_dataView);
+		},
+		
+		getTabStripObject: function() {
+			return this.jContainerElement.data("kendoTabStrip");
 		},
 		
 		afterScreenResize: function() {
