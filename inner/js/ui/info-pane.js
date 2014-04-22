@@ -12,12 +12,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.prepareDefaultTabs();
 		this.setupTabstrip();
 	}
+	
+	InfoPane.INFOPANE_EVENT_DATAPAGE_SELECTED = "infopane-event-datapage-selected";
 
 	InfoPane.prototype = {
 		setApp: function(a) {
 			this.ownerApp = a;
 		},
-		
+
+		eventDispatcher: function() {
+			return this.jContainerElement;
+		},
+
 		observeScreenResize: function(scr) {
 			scr.eventDispatcher().bind(mobmap.Mobmap3PanesScreen.RESIZE_EVENT,
 				this.afterScreenResize.bind(this));
@@ -41,7 +47,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onSelectTab: function(e) {
-			console.log(e.item, 'impl here')
+			if (e && e.item === this.li_dataView) {
+				this.eventDispatcher().
+				 trigger(InfoPane.INFOPANE_EVENT_DATAPAGE_SELECTED);
+			}
 		},
 		
 		isDataTabSelected: function() {

@@ -2,3 +2,8 @@ div[data-itemname=data_detail] {
 	overflow-x: hidden;
 	overflow-y: auto;
 }
+
+.mm-data-view-target-selector-label {
+	display: block;
+	padding-left: 0.5em;
+}

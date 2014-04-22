@@ -55,6 +55,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (prj) {
 				this.fillTargetSelect(prj.getLayerList());
 			}
+			
+			this.fetchTargetSelectValue();
 		},
 
 		buildView: function() {
@@ -71,7 +73,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addTargetSelector: function(containerElement) {
-			var lab = $H('label');
+			var lab = $H('label', 'mm-data-view-target-selector-label');
 			var sel = $H('select');
 			
 			lab.appendChild( $T('Target: ') );
@@ -112,10 +114,16 @@ if (!window.mobmap) { window.mobmap={}; }
 				return;
 			}
 			
-			var arr = this.dataSourceArray;
-			arr.length = count;
+			
+			var nToShow = count;
+			if (nToShow > 100) {
+				nToShow = 100;
+			}
 
-			for (var i = 0;i < count;++i) {
+			// Refer records
+			var arr = this.dataSourceArray;
+			arr.length = nToShow;
+			for (var i = 0;i < nToShow;++i) {
 				arr[i] = pickedArray[i];
 			}
 			
