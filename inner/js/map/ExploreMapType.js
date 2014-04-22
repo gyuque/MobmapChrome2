@@ -439,7 +439,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var clr_mode = this.ownerMapType.getTrajectoryColoringMode();
 			var speed_clr = (clr_mode === mobmap.MMExploreLayer.TrajectoryColoring.Speed);
-			
+//speed_clr=true;
 			var wsize = Math.pow(2, this.currentZoom);
 
 			var tw = this.tileSize.width;
@@ -513,7 +513,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (dTime > 0.1) {
 					velo = dMeter / dTime;
 //					colorComponent = Math.floor(velo * 10.0);
-					colorComponent = Math.floor(velo * 50.0);
+					colorComponent = Math.floor(velo * 40.0);
 					if (colorComponent > 255) { colorComponent = 255; }
 				}
 				

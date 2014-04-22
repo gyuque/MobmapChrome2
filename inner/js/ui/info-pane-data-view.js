@@ -8,8 +8,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataSourceForGrid = null;
 		this.gridOuterElement = null;
 		this.jGridOuterElement = null;
+		this.jCollapseWarning = null;
 		this.targetSelectElement = null;
 		this.currentTargetId = -1;
+		this.forceShowAll = false;
 		// -----------------
 		this.dataSourceArray = [];
 		this.containerElement = containerElement;
@@ -43,7 +45,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this));
 			}
 		},
-		
+
 		onAnyLayerLoadFinish: function() {
 			this.onLayerListChange();
 		},
@@ -62,6 +64,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		buildView: function() {
 			this.dataSourceForGrid = new kendo.data.DataSource({data: this.dataSourceArray});
 			this.addTargetSelector( this.containerElement );
+			this.addCollapseDisp( this.containerElement );
 			
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
 			this.jGridOuterElement = $(this.gridOuterElement);
@@ -71,7 +74,29 @@ if (!window.mobmap) { window.mobmap={}; }
 			var gr = this.getDataGridObject();
 			gr.setDataSource(this.dataSourceForGrid);
 		},
+
+		addCollapseDisp: function(contaierElement) {
+			var div = $H('div', 'mm-datatable-collapse-warning');
+			contaierElement.appendChild(div);
+
+			this.jCollapseWarning = $(div).hide().click(this.onCollapseWarningClick.bind(this));
+		},
 		
+		showCollapseWarning: function(nAll) {
+			var msg = 'Showing cut-off table. Click here to show all '+ nAll + ' rows.';
+			this.jCollapseWarning.text(msg).show();
+		},
+		
+		onCollapseWarningClick: function() {
+			this.forceShowAll = true;
+			this.requestRedraw();
+			this.forceShowAll = false;
+		},
+		
+		hideCollapseWarning: function() {
+			this.jCollapseWarning.hide();
+		},
+
 		addTargetSelector: function(containerElement) {
 			var lab = $H('label', 'mm-data-view-target-selector-label');
 			var sel = $H('select');
@@ -81,7 +106,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			containerElement.appendChild(lab);
 			this.targetSelectElement = sel;
-			
+
 			$(sel).change( this.onTargetSelectChange.bind(this) );
 		},
 
@@ -116,8 +141,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			
 			var nToShow = count;
-			if (nToShow > 100) {
+			if (!this.forceShowAll && nToShow > 100) {
 				nToShow = 100;
+				this.showCollapseWarning(count);
+			} else {
+				this.hideCollapseWarning();
 			}
 
 			// Refer records
@@ -146,10 +174,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var v = parseInt(this.targetSelectElement.value);
 			if (this.currentTargetId !== v) {
 				this.currentTargetId = v;
-				
-				if (this.ownerApp) {
-					this.ownerApp.redrawMap();
-				}
+				this.requestRedraw();
+			}
+		},
+		
+		requestRedraw: function() {
+			if (this.ownerApp) {
+				this.ownerApp.redrawMap();
 			}
 		}
 	};

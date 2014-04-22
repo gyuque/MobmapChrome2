@@ -24,6 +24,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.setupScreen();
 		this.connectWithViews();
 		this.observeTimelineBarUIEvents();
+		this.observeInfoPaneEvents();
 
 		this.getToolPane().sendChosenPlaySpeed( this.playController );
 		this.newProject();
@@ -320,6 +321,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.mapPane.setApp(this);
 			this.layersView.setApp(this);
 			this.dataView.setApp(this);
+		},
+		
+		observeInfoPaneEvents: function() {
+			this.infoPane.eventDispatcher().
+			 bind(mobmap.InfoPane.INFOPANE_EVENT_DATAPAGE_SELECTED, this.onInfoPaneDataPageSelect.bind(this));
+		},
+		
+		onInfoPaneDataPageSelect: function() {
+			setTimeout(this.redrawMap.bind(this), 20);
 		},
 
 		// Timeline bar UI events - - - - - - -

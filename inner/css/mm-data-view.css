@@ -7,3 +7,16 @@ div[data-itemname=data_detail] {
 	display: block;
 	padding-left: 0.5em;
 }
+
+.mm-datatable-collapse-warning {
+	background: linear-gradient(to bottom, #fea, #dc8) #fea;
+	border-top: 1px solid #cb7;
+	border-bottom: 1px solid #cb7;
+	padding: 3px;
+	color: #000;
+	cursor: pointer;
+}
+
+.mm-datatable-collapse-warning:hover:active {
+	background: linear-gradient(to bottom, #ba6, #cb7) #cb7;
+}
