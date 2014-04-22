@@ -69,10 +69,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
 			this.jGridOuterElement = $(this.gridOuterElement);
 			this.containerElement.appendChild(this.gridOuterElement);
-			this.jGridOuterElement.kendoGrid();
+			this.jGridOuterElement.kendoGrid({
+				detailTemplate: this.generateRowDetailBox.bind(this)
+			});
 			
 			var gr = this.getDataGridObject();
 			gr.setDataSource(this.dataSourceForGrid);
+		},
+		
+		generateRowDetailBox: function(item) {
+			console.log(item._id)
+			return '<div class="mm-datatable-detail-box"><button>Select this</button> <button>Deselect others</button></div>';
 		},
 
 		addCollapseDisp: function(contaierElement) {
