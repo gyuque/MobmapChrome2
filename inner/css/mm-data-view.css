@@ -30,5 +30,25 @@ div[data-itemname=data_detail] {
 .k-detail-row>td {
 	text-align: right;
 	background: linear-gradient(to bottom, #fcfcfc, #fbfbfb, #eee) #eee;
-	box-shadow: 0 -1px 1px #999 inset;
+	box-shadow: 0 -1px 2px -1px #000 inset;
+}
+
+.mm-detail-row-command-button {
+	vertical-align: middle;
+	cursor: pointer;
+	background: linear-gradient(to bottom, #eee, #ccc) #eee;
+	border: 1px solid #bbb;
+	box-shadow: 0 -1px 1px rgba(0,0,0,0.1) inset;
+	margin-left: 2px;
+}
+
+.mm-detail-row-command-button:hover:active {
+	background: linear-gradient(to bottom, #b4b4b4, #bcbcbc) #ccc;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.25) inset;
+}
+
+.mm-datatable-detail-mini-info {
+	border-bottom: 1px solid #ccc;
+	text-align: left;
+	margin-bottom: 2px;
 }

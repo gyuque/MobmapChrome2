@@ -13,6 +13,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.targetSelectElement = null;
 		this.currentTargetId = -1;
 		this.forceShowAll = false;
+		this.nowShowingSelectedOnly = false;
 		// -----------------
 		this.dataSourceArray = [];
 		this.containerElement = containerElement;
@@ -80,7 +81,65 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		generateRowDetailBox: function(item) {
-			return '<div class="mm-datatable-detail-box"><button data-command="reveal" data-lat="' +item.y+ '" data-lng="' +item.x+ '" data-objid="' +item._id+ '">Reveal on map</button></div>';
+			var count = this.generateRowDetailRecordsCount(item._id);
+			var velo  = this.generateRowDetailVelocity(item);
+			var buttons = this.generateDetailRowButton('reveal', item, 'images/drowbtn-reveal.png', 'Reveal on map');
+			
+			if (this.nowShowingSelectedOnly) {
+				buttons += this.generateDetailRowButton('deselect', item, 'images/drowbtn-remove.png', 'Deselect this');
+			}
+			
+			return '<div class="mm-datatable-detail-box">'+ count+velo+buttons+ '</div>';
+		},
+		
+		generateRowDetailRecordsCount: function(objId) {
+			var n = 0;
+			var sourceLayer = this.getCurrentSourceLayer();
+			if (sourceLayer) {
+				var tl = sourceLayer.movingData.getTimeListOfId(objId);
+				if (tl) {
+					n = tl.getRecordList().length;
+				}
+			}
+			
+			return '<div class="mm-datatable-detail-mini-info">' +n+ ' records</div>' ;
+		},
+		
+		generateRowDetailVelocity: function(item) {
+			var mPerSec = 0;
+			var dispV1 = '0';
+			var dispV2 = '0';
+			
+			if (item._backKeyTime && item._fwdKeyTime) {
+				var sourceLayer = this.getCurrentSourceLayer();
+				if (sourceLayer) {
+					var rec1 = sourceLayer.movingData.getKeyFrameRecord(item._id, item._backKeyTime);
+					var rec2 = sourceLayer.movingData.getKeyFrameRecord(item._id, item._fwdKeyTime);
+					
+					var etime = item._fwdKeyTime - item._backKeyTime;
+					var distance = calcDistanceFromLatLng(rec1.x, rec1.y, rec2.x, rec2.y);
+					if (etime) {
+						mPerSec = distance / etime;
+						dispV1 = mPerSec.toFixed(1);
+						dispV2 = (mPerSec * 3600.0 / 1000.0).toFixed(1);
+					}
+				}
+			}
+			
+			return '<div class="mm-datatable-detail-mini-info">' +dispV1+ ' m/s (' +dispV2+ ' km/h)</div>' ;
+		},
+		
+		getCurrentSourceLayer: function() {
+			if (!this.ownerApp) { return null; }
+
+			var prj = this.ownerApp.getCurrentProject();
+			if (!prj) { return null; }
+			
+			return prj.getLayerById(this.currentTargetId);
+		},
+		
+		generateDetailRowButton: function(commandName, boundItem, iconURL, title) {
+			return '<img class="mm-detail-row-command-button" data-command="' +commandName+ '" data-lat="' +boundItem.y+ '" data-lng="' +boundItem.x+ '" data-objid="' +boundItem._id+ '" title="' +title+ '" src="' +iconURL+ '">';
 		},
 
 		addCollapseDisp: function(contaierElement) {
@@ -202,6 +261,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
+			this.nowShowingSelectedOnly = any_selected;
 			this.updateTableTitle(any_selected, sel_count);
 			this.dataSourceForGrid.read();
 			

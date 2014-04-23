@@ -340,7 +340,7 @@ if (!window.mobmap) window.mobmap={};
 			var ls = this.recordList;
 			var len = ls.length;
 
-			for (i = 0;i < len;++i) {
+			for (var i = 0;i < len;++i) {
 				var rec = ls[i];
 				if (rec._time === seconds) {
 					return rec;
