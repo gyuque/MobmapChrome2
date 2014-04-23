@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.gridOuterElement = null;
 		this.jGridOuterElement = null;
 		this.jCollapseWarning = null;
+		this.jTableTitle = null;
 		this.targetSelectElement = null;
 		this.currentTargetId = -1;
 		this.forceShowAll = false;
@@ -49,7 +50,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onAnyLayerLoadFinish: function() {
 			this.onLayerListChange();
 		},
-		
+
 		onLayerListChange: function() {
 			var prj = this.ownerApp.getCurrentProject();
 			
@@ -63,11 +64,12 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		buildView: function() {
 			this.dataSourceForGrid = new kendo.data.DataSource({data: this.dataSourceArray});
-			this.addTargetSelector( this.containerElement );
 			this.addCollapseDisp( this.containerElement );
+			this.addTargetSelector( this.containerElement );
+			this.addTableTitle( this.containerElement );
 			
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
-			this.jGridOuterElement = $(this.gridOuterElement);
+			this.jGridOuterElement = $(this.gridOuterElement).click( this.onClickInsideGrid.bind(this) );
 			this.containerElement.appendChild(this.gridOuterElement);
 			this.jGridOuterElement.kendoGrid({
 				detailTemplate: this.generateRowDetailBox.bind(this)
@@ -78,8 +80,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		generateRowDetailBox: function(item) {
-			console.log(item._id)
-			return '<div class="mm-datatable-detail-box"><button>Select this</button> <button>Deselect others</button></div>';
+			return '<div class="mm-datatable-detail-box"><button data-command="reveal" data-lat="' +item.y+ '" data-lng="' +item.x+ '" data-objid="' +item._id+ '">Reveal on map</button></div>';
 		},
 
 		addCollapseDisp: function(contaierElement) {
@@ -87,6 +88,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			contaierElement.appendChild(div);
 
 			this.jCollapseWarning = $(div).hide().click(this.onCollapseWarningClick.bind(this));
+		},
+		
+		addTableTitle: function(containerElement) {
+			var h = $H('h3', 'mm-datatable-title');
+			containerElement.appendChild(h);
+			this.jTableTitle = $(h).hide();
+		},
+		
+		updateTableTitle: function(sel_enabled, n) {
+			if (sel_enabled) {
+				var postfix = (n > 1) ? ' selected objects' : ' selected object';
+				this.jTableTitle.text(n + postfix).show();
+			} else {
+				this.jTableTitle.hide();
+			}
 		},
 		
 		showCollapseWarning: function(nAll) {
@@ -108,7 +124,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var lab = $H('label', 'mm-data-view-target-selector-label');
 			var sel = $H('select');
 			
-			lab.appendChild( $T('Target: ') );
+			lab.appendChild( $T('Layer: ') );
 			lab.appendChild( sel );
 			
 			containerElement.appendChild(lab);
@@ -142,26 +158,51 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		notifyMovingDataPicked: function(sourceLayer, pickedArray, count) {
+			var nToShow = count;
 			if (sourceLayer.layerId !== this.currentTargetId) {
 				return;
 			}
 			
+			var any_selected = false;
+			var sel_count = 0;
+			var selp = sourceLayer.localSelectionPool;
+			if (selp.isAnySelected()) {
+				any_selected = true;
+				sel_count = selp.count();
+				nToShow = sel_count;
+			}
 			
-			var nToShow = count;
 			if (!this.forceShowAll && nToShow > 100) {
+				this.showCollapseWarning(nToShow);
 				nToShow = 100;
-				this.showCollapseWarning(count);
 			} else {
 				this.hideCollapseWarning();
 			}
 
 			// Refer records
+			var i;
 			var arr = this.dataSourceArray;
 			arr.length = nToShow;
-			for (var i = 0;i < nToShow;++i) {
-				arr[i] = pickedArray[i];
+			
+			if (!any_selected) {
+				for (i = 0;i < nToShow;++i) {
+					arr[i] = pickedArray[i];
+				}
+			} else {
+				var wroteCount = 0;
+				for (i = 0;i < count;++i) {
+					var srcRecord = pickedArray[i];
+					if (selp.isIDSelected(srcRecord._id)) {
+						arr[wroteCount++] = srcRecord;
+					}
+					
+					if (wroteCount >= nToShow) {
+						break;
+					}
+				}
 			}
 			
+			this.updateTableTitle(any_selected, sel_count);
 			this.dataSourceForGrid.read();
 			
 			var gr = this.getDataGridObject();
@@ -171,6 +212,28 @@ if (!window.mobmap) { window.mobmap={}; }
 			gr.hideColumn("_fwdKeyTime");
 
 //			console.log("renew", count)
+		},
+		
+		onClickInsideGrid: function(e) {
+			if (e.target) {
+				var cmd = e.target.getAttribute('data-command');
+				if (cmd && cmd.length > 0) {
+					this.execDetailBoxCommand(cmd, e.target);
+				}
+			}
+		},
+		
+		execDetailBoxCommand: function(cmdName, sourceElement) {
+			if (cmdName === 'reveal') {
+				if (this.ownerApp) {
+					var oid = sourceElement.getAttribute('data-objid');
+					var lat = parseFloat( sourceElement.getAttribute('data-lat') );
+					var lng = parseFloat( sourceElement.getAttribute('data-lng') );
+					var mp = this.ownerApp.getMapPane();
+					mp.showAimingMarker(lat, lng);
+					mp.panTo(lat, lng);
+				}
+			}
 		},
 		
 		onTargetSelectChange: function() {

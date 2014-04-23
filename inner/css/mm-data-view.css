@@ -3,9 +3,15 @@ div[data-itemname=data_detail] {
 	overflow-y: auto;
 }
 
+.mm-datatable-title {
+	display: block;
+	padding: 0.25em;
+	margin: 0;
+}
+
 .mm-data-view-target-selector-label {
 	display: block;
-	padding-left: 0.5em;
+	padding: 0.25em;
 }
 
 .mm-datatable-collapse-warning {
@@ -22,6 +28,7 @@ div[data-itemname=data_detail] {
 }
 
 .k-detail-row>td {
-	background: linear-gradient(to bottom, #f7f7f7, #f7f7f7, #eee) #eee;
-	box-shadow: 0 -1px 0 #555 inset;
+	text-align: right;
+	background: linear-gradient(to bottom, #fcfcfc, #fbfbfb, #eee) #eee;
+	box-shadow: 0 -1px 1px #999 inset;
 }

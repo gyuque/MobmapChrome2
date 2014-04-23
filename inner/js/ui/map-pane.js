@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.prevRenderTargetTime = -1;
 
 		// Preview overlays
+		this.aimingMarker = null;
 		this.selectionPolygonpath    = null;
 		this.selectionPreviewPolygon = null;
 		this.selectionLinepath    = null;
@@ -36,6 +37,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.setupGoogleMaps();
 		this.setupCaptureEvents();
+		this.setupAimingMarker();
 		this.setupSelectionViews();
 	}
 	
@@ -133,6 +135,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onCurrentDateTimeChange: function(e, sender) {
+			this.hideAimingMarker();
 			this.redraw();
 		},
 
@@ -272,6 +275,33 @@ if (!window.mobmap) { window.mobmap={}; }
 		selDidGateProcess: function(selController) {
 			this.ownerApp.closeGateBusyDialog();
 			this.gateUI.hide();
+		},
+		
+		
+		// Aiming marker
+		
+		setupAimingMarker: function() {
+			var marker = new google.maps.Marker({
+				map: this.gmap,
+				clickable: false,
+				icon: {
+					url: 'images/aiming.png',
+					anchor: new google.maps.Point(16, 16)
+				}
+			});
+			
+			marker.setVisible(false);
+			this.aimingMarker = marker;
+		},
+		
+		showAimingMarker: function(lat, lng) {
+			console.log(lat, lng)
+			this.aimingMarker.setPosition(new google.maps.LatLng(lat, lng));
+			this.aimingMarker.setVisible(true);
+		},
+
+		hideAimingMarker: function() {
+			this.aimingMarker.setVisible(false);
 		},
 		
 		// Selection feedback views = = =
