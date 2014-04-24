@@ -36,6 +36,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!suppress_event) { this.fire(); }
 		},
 		
+		removeId: function(objId) {
+			if (this.idmap[objId]) {
+				delete this.idmap[objId];
+				this.fire();
+			}
+		},
+		
 		isAnySelected: function() {
 			var m = this.idmap;
 			for (var i in m) { return true; }

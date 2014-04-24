@@ -83,7 +83,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		generateRowDetailBox: function(item) {
 			var count = this.generateRowDetailRecordsCount(item._id);
 			var velo  = this.generateRowDetailVelocity(item);
-			var buttons = this.generateDetailRowButton('reveal', item, 'images/drowbtn-reveal.png', 'Reveal on map');
+			var buttons = 
+			 this.generateDetailRowButton('only', item, 'images/drowbtn-only.png', 'Select this only') +
+			 this.generateDetailRowButton('reveal', item, 'images/drowbtn-reveal.png', 'Reveal on map');
 			
 			if (this.nowShowingSelectedOnly) {
 				buttons += this.generateDetailRowButton('deselect', item, 'images/drowbtn-remove.png', 'Deselect this');
@@ -284,15 +286,35 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		execDetailBoxCommand: function(cmdName, sourceElement) {
-			if (cmdName === 'reveal') {
-				if (this.ownerApp) {
-					var oid = sourceElement.getAttribute('data-objid');
-					var lat = parseFloat( sourceElement.getAttribute('data-lat') );
-					var lng = parseFloat( sourceElement.getAttribute('data-lng') );
-					var mp = this.ownerApp.getMapPane();
-					mp.showAimingMarker(lat, lng);
-					mp.panTo(lat, lng);
+			var oid = sourceElement.getAttribute('data-objid');
+			
+			switch(cmdName) {
+				case 'reveal': {
+					if (this.ownerApp) {
+						var lat = parseFloat( sourceElement.getAttribute('data-lat') );
+						var lng = parseFloat( sourceElement.getAttribute('data-lng') );
+						var mp = this.ownerApp.getMapPane();
+						mp.showAimingMarker(lat, lng);
+						mp.panTo(lat, lng);
+					}
+					break;
+				} 
+			
+				case 'deselect': {
+					this.deselectId(oid);
+					break;
 				}
+		
+				case 'only': {
+					break;
+				}
+			}
+		},
+		
+		deselectId: function(objId) {
+			var lyr = this.getCurrentSourceLayer();
+			if (lyr && lyr.localSelectionPool) {
+				lyr.localSelectionPool.removeId(objId);
 			}
 		},
 		
