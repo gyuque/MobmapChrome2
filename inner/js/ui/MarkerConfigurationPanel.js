@@ -5,6 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function MarkerConfigurationPanel(markerGenerator, layer) {
 		this.boundLayer = layer;
+		this.markerPresetList = this.generatePresetMarkerSets();
 		
 		this.markerGenerator = markerGenerator;
 		this.markerGenerator.eventDispatcher().bind(
@@ -44,6 +45,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var ec = this.expandablePanel.expandedContentElement;
 			ec.innerHTML = '';
+			ec.appendChild( this.generatePresetMarkerMenu() );
 			ec.appendChild( this.markerGenerator.resultCanvas );
 			
 			this.buildMarkerColumnsSlider(ec);
@@ -52,10 +54,58 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.buildOtherOptions(ec);
 		},
 		
+		generatePresetMarkerMenu: function() {
+			var ul = $H('ul');
+			var li = $H('li');
+			
+			li.innerHTML = 'Marker presets';
+
+			// Add preset items
+			var ulPresets = $H('ul');
+			var plist = this.markerPresetList;
+			li.appendChild(ulPresets);
+			for (var i in plist) {
+				ulPresets.appendChild( this.generatePresetMenuItem(plist[i], i) );
+			}
+			
+			ul.appendChild(li);
+			$(ul).kendoMenu({
+				select: this.onPresetMenuSelect.bind(this)
+			});
+			return ul;
+		},
+		
+		generatePresetMenuItem: function(presetData, index) {
+			var li = $H('li');
+			li.innerHTML = presetData.name;
+			
+			li.setAttribute('data-index', index);
+			return li;
+		},
+		
+		onPresetMenuSelect: function(e) {
+			var itemElement = e.item;
+			var index = parseInt( itemElement.getAttribute('data-index') );
+
+			this.applyMarkerSetPreset(index);
+		},
+		
+		applyMarkerSetPreset: function(presetIndex) {
+			var presetData = this.markerPresetList[presetIndex];
+			
+			var mo = this.markerGenerator.options;
+			mo.gradientType = presetData.gradientType;
+			mo.reverseOrder = presetData.reverseOrder;
+			mo.color1 = presetData.color1;
+			mo.color2 = presetData.color2;
+			
+			this.markerGenerator.forceRebuild();
+		},
+		
 		configureTyphoonMarkerPanelContent: function() {
 			var cc = this.expandablePanel.closedContentElement;
 			cc.innerHTML = '';
-			
+
 			var t_icon = document.createElement('img');
 			t_icon.src = "images/typhoon-data-icon.png";
 			t_icon.width = t_icon.height = 16;
@@ -177,7 +227,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			fs.appendChild( rl_none.label );
 			fs.appendChild( rl_attr.label );
-			fs.appendChild( rl_day.label );
+			// fs.appendChild( rl_day.label );
 
 			rl_none.input.value = mobmap.LayerMarkerOptions.MV_NONE;
 			rl_attr.input.value = mobmap.LayerMarkerOptions.MV_ATTR;
@@ -290,8 +340,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			this.syncShowTyphoonCloudCheckValue();
+		},
+		
+		generatePresetMarkerSets: function() {
+			var outList = [];
+			
+			var cWhite = new RGBColor(245,245,245);
+			var cBlue  = new RGBColor(0,0,255);
+			var cRed   = new RGBColor(255,0,0);
+			
+			outList.push( new MarkerSetPreset('Dot marker - hue gradient', mobmap.MarkerGenerator.HueGradient, false) );
+			outList.push( new MarkerSetPreset('Dot marker - reversed hue gradient', mobmap.MarkerGenerator.HueGradient, true) );
+			outList.push( new MarkerSetPreset('Dot marker - white to blue', mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
+			outList.push( new MarkerSetPreset('Dot marker - blue to red', mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			
+			return outList;
 		}
 	};
+	
+	function MarkerSetPreset(name, gt, ro, c1, c2) {
+		this.name = name;
+		this.gradientType = gt;
+		this.reverseOrder = ro;
+		this.color1 = c1 || null;
+		this.color2 = c2 || null;
+	}
+	
 	
 	function makeComboWithLabel(container, labelText, labelClass) {
 		var cb = $H('select');

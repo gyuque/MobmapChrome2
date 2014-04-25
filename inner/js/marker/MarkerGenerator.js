@@ -26,8 +26,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.testDummyMarkerGenerator();
 	}
 	
+	// Events
 	MarkerGenerator.CHANGE_EVENT = "marker-generator-configuration-change";
-	
+
+	// Generate options
+	MarkerGenerator.HueGradient   = 0;
+	MarkerGenerator.BlendGradient = 1;
+
 	MarkerGenerator.prototype = {
 		eventDispatcher: function() {
 			return this.jResultCanvas;
@@ -42,10 +47,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var h = this.resultCanvas.height - 0;
 			this.textureSourceCanvas.width = w;
 			this.textureSourceCanvas.height = h;
-			
+
 			this.textureSourceG.clearRect(0, 0, w, h);
 			this.textureSourceG.drawImage( this.resultCanvas, 0, 0 );
-			
+
 			return this.textureSourceCanvas;
 		},
 		
@@ -68,6 +73,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				this.fire();
 			}
+		},
+		
+		forceRebuild: function() {
+			this.dirty = true;
+			this.testDummyMarkerGenerator();
+			this.fire();
 		},
 		
 		adjustPreviewMargin: function() {
@@ -110,7 +121,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.clearCanvas();
 			
 			var op = this.options;
-			var baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220);
+			var baseColors;
+			
+			if (op.gradientType === MarkerGenerator.HueGradient)
+				baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220, op.reverseOrder);
+			else
+				baseColors = MarkerGenerator.generateBlendGradient(op.nVariations, op.color1, op.color2);
 			
 			MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
 			MarkerGenerator.renderPreviewImage(
@@ -123,13 +139,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			);
 		}
 	};
+
+	var kRGBWhiteColor = new RGBColor(255, 255, 255);
+	var kRGBRedColor = new RGBColor(255, 0, 0);
+
+	MarkerGenerator.generateBlendGradient = function(n, c1, c2) {
+		c1 = c1 || kRGBWhiteColor;
+		c2 = c2 || kRGBRedColor;
+		
+		var RGBlist = [];
+		for (var i = 0;i < n;++i) {
+			var newColor = new RGBColor(0, 0, 0);
+			blendRGBColors(newColor, c1, c2, i / (n-1));
+			RGBlist.push(newColor);
+		}
+		
+		return RGBlist;
+	};
 	
-	MarkerGenerator.generateRainbowColors = function(n, hueMax) {
+	MarkerGenerator.generateRainbowColors = function(n, hueMax, reverseOrder) {
 		var RGBlist = [];
 		var tmpC = [0,0,0];
 		
 		for (var i = 0;i < n;++i) {
-			var t = i / (n - 0.99);
+			var index = reverseOrder ? ((n-1) - i) : i;
+			var t = index / (n - 0.99);
 			var hue = Math.floor(hueMax * (1-t));
 			tmpC[0] = hue;
 			tmpC[1] = 1;
@@ -259,6 +293,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.chipWidth = 16;
 		this.chipHeight = 16;
 		this.nVariations = 8;
+		this.gradientType = MarkerGenerator.HueGradient;
+		this.reverseOrder = false;
+		this.color1 = null;
+		this.color2 = null;
 	}
 	
 	aGlobal.mobmap.MarkerGenerator = MarkerGenerator;

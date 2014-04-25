@@ -164,6 +164,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.b = b || 0;
 	};
 	
+	aGlobal.blendRGBColors = function(rgbOut, c1, c2, a2) {
+		rgbOut.r = Math.min(255, c1.r*(1.0-a2) + c2.r*a2) | 0;
+		rgbOut.g = Math.min(255, c1.g*(1.0-a2) + c2.g*a2) | 0;
+		rgbOut.b = Math.min(255, c1.b*(1.0-a2) + c2.b*a2) | 0;
+	};
+	
 	aGlobal.hsvToRGB = function(aHSV) {
 		var hue = aHSV[0] % 360;
 		var sat = aHSV[1];
