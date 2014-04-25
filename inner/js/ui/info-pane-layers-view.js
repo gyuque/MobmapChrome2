@@ -431,6 +431,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var use_marker = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable);
 			var use_mesh   = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MeshRenderable);
 			var use_exp    = !!(this.boundLayer.capabilities & mobmap.LayerCapability.ExploreOtherLayer);
+			var no_updown = use_exp;
 			
 			// Caption ---------------------
 			var caption = $H('h3');
@@ -443,7 +444,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.appendChild(caption);
 
 			// Buttons on caption bar
-			this.addCaptionButtons(caption);
+			this.addCaptionButtons(caption, no_updown);
 
 			var sub_caption = $H('h4');
 			sub_caption.appendChild($T('No data'));
@@ -480,27 +481,37 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
-		addCaptionButtons: function(containerElement) {
+		addCaptionButtons: function(containerElement, noUpDown) {
 			var img = $H('img', 'mm-layer-delete-button');
 			img.src = 'images/delete-symbol.png';
 			containerElement.appendChild(img);
-
+			if (noUpDown) {
+				$(img).addClass('disabled');
+			} else {
+				$(img).click(this.onLayerDeleteButtonClick.bind(this));
+			}
+			
 			var v_btn = generateLayerVisibilityButton();
 			containerElement.appendChild(v_btn.element);
-
-			var img_down = $H('img', 'mm-layer-down-button');
-			img_down.src = 'images/down-icon.png';
-			containerElement.appendChild(img_down);
-
-			var img_up = $H('img', 'mm-layer-up-button');
-			img_up.src = 'images/up-icon.png';
-			containerElement.appendChild(img_up);
-			
-			$(img).click(this.onLayerDeleteButtonClick.bind(this));
-			$(img_down).click(this.onLayerDownButtonClick.bind(this));
-			$(img_up).click(this.onLayerUpButtonClick.bind(this));
 			v_btn.eventDispatcher().click(this.onLayerVisibilityButtonClick.bind(this));
 			this.visibilityButton = v_btn;
+
+			if (noUpDown) {
+				var img_no_updown = $H('img', 'mm-layer-no-up-down');
+				img_no_updown.src = 'images/no-updown.png';
+				containerElement.appendChild(img_no_updown);
+			} else {
+				var img_down = $H('img', 'mm-layer-down-button');
+				img_down.src = 'images/down-icon.png';
+				containerElement.appendChild(img_down);
+
+				var img_up = $H('img', 'mm-layer-up-button');
+				img_up.src = 'images/up-icon.png';
+				containerElement.appendChild(img_up);
+
+				$(img_down).click(this.onLayerDownButtonClick.bind(this));
+				$(img_up).click(this.onLayerUpButtonClick.bind(this));
+			}
 		},
 
 		makeLayerTypeString: function() {

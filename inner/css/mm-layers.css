@@ -83,6 +83,16 @@
 	opacity: 0.8;
 }
 
+.mm-layer-delete-button:active {
+	opacity: 1;
+}
+
+.mm-layer-delete-button.disabled,
+.mm-layer-delete-button.disabled:active {
+	cursor: default;
+	opacity: 0.2;
+}
+
 .layer-visibility-toggle {
 	position: absolute;
 	top: 1px;
@@ -107,18 +117,23 @@
 	opacity: 0;
 }
 
+.mm-layer-no-up-down {
+	position: absolute;
+	top: 1px;
+	right: 36px;
+	opacity: 0;
+}
+
+
 .mm-layer-view-item-box:hover .mm-layer-down-button { opacity: 0.7; }
 .mm-layer-view-item-box:hover .mm-layer-down-button:active { opacity: 1; }
 .mm-layer-view-item-box:hover .mm-layer-up-button { opacity: 0.7; }
 .mm-layer-view-item-box:hover .mm-layer-up-button:active { opacity: 1; }
+.mm-layer-view-item-box:hover .mm-layer-no-up-down { opacity: 0.7; }
 
 
 .layer-visibility-toggle.selected {
 	background-position: top right;
-}
-
-.mm-layer-delete-button:active {
-	opacity: 1;
 }
 
 .mm-layer-view-item-box:hover .mm-layer-goup-button,
