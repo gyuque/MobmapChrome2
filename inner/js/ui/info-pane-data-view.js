@@ -84,8 +84,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var count = this.generateRowDetailRecordsCount(item._id);
 			var velo  = this.generateRowDetailVelocity(item);
 			var buttons = 
-			 this.generateDetailRowButton('only', item, 'images/drowbtn-only.png', 'Select this only') +
-			 this.generateDetailRowButton('reveal', item, 'images/drowbtn-reveal.png', 'Reveal on map');
+			 this.generateDetailRowButton('reveal', item, 'images/drowbtn-reveal.png', 'Reveal on map') +
+			 this.generateDetailRowButton('only', item, 'images/drowbtn-only.png', 'Select this only');
 			
 			if (this.nowShowingSelectedOnly) {
 				buttons += this.generateDetailRowButton('deselect', item, 'images/drowbtn-remove.png', 'Deselect this');
@@ -306,6 +306,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 		
 				case 'only': {
+					this.selectOneId(oid);
 					break;
 				}
 			}
@@ -315,6 +316,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			var lyr = this.getCurrentSourceLayer();
 			if (lyr && lyr.localSelectionPool) {
 				lyr.localSelectionPool.removeId(objId);
+			}
+		},
+		
+		selectOneId: function(objId) {
+			var lyr = this.getCurrentSourceLayer();
+			if (lyr && lyr.localSelectionPool) {
+				lyr.localSelectionPool.clear(true);
+				lyr.localSelectionPool.addId(objId);
 			}
 		},
 		
