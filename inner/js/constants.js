@@ -29,3 +29,6 @@ var GateDirection = {
 	Back         : 2,
 	Bidirectional: 3
 };
+
+var kMarkerCompositionNormal = 0;
+var kMarkerCompositionAdd    = 1;

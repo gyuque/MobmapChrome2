@@ -37,6 +37,7 @@ function installMobLayer(pkg) {
 		// Default values
 		this.visible = true;
 		this.timeDirection = 0;
+		this.composition = kMarkerCompositionNormal;
 		this.showTyphoonCloud = true;
 		this.generatedListeners = [];
 		this.targetPane = 'overlayLayer';
@@ -78,6 +79,7 @@ function installMobLayer(pkg) {
 	GLMobLayer.prototype.setVisibility = GLMobLayer.overlaybase_setVisibility;
 	GLMobLayer.prototype.setTimeDirection = function(timeDirection) { this.timeDirection = timeDirection; };
 	GLMobLayer.prototype.setShowTyphoonCloud = function(s) { this.showTyphoonCloud = s; };
+	GLMobLayer.prototype.setMarkerComposition = function(c) { this.composition = c; };
 	
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {
@@ -282,7 +284,12 @@ function installMobLayer(pkg) {
 
 		this.updateProjectionGrid(this.projectionGrid);
 //		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
-		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		if (this.composition === kMarkerCompositionNormal) {
+			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		} else {
+			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.SRC_ALPHA, gl.ONE);
+		}
+		
 		gl.enable(gl.BLEND);
 		gl.disable(gl.DEPTH_TEST);
 		

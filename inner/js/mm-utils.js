@@ -164,6 +164,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.b = b || 0;
 	};
 	
+	aGlobal.RGBColor.prototype.toHTMLRGB = function() {
+		return 'rgb(' +this.r+ ',' +this.g+ ',' +this.b+ ')';
+	};
+	
+	aGlobal.parseHTMLRGBHex3 = function(hex) {
+		return parseInt(hex.replace('#', '') , 16);
+	},
+	
 	aGlobal.blendRGBColors = function(rgbOut, c1, c2, a2) {
 		rgbOut.r = Math.min(255, c1.r*(1.0-a2) + c2.r*a2) | 0;
 		rgbOut.g = Math.min(255, c1.g*(1.0-a2) + c2.g*a2) | 0;

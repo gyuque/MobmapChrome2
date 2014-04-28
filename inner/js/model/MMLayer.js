@@ -225,6 +225,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		csvloaderLineError: function(e) {
+			console.log(this.sourceLoader);
 			console.log("Loader error at MMLayer#csvloaderLineError", e)
 			this.eventDispatcher().trigger(LayerEvent.LoadError, this);
 		},

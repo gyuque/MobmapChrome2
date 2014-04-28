@@ -128,7 +128,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			else
 				baseColors = MarkerGenerator.generateBlendGradient(op.nVariations, op.color1, op.color2);
 			
-			MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
+			if (op.compositionType === kMarkerCompositionNormal)
+				MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
+			else
+				MarkerGenerator.renderSpotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
+			
 			MarkerGenerator.renderPreviewImage(
 				this.previewG,
 				this.previewCanvas.width - 0,
@@ -166,7 +170,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var t = index / (n - 0.99);
 			var hue = Math.floor(hueMax * (1-t));
 			tmpC[0] = hue;
-			tmpC[1] = 1;
+			tmpC[1] = 0.9;
 			tmpC[2] = 0.8;
 
 			hsvToRGB(tmpC);
@@ -216,7 +220,47 @@ if (!window.mobmap) { window.mobmap={}; }
 		g.clearRect(6, 5, 1, 1);
 	};
 
+	var _spottmpRGB = new RGBColor(0, 0, 0);
+	MarkerGenerator.renderSpotMarker = function(g, baseColor, blendColor) {
+		var clr = baseColor.toHTMLRGB();
+		var alpha = 1;
+		if (blendColor) {
+			var blendRGB = parseHTMLRGBHex3(blendColor);
+			_spottmpRGB.r = ( blendRGB       & 0xf) * 17;
+			_spottmpRGB.g = ((blendRGB >> 4) & 0xf) * 17;
+			_spottmpRGB.b = ((blendRGB >> 8) & 0xf) * 17;
+			
+			blendRGBColors(_spottmpRGB, baseColor, _spottmpRGB, 0.9);
+			clr = _spottmpRGB.toHTMLRGB();
+			alpha = 0.4;
+		};
+		
+		g.save();
+		g.globalAlpha = alpha;
+		g.shadowColor = clr;
+		g.shadowBlur = 3;
+		g.fillStyle = clr;
+		g.fillRect(3, 3, 1, 1);
+
+		g.globalAlpha = alpha * 0.3;
+		g.fillRect(2, 3, 3, 1);
+		g.fillRect(3, 2, 1, 3);
+		
+		g.restore();
+	};
+
 	MarkerGenerator.renderDotMarkerSequence = function(g, n, xStep, yStep, baseColorList) {
+		MarkerGenerator.renderMarkerSequence(g, n, xStep, yStep, baseColorList,
+			MarkerGenerator.renderDotMarker);
+	};
+
+	MarkerGenerator.renderSpotMarkerSequence = function(g, n, xStep, yStep, baseColorList) {
+		MarkerGenerator.renderMarkerSequence(g, n, xStep, yStep, baseColorList,
+			MarkerGenerator.renderSpotMarker);
+	};
+
+
+	MarkerGenerator.renderMarkerSequence = function(g, n, xStep, yStep, baseColorList, generatorFunc) {
 		var ox = 4;
 		var oy = 4;
 
@@ -224,18 +268,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		for (var i = 0;i < n;++i) {
 			g.save();
 			g.translate(ox + x, oy);
-			MarkerGenerator.renderDotMarker(g, baseColorList[i]);
+			generatorFunc(g, baseColorList[i]);
 			g.restore();
 
 			g.save();
 			g.translate(ox + x, oy + yStep);
-			MarkerGenerator.renderDotMarker(g, baseColorList[i], '#666');
+			generatorFunc(g, baseColorList[i], '#666');
 			g.restore();
 
 			x += xStep;
 		}
 	};
-	
+
+
 	MarkerGenerator.createBallGradient = function(g, cR, cG, cB, hdiv) {
 		hdiv = (hdiv < 2) ? 1 : hdiv;
 		var gr = g.createRadialGradient(3.3, 2.5, 1, 3.5, 3, 4);
@@ -297,6 +342,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.reverseOrder = false;
 		this.color1 = null;
 		this.color2 = null;
+		this.compositionType = kMarkerCompositionNormal;
 	}
 	
 	aGlobal.mobmap.MarkerGenerator = MarkerGenerator;

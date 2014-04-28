@@ -98,6 +98,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			mo.reverseOrder = presetData.reverseOrder;
 			mo.color1 = presetData.color1;
 			mo.color2 = presetData.color2;
+			mo.compositionType = presetData.compositionType;
 			
 			this.markerGenerator.forceRebuild();
 		},
@@ -349,21 +350,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			var cBlue  = new RGBColor(0,0,255);
 			var cRed   = new RGBColor(255,0,0);
 			
-			outList.push( new MarkerSetPreset('Dot marker - hue gradient', mobmap.MarkerGenerator.HueGradient, false) );
-			outList.push( new MarkerSetPreset('Dot marker - reversed hue gradient', mobmap.MarkerGenerator.HueGradient, true) );
-			outList.push( new MarkerSetPreset('Dot marker - white to blue', mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
-			outList.push( new MarkerSetPreset('Dot marker - blue to red', mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			outList.push( new MarkerSetPreset('Dot marker - hue gradient'         , kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, false) );
+			outList.push( new MarkerSetPreset('Dot marker - reversed hue gradient', kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, true) );
+			outList.push( new MarkerSetPreset('Dot marker - white to blue'        , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
+			outList.push( new MarkerSetPreset('Dot marker - blue to red'          , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+
+			outList.push( new MarkerSetPreset('Spot marker - hue gradient'        , kMarkerCompositionAdd   , mobmap.MarkerGenerator.HueGradient, false) );
 			
 			return outList;
 		}
 	};
 	
-	function MarkerSetPreset(name, gt, ro, c1, c2) {
+	function MarkerSetPreset(name, cm, gt, ro, c1, c2) {
 		this.name = name;
 		this.gradientType = gt;
 		this.reverseOrder = ro;
 		this.color1 = c1 || null;
 		this.color2 = c2 || null;
+		this.compositionType = cm;
 	}
 	
 	
