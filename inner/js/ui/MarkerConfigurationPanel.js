@@ -76,11 +76,35 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		generatePresetMenuItem: function(presetData, index) {
-			var li = $H('li');
-			li.innerHTML = presetData.name;
-			
+			var li = $H('li', 'mm-marker-preset-menu-item');
+						
+			var pw = 160;
+			var ph = 16;
+			var previewCanvas = $H('canvas');
+			previewCanvas.width = pw;
+			previewCanvas.height = ph;
+			this.renderMarkerPresetPreview(previewCanvas.getContext('2d'), index, 10);
+
+			var caption = $H('h4');
+			caption.appendChild( $T(presetData.name) );
+
+			li.appendChild(caption);
+			li.appendChild(previewCanvas);
 			li.setAttribute('data-index', index);
 			return li;
+		},
+
+		renderMarkerPresetPreview: function(g, presetIndex, count) {
+			var n = 10;
+			var presetData = this.markerPresetList[presetIndex];
+			var baseColors = mobmap.MarkerGenerator.generateMarkerBaseColors(presetData, n);
+			
+			if (presetData.compositionType === kMarkerCompositionAdd) {
+				g.fillStyle = "rgba(0,0,0,0.8)";
+				g.fillRect(0, 0, 640, 480);
+			}
+			
+			mobmap.MarkerGenerator.renderMarkerSequenceWithCompositeType(presetData.compositionType, g, n, 16, 16, baseColors);
 		},
 		
 		onPresetMenuSelect: function(e) {
@@ -355,7 +379,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			outList.push( new MarkerSetPreset('Dot marker - white to blue'        , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
 			outList.push( new MarkerSetPreset('Dot marker - blue to red'          , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 
-			outList.push( new MarkerSetPreset('Spot marker - hue gradient'        , kMarkerCompositionAdd   , mobmap.MarkerGenerator.HueGradient, false) );
+			outList.push( new MarkerSetPreset('Spot marker - hue gradient'         , kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
+			outList.push( new MarkerSetPreset('Spot marker - reversed hue gradient', kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, true) );
+			outList.push( new MarkerSetPreset('Spot marker - white to blue'        , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
+			outList.push( new MarkerSetPreset('Spot marker - blue to red'          , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 			
 			return outList;
 		}

@@ -121,17 +121,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.clearCanvas();
 			
 			var op = this.options;
-			var baseColors;
-			
-			if (op.gradientType === MarkerGenerator.HueGradient)
-				baseColors = MarkerGenerator.generateRainbowColors(op.nVariations, 220, op.reverseOrder);
-			else
-				baseColors = MarkerGenerator.generateBlendGradient(op.nVariations, op.color1, op.color2);
-			
-			if (op.compositionType === kMarkerCompositionNormal)
-				MarkerGenerator.renderDotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
-			else
-				MarkerGenerator.renderSpotMarkerSequence(this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
+			var baseColors = MarkerGenerator.generateMarkerBaseColors(op);
+			MarkerGenerator.renderMarkerSequenceWithCompositeType(op.compositionType, this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
 			
 			MarkerGenerator.renderPreviewImage(
 				this.previewG,
@@ -142,6 +133,15 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.previewNegativeMargin
 			);
 		}
+	};
+	
+	MarkerGenerator.generateMarkerBaseColors = function(markerOptions, nVariations) {
+		var n = markerOptions.nVariations || nVariations;
+		
+		if (markerOptions.gradientType === MarkerGenerator.HueGradient)
+			return MarkerGenerator.generateRainbowColors(n, 220, markerOptions.reverseOrder);
+		else
+			return MarkerGenerator.generateBlendGradient(n, markerOptions.color1, markerOptions.color2);
 	};
 
 	var kRGBWhiteColor = new RGBColor(255, 255, 255);
@@ -259,6 +259,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			MarkerGenerator.renderSpotMarker);
 	};
 
+
+	MarkerGenerator.renderMarkerSequenceWithCompositeType = function(compositionType, g, n, xStep, yStep, baseColorList) {
+		if (compositionType === kMarkerCompositionNormal)
+			MarkerGenerator.renderDotMarkerSequence(g, n, xStep, yStep, baseColorList);
+		else
+			MarkerGenerator.renderSpotMarkerSequence(g, n, xStep, yStep, baseColorList);
+	};
 
 	MarkerGenerator.renderMarkerSequence = function(g, n, xStep, yStep, baseColorList, generatorFunc) {
 		var ox = 4;
