@@ -16,6 +16,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.previewNegativeMargin = 4;
 		this.previewG = this.previewCanvas.getContext('2d');
 		this.resultG = this.resultCanvas.getContext('2d');
+		this.lastBaseColorList = null;
 
 		this.textureSourceCanvas = document.createElement('canvas');
 		this.textureSourceG = this.textureSourceCanvas.getContext('2d');
@@ -132,6 +133,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				op.chipWidth,
 				this.previewNegativeMargin
 			);
+
+			this.lastBaseColorList = baseColors;
 		}
 	};
 	

@@ -26,6 +26,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.targetObjectIds = [];
 		this.trajectoryDefaultColor = '#ff0';
 		this.trajectoryAddComposition = false;
+		this.trajectoryUseMarkerColor = false;
 		this.trajectoryColoringMode = MMExploreLayer.TrajectoryColoring.Fixed;
 	}
 	
@@ -101,6 +102,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		setTrajectoryColoringMode: function(m) {
 			if (this.trajectoryColoringMode !== m) {
 				this.trajectoryColoringMode = m;
+				this.fireViewOptionChange();
+			}
+		},
+		
+		setTrajectoryUseMarkerColor: function(enabled) {
+			if (this.trajectoryUseMarkerColor !== enabled) {
+				this.trajectoryUseMarkerColor = enabled;
 				this.fireViewOptionChange();
 			}
 		}

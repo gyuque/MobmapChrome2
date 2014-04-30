@@ -302,6 +302,40 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tls = this.movingData.getFlattenTLArray();
 			
 			return tls[polylineIndex].stringId;
+		},
+		
+		tpGetMarkerBoundColor: function(objId, stopIndex) {
+			var tl = this.movingData.getTimeListOfId(objId);
+			if (!tl) {
+				return null;
+			}
+			
+			var record = (tl.getRecordList())[stopIndex] || null;
+			if (!record) {
+				return null;
+			}
+
+			var markerIndex = this.getMarkerIndexForRecord(record);
+			var baseColorList = this.markerGenerator.lastBaseColorList;
+			if (!baseColorList) {
+				return null;
+			} else {
+				if (markerIndex < 0) { markerIndex = 0; }
+				else if (markerIndex >= baseColorList.length) { markerIndex = baseColorList.length-1; }
+			}
+			
+			return baseColorList[markerIndex] || null;
+		},
+		
+		getMarkerIndexForRecord: function(rec) {
+			if (!rec) { return null; }
+
+			var markerIndex = 0;
+			if (this._markerOptions.varyingType === mobmap.LayerMarkerOptions.MV_ATTR) {
+				markerIndex = rec[this._markerOptions.boundAttributeName] || 0;
+			}
+			
+			return markerIndex;
 		}
 	};
 

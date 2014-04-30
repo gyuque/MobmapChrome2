@@ -70,6 +70,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		if (!this.ownerObject) { return null;}
 		return this.ownerObject.trajectoryAddComposition;
 	};
+
+	ExploreMapType.prototype.getTrajectoryUseMarkerColor = function() {
+		if (!this.ownerObject) { return false;}
+		return this.ownerObject.trajectoryUseMarkerColor;
+	};
 	
 	ExploreMapType.prototype.getTrajectoryColoringMode = function() {
 		if (!this.ownerObject) { return null;}
@@ -391,6 +396,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var anySelected = this.ownerMapType.isReferringAnySelection();
 			var defaultColor = this.ownerMapType.getTrajectoryDefaultColor();
+			var use_mkclr = this.ownerMapType.getTrajectoryUseMarkerColor();
 
 			g.save();
 			if (this.ownerMapType.getTrajectoryAddComposition()) {
@@ -399,7 +405,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			for (var i = 0;i < n;++i) {
 				var nextIndex = this.jobFinishedCount;
-				this.renderOffscreen(g, nextIndex, anySelected, defaultColor);
+				this.renderOffscreen(g, nextIndex, anySelected, defaultColor, use_mkclr);
 				//console.log(nextIndex)
 
 				if (++this.jobFinishedCount <= plLastIndex) {
@@ -428,7 +434,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
-		renderOffscreen: function(g, polylineIndex, selectedOnly, defaultColor) {
+		renderOffscreen: function(g, polylineIndex, selectedOnly, defaultColor, useMarkerColor) {
 			var ds = this.dataSource;
 			if (selectedOnly) {
 				var objId = ds.tpGetOwnerObjectId(polylineIndex);
@@ -450,7 +456,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			//var render_nodes = this.renderNodes;
 
 			if (!speed_clr) {
-				this.drawTrajectoryLinesFixedColor(g, ds, polylineIndex, wsize, tox, toy, defaultColor);
+				var markerBoundColor = null;
+				if (useMarkerColor) {
+					markerBoundColor = ds.tpGetMarkerBoundColor( ds.tpGetOwnerObjectId(polylineIndex), 0 );
+				}
+
+
+				this.drawTrajectoryLinesFixedColor(g, ds, polylineIndex, wsize, tox, toy, markerBoundColor ? markerBoundColor.toHTMLRGB() : defaultColor);
 			} else {
 				this.drawTrajectoryLinesSpeedColor(g, ds, polylineIndex, wsize, tox, toy);
 			}

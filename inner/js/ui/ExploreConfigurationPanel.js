@@ -15,6 +15,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jSelectElementTargets = null;
 		this.jTrajectoryColorPickerElement = null;
 		this.chkTrajectoryAddComposition = null;
+		this.chkTrajectoryUseMarkerColor = null; 
 
 		this.selectedTargetId = -1;
 		this.configurePanelContent();
@@ -65,11 +66,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.setTrajectoryPickerColor(64,128,255, 1);
 			
+			// Use marker color option
+			this.addUseMarkerColorCheckbox(fieldSet);
+			
 			// Composition option
 			var pair = generateCheckboxInLabel("Add composition", "mm-trajectory-composition", "mm-trajectory-composition-label");
 			fieldSet.appendChild(pair.label);
 			this.chkTrajectoryAddComposition = pair.input;
 			$(this.chkTrajectoryAddComposition).click(this.onTrajectoryAddCompositionChange.bind(this));
+		},
+		
+		addUseMarkerColorCheckbox: function(containerElement) {
+			var pair = generateCheckboxInLabel("Use marker color", "mm-trajectory-markercolor", "mm-trajectory-markercolor-label");
+			containerElement.appendChild(pair.label);
+			this.chkTrajectoryUseMarkerColor = pair.input;
+			$(this.chkTrajectoryUseMarkerColor).click(this.onTrajectoryUseMarkerColorChange.bind(this)); 
 		},
 		
 		addTrajectoryColoringTypeRadio: function(containerElement, labelText, val) {
@@ -101,8 +112,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.sendTrajectoryAddComposition();
 		},
 		
+		onTrajectoryUseMarkerColorChange: function() {
+			this.sendTrajectoryUseMarkerColor();
+		},
+		
 		sendTrajectoryAddComposition: function() {
 			this.boundLayer.setTrajectoryAddComposition( this.chkTrajectoryAddComposition.checked );
+		},
+		
+		sendTrajectoryUseMarkerColor: function() {
+			this.boundLayer.setTrajectoryUseMarkerColor( this.chkTrajectoryUseMarkerColor.checked );
 		},
 		
 		addViewTypeRadio: function(containerElement) {

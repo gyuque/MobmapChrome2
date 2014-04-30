@@ -295,3 +295,8 @@ label.varytypeopt {
 	background-color: #cdc3bf;
 	box-shadow: 0 0 3px rgba(0,0,0,0.5) inset;
 }
+
+.mm-trajectory-composition-label,
+.mm-trajectory-markercolor-label {
+	display: block;
+}
