@@ -44,7 +44,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				 bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this)).
 				 bind(mobmap.MMProject.LAYERLIST_ORDER_SWAP, this.onLayerListOrderSwap.bind(this)).
 				 bind(mobmap.MMProject.LAYERLIST_SWAP_FAIL, this.onLayerListSwapFail.bind(this)).
-				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this));
+				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this)).
+				 bind(mobmap.LayerEvent.ExploreTargetSet, this.onAnyExploreLayerTargetSet.bind(this));
 			}
 		},
 
@@ -59,6 +60,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onAnyLayerLoadFinish: function() {
 			this.updateExploreTargets();
+		},
+		
+		onAnyExploreLayerTargetSet: function() {
+			this.updateExploreLayerSubCaption();
 		},
 		
 		onLayerListOrderSwap: function(e, layerList, i1, i2) {
@@ -305,6 +310,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		updateExploreLayerSubCaption: function() {
+			var prj = this.ownerApp.getCurrentProject();
+			var ls = prj.layerList;
+			var len = ls.getCount();
+			for (var i = 0;i < len;++i) {
+				var layer = ls.getLayerAt(i);
+				if (!!(layer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) &&
+				       layer.hasPrimaryView()) {
+					var tid = layer.targetLayerId;
+					var targetLayer = null;
+					if (tid >= 0) {
+						targetLayer = ls.getLayerById(tid);
+					}
+
+					layer.primaryView.showExploreTargetName(targetLayer);
+				}
+			}
+		},
+		
 		updateLayerViews: function() {
 			var nextInView = null;
 			
@@ -471,6 +495,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (use_exp) {
 				this.buildExploreConfigurationPanel();
+				this.setSubCaption("Select target layer");
 			}
 		},
 		
@@ -541,6 +566,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.explorePanel = new mobmap.ExploreConfigurationPanel(this.boundLayer);
 			this.explorePanel.hide();
 			this.element.appendChild(this.explorePanel.element);
+		},
+		
+		showExploreTargetName: function(targetLayer) {
+			if (!targetLayer) {
+				this.setSubCaption('No target set.');
+			} else {
+				this.setSubCaption('Exploring "' + targetLayer.getShortDescription() + '"');
+			}
 		},
 		
 		setSubCaption: function(label) {
