@@ -24,6 +24,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	ExploreConfigurationPanel.prototype = {
 		configurePanelContent: function() {
+			this.expandablePanel.closedContentElement.innerHTML = 'Open to configure.';
+
 			var ec = this.expandablePanel.expandedContentElement;
 			ec.innerHTML = '';
 			this.buildExpandedPanelContent(ec);
