@@ -6,6 +6,14 @@ if (!window.mobmap) { window.mobmap={}; }
 	aGlobal.isMMRequiredAttribute = function(name)
 		{ return (kRequiredAttributes.indexOf(name) >= 0); };
 
+	aGlobal.replaceParentEventElement = function(selfElement, parentEventElement) {
+		var cur = selfElement.parentNode;
+		if (cur === parentEventElement) { return; }
+		if (cur) { cur.removeChild(selfElement); }
+
+		parentEventElement.appendChild(selfElement);
+	}
+
 	aGlobal.createCleanHash = function() {
 		var o = {__proto__:null};
 		delete o.__proto__;

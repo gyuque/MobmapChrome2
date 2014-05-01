@@ -45,7 +45,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				 bind(mobmap.MMProject.LAYERLIST_ORDER_SWAP, this.onLayerListOrderSwap.bind(this)).
 				 bind(mobmap.MMProject.LAYERLIST_SWAP_FAIL, this.onLayerListSwapFail.bind(this)).
 				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this)).
-				 bind(mobmap.LayerEvent.ExploreTargetSet, this.onAnyExploreLayerTargetSet.bind(this));
+				 bind(mobmap.LayerEvent.ExploreTargetSet, this.onAnyExploreLayerTargetSet.bind(this)).
+				 bind(mobmap.LayerMarkerOptions.CHANGE_EVENT, this.onAnyLayerMarkerOptionChange.bind(this)).
+				 bind(mobmap.MarkerGenerator.CHANGE_EVENT, this.onAnyLayerMarkerGeneratorChange.bind(this))
 			}
 		},
 
@@ -64,6 +66,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onAnyExploreLayerTargetSet: function() {
 			this.updateExploreLayerSubCaption();
+		},
+		
+		onAnyLayerMarkerOptionChange: function(e, sourceMarkerOption) {
+			this.redrawExploreLayerIfUsingMarker(sourceMarkerOption);
+		},
+		
+		onAnyLayerMarkerGeneratorChange: function(e, sourceMarkerGenerator) {
+			this.redrawExploreLayerIfUsingMarker(sourceMarkerGenerator);
 		},
 		
 		onLayerListOrderSwap: function(e, layerList, i1, i2) {
@@ -318,15 +328,39 @@ if (!window.mobmap) { window.mobmap={}; }
 				var layer = ls.getLayerAt(i);
 				if (!!(layer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) &&
 				       layer.hasPrimaryView()) {
-					var tid = layer.targetLayerId;
-					var targetLayer = null;
-					if (tid >= 0) {
-						targetLayer = ls.getLayerById(tid);
-					}
-
-					layer.primaryView.showExploreTargetName(targetLayer);
+					layer.primaryView.showExploreTargetName(
+						this.findExploreTargetLayer(layer)
+					);
 				}
 			}
+		},
+		
+		redrawExploreLayerIfUsingMarker: function(sourceObject) {
+			var prj = this.ownerApp.getCurrentProject();
+			var ls = prj.layerList;
+			var len = ls.getCount();
+			for (var i = 0;i < len;++i) {
+				var layer = ls.getLayerAt(i);
+				if (layer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
+					var targetLayer = this.findExploreTargetLayer(layer);
+					if (targetLayer && 
+						(targetLayer._markerOptions === sourceObject ||
+						 targetLayer.markerGenerator === sourceObject)) {
+						layer.notifyMarkerOptionChanged();
+					}
+				}
+			}
+		},
+		
+		findExploreTargetLayer: function(exLayer) {
+			var ls = this.ownerApp.getCurrentProject().layerList;
+
+			var tid = exLayer.targetLayerId;
+			if (tid >= 0) {
+				return ls.getLayerById(tid);
+			}
+			
+			return null;
 		},
 		
 		updateLayerViews: function() {

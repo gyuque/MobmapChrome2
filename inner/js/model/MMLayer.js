@@ -47,10 +47,12 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this._lvObserved = false;
 		this._markerOptions = new mobmap.LayerMarkerOptions();
+		this._markerOptions.setParentEventElement(this.jElement[0]);
 		this._lctrlObserved = false;
 		
 		this.sourceLoader = null;
 		this.markerGenerator = new mobmap.MarkerGenerator();
+		this.markerGenerator.setParentEventElement(this.jElement[0]);
 		this.movingData = null;
 		this.tp_count_cache = -1;
 		this.localSelectionPool = new mobmap.SelectionPool();
@@ -65,12 +67,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Base functions - - - - - - -
 	function layerbase_setParentEventElement(parentEventElement) {
-		var selfElem = this.jElement[0];
-		var cur = selfElem.parentNode;
-		if (cur === parentEventElement) { return; }
-		if (cur) { cur.removeChild(selfElem); }
-		
-		parentEventElement.appendChild(selfElem);
+		replaceParentEventElement(this.jElement[0], parentEventElement);
 	}
 
 	function layerbase_eventDispatcher() {

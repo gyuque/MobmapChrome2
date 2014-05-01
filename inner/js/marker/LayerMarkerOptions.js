@@ -13,6 +13,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	LayerMarkerOptions.CHANGE_EVENT = "layer-marker-options-event-change";
 	
 	LayerMarkerOptions.prototype = {
+		setParentEventElement: function(pe) {
+			replaceParentEventElement(this.jEventElement[0], pe);
+		},
+		
 		eventDispatcher: function() {
 			return this.jEventElement;
 		},

@@ -7,6 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dirty = true;
 		this.options = new MarkerGeneratorOptions();
 		
+		this.jEventElement = $( createEventDummyElement() );
 		this.previewCanvas = document.createElement('canvas');
 		this.resultCanvas = document.createElement('canvas');
 		this.previewCanvas.setAttribute('class', 'mm-marker-preview-canvas');
@@ -35,8 +36,12 @@ if (!window.mobmap) { window.mobmap={}; }
 	MarkerGenerator.BlendGradient = 1;
 
 	MarkerGenerator.prototype = {
+		setParentEventElement: function(pe) {
+			replaceParentEventElement( this.eventDispatcher()[0] , pe);
+		},
+
 		eventDispatcher: function() {
-			return this.jResultCanvas;
+			return this.jEventElement;
 		},
 		
 		fire: function() {

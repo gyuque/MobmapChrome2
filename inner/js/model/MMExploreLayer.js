@@ -111,6 +111,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.trajectoryUseMarkerColor = enabled;
 				this.fireViewOptionChange();
 			}
+		},
+		
+		notifyMarkerOptionChanged: function() {
+			if (this.trajectoryUseMarkerColor) {
+				this.fireViewOptionChange();
+			}
 		}
 	};
 	
