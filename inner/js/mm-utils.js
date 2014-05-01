@@ -175,6 +175,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	aGlobal.RGBColor.prototype.toHTMLRGB = function() {
 		return 'rgb(' +this.r+ ',' +this.g+ ',' +this.b+ ')';
 	};
+
+	aGlobal.RGBColor.prototype.equals = function(c) {
+		return this.r === c.r && this.g === c.g && this.b === c.b;
+	};
 	
 	aGlobal.parseHTMLRGBHex3 = function(hex) {
 		return parseInt(hex.replace('#', '') , 16);

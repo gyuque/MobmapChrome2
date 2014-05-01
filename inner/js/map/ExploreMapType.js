@@ -458,11 +458,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!speed_clr) {
 				var markerBoundColor = null;
 				if (useMarkerColor) {
-					markerBoundColor = ds.tpGetMarkerBoundColor( ds.tpGetOwnerObjectId(polylineIndex), 0 );
+					this.drawTrajectoryLinesMarkerColor(g, ds, polylineIndex, wsize, tox, toy, defaultColor);
+				} else {
+					this.drawTrajectoryLinesFixedColor(g, ds, polylineIndex, wsize, tox, toy, defaultColor);
 				}
-
-
-				this.drawTrajectoryLinesFixedColor(g, ds, polylineIndex, wsize, tox, toy, markerBoundColor ? markerBoundColor.toHTMLRGB() : defaultColor);
 			} else {
 				this.drawTrajectoryLinesSpeedColor(g, ds, polylineIndex, wsize, tox, toy);
 			}
@@ -496,6 +495,52 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			g.stroke();
+		},
+		
+		drawTrajectoryLinesMarkerColor: function(g, ds, polylineIndex, wsize, tox, toy, defaultColor) {
+			var len = ds.tpCountVerticesOfPolyline(polylineIndex);
+			var pj = this.ownerMap.getProjection();
+			if (len < 2) {return;}
+
+			var prevColor = null;
+			g.beginPath();
+			var vcount = 0;
+
+			for (var i = 0;i < len;++i) {
+				var lat = ds.tpGetVertexLatitude(polylineIndex, i);
+				var lng = ds.tpGetVertexLongitude(polylineIndex, i);
+				var newColor = ds.tpGetMarkerBoundColor( ds.tpGetOwnerObjectId(polylineIndex), i );
+
+				// Projection - - - - -
+				var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
+				var sx = wPos.x * wsize - tox;
+				var sy = wPos.y * wsize - toy;
+
+				if (!prevColor || !prevColor.equals(newColor)) {
+					if (i) {
+						g.lineTo(sx, sy);
+						g.stroke();
+						g.beginPath();
+					}
+					
+					vcount = 0;
+					g.strokeStyle = newColor.toHTMLRGB();
+				}
+
+
+				if (vcount === 0) {
+					g.moveTo(sx, sy);
+				} else {
+					g.lineTo(sx, sy);
+				}
+
+				++vcount;
+			}
+			
+			if (vcount > 1) {
+				g.lineTo(sx, sy);
+				g.stroke();
+			}
 		},
 
 		drawTrajectoryLinesSpeedColor: function(g, ds, polylineIndex, wsize, tox, toy) {
