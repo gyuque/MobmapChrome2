@@ -52,3 +52,18 @@ div[data-itemname=data_detail] {
 	text-align: left;
 	margin-bottom: 2px;
 }
+
+.mm-query-expression-input {
+	display: block;
+	width: 95%;
+}
+
+.mm-query-expression-buttons-container {
+	display: block;
+	text-align: right;
+}
+
+.mm-info-pane-box .mm-expandable-panel-expanded {
+	background-color: #eee;
+	box-shadow: 0 -1px 4px #999 inset;
+}

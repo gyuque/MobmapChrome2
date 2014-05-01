@@ -10,11 +10,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jGridOuterElement = null;
 		this.jCollapseWarning = null;
 		this.jTableTitle = null;
+		this.jExpressionInputBox = null;
 		this.targetSelectElement = null;
 		this.currentTargetId = -1;
 		this.forceShowAll = false;
 		this.nowShowingSelectedOnly = false;
 		// -----------------
+		this.exsearchExpandablePanel = new mobmap.ExpandablePanel();
 		this.dataSourceArray = [];
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
@@ -67,6 +69,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.dataSourceForGrid = new kendo.data.DataSource({data: this.dataSourceArray});
 			this.addCollapseDisp( this.containerElement );
 			this.addTargetSelector( this.containerElement );
+			this.setupExpressionSearchPanel( this.containerElement );
 			this.addTableTitle( this.containerElement );
 			
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
@@ -78,6 +81,30 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var gr = this.getDataGridObject();
 			gr.setDataSource(this.dataSourceForGrid);
+		},
+		
+		setupExpressionSearchPanel: function(containerElement) {
+			this.exsearchExpandablePanel.setTitle("Expression");
+			containerElement.appendChild(this.exsearchExpandablePanel.element);
+			
+			this.exsearchExpandablePanel.closedContentElement.innerHTML = '';
+
+			var ec = this.exsearchExpandablePanel.expandedContentElement;
+			ec.innerHTML = '';
+			var tx = $H('textarea', 'mm-query-expression-input');
+			this.jExpressionInputBox = $(tx);
+			ec.appendChild(tx);
+
+			var buttonContainer = $H('div', 'mm-query-expression-buttons-container');
+			var btn = $H('button');
+			btn.appendChild( $T('Run query') );
+			buttonContainer.appendChild(btn);
+			ec.appendChild(buttonContainer);
+			$(btn).click( this.onRunExpressionQueryButtonClick.bind(this) );
+		},
+		
+		onRunExpressionQueryButtonClick: function() {
+			
 		},
 		
 		generateRowDetailBox: function(item) {

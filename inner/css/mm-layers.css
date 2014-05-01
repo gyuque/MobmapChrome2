@@ -155,7 +155,7 @@
 	border: 1px solid #999;
 }
 
-.mm-layer-view-item-box .mm-expandable-panel-heading {
+#info-pane .mm-expandable-panel-heading {
 	background: #fff url(../images/expand-mark.png) 0 0 no-repeat;
 	box-shadow: 0 -2px 1px #eee inset;
 	cursor: pointer;
@@ -163,21 +163,21 @@
 	padding: 2px 2px 2px 13px;
 }
 
-.mm-layer-view-item-box .expanded .mm-expandable-panel-heading {
+#info-pane .expanded .mm-expandable-panel-heading {
 	background: #fff url(../images/expand-mark.png) 0 -24px no-repeat;
 }
 
 .expanded .mm-expandable-panel-closed {display: none;}
 .mm-expandable-panel-expanded {display:none;}
-.mm-layer-view-item-box .expanded .mm-expandable-panel-expanded {
+#info-pane .expanded .mm-expandable-panel-expanded {
 	display: block;
 }
 
-.mm-layer-view-item-box .mm-expandable-panel-closed {
+#info-pane .mm-expandable-panel-closed {
 	padding: 3px;
 }
 
-.mm-layer-view-item-box .mm-expandable-panel-expanded {
+#info-pane .mm-expandable-panel-expanded {
 	padding: 3px;
 }
 
