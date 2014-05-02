@@ -155,6 +155,23 @@ if (!window.mobmap) { window.mobmap={}; }
 				lat1, lng1, lat2, lng2, direction);
 				
 			job.run();
+		},
+		
+		// Expression
+		doExpressionSelection: function(targetLayerId, expressionString) {
+			var prj = this.ownerApp.getCurrentProject();
+			if (!prj) { return; }
+			
+			var layer = prj.getLayerById(targetLayerId);
+			if (!(layer.capabilities & mobmap.LayerCapability.SpatialSelectable)) {
+				return -1;
+			}
+			
+			var pickTime = prj.getCurrentTimeInSeconds();
+			var pickPool = layer.movingData.createPickPool();
+			pickPool.clear();
+			
+			console.log("EXS",layer,expressionString, pickTime)
 		}
 	};
 	

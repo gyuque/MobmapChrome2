@@ -104,7 +104,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onRunExpressionQueryButtonClick: function() {
+			var selc = this.ownerApp.getSelectionController();
+			var tid = this.currentTargetId;
+			var ex  = this.jExpressionInputBox.val();
 			
+			selc.doExpressionSelection(tid, ex); 
 		},
 		
 		generateRowDetailBox: function(item) {

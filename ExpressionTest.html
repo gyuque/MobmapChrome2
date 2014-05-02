@@ -1,0 +1,61 @@
+<head>
+	<script type="text/javascript" src="inner/js/selection/ExpressionQuery.js"></script>
+	<script type="text/javascript">
+
+function doTest() {
+	console.log('Checking... ', !!mobmap.ExpressionQuery);
+	
+	var TestRecords = [
+		{id:1, x:10, z:-1},
+		{id:2, x:20, z:-2},
+		{id:3, x:30, z:-3},
+		{id:4, x:40.1, z:-4}
+	];
+	
+	doExpressionTest(TestRecords, "x >", -1, true);
+	doExpressionTest(TestRecords, "x > y", -1, true);
+	doExpressionTest(TestRecords, "x y z", -1, true);
+	doExpressionTest(TestRecords, "1 = 2", -1, true);
+	doExpressionTest(TestRecords, "1 = x", 0,        false);
+	doExpressionTest(TestRecords, "1 = x =", -1, true);
+	
+	doExpressionTest(TestRecords, "x > .2", 4, false);
+	doExpressionTest(TestRecords, "9.9 > z", 4, false);
+	doExpressionTest(TestRecords, "x >\n 15", 3, false);
+	doExpressionTest(TestRecords, "x <\n 15", 1, false);
+	doExpressionTest(TestRecords, "z == -2", 1, false);
+	doExpressionTest(TestRecords, "-2 <> z", 3, false);
+	doExpressionTest(TestRecords, "z != -3", 3, false);
+	doExpressionTest(TestRecords, "x == 40.1", 1, false);
+}
+
+function doExpressionTest(sourceData, ex, expectNFound, containError) {
+	console.log('-------------');
+	console.log(ex);
+	
+	var q = new mobmap.ExpressionQuery();
+	q.parse(ex);
+	
+	console.log('Expression validation:' + !q.hasError);
+	if (q.hasError !== containError) {
+		console.log("******** Error checking looks bad");
+	}
+	
+	
+	var resultList = [];
+	var nFounds = q.run(sourceData, resultList);
+	if (nFounds !== expectNFound) {
+		throw "Expect N="+expectNFound+" (actual:"+ nFounds +")";
+	}
+	
+	console.log(' - -');
+	console.log(resultList);
+	console.log('-------------');
+}
+
+	</script>
+</head>
+
+<body onload="void doTest();">
+</body>
+
