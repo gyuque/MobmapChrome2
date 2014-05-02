@@ -163,15 +163,34 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!prj) { return; }
 			
 			var layer = prj.getLayerById(targetLayerId);
-			if (!(layer.capabilities & mobmap.LayerCapability.SpatialSelectable)) {
+			if (!layer || !(layer.capabilities & mobmap.LayerCapability.SpatialSelectable)) {
 				return -1;
 			}
 			
 			var pickTime = prj.getCurrentTimeInSeconds();
 			var pickPool = layer.movingData.createPickPool();
 			pickPool.clear();
+
+			layer.movingData.pickAt(pickPool, pickTime);
 			
-			console.log("EXS",layer,expressionString, pickTime)
+			var expq = new mobmap.ExpressionQuery();
+			expq.parse(expressionString);
+			if (expq.hasError) {
+				return -1;
+			}
+
+			var evalOutList = [];
+			var nFounds = expq.run(pickPool.getArray(), evalOutList, pickPool.pickedCount);
+			
+			var selp = layer.localSelectionPool;
+			for (var i = 0;i < nFounds;++i) {
+				var foundRecord = evalOutList[i];
+				selp.addId(foundRecord._id, true);
+			}
+
+			selp.fire();
+			
+			return nFounds;
 		}
 	};
 	
