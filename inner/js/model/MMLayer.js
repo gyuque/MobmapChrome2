@@ -357,6 +357,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 
 				var tl = mdat.getTimeListOfId(objId);
+				tl.fillValue(attrName, convertedValue);
 			}
 		}
 	};

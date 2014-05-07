@@ -251,6 +251,14 @@ if (!window.mobmap) window.mobmap={};
 		isEmpty: function() {
 			return this.recordList.length < 1;
 		},
+		
+		fillValue: function(attrName, newValue) {
+			var ls = this.recordList;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				ls[i][attrName] = newValue;
+			}
+		},
 
 		hasMoreTwoEnds: function() {
 			return this.recordList.length > 1;
