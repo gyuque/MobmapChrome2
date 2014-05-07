@@ -27,6 +27,8 @@ function doTest() {
 	doExpressionTest(TestRecords, "-2 <> z", 3, false);
 	doExpressionTest(TestRecords, "z != -3", 3, false);
 	doExpressionTest(TestRecords, "x == 40.1", 1, false);
+	doExpressionTest(TestRecords, "x <= 30", 3, false);
+	doExpressionTest(TestRecords, "x >= 30", 2, false);
 }
 
 function doExpressionTest(sourceData, ex, expectNFound, containError) {

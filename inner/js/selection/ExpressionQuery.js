@@ -21,7 +21,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var lexRegexs = [
 		{id: TOK_NUMBER, re: /^[-+]?[.0-9]+/  },
 		{id: TOK_IDENT , re: /^[_0-9a-zA-Z]+/ },
-		{id: TOK_COMP  , re: /^(<>|==|=|<|>|!=)/ },
+		{id: TOK_COMP  , re: /^(<>|<=|>=|==|=|<|>|!=)/ },
 		{id: TOK_WS    , re: /^[\t \r\n]+/ }
 	];
 	
@@ -195,9 +195,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			case '<':
 				return function(a,b) { return (a < b); } ;
 
-
 			case '>':
 				return function(a,b) { return (a > b); } ;
+
+			case '<=':
+				return function(a,b) { return (a <= b); } ;
+
+			case '>=':
+				return function(a,b) { return (a >= b); } ;
 		}
 		
 		return null;
