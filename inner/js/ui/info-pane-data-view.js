@@ -17,6 +17,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.nowShowingSelectedOnly = false;
 		// -----------------
 		this.exsearchExpandablePanel = new mobmap.ExpandablePanel();
+		this.valfillExpandablePanel = new mobmap.ExpandablePanel();
+		this.jValFillButton = null;
+		this.valfillInputElement = null;
+		this.valfillSelectElement = null;
 		this.dataSourceArray = [];
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
@@ -63,6 +67,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			this.fetchTargetSelectValue();
+			this.updateValFillAttrSelection();
 		},
 
 		buildView: function() {
@@ -70,6 +75,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.addCollapseDisp( this.containerElement );
 			this.addTargetSelector( this.containerElement );
 			this.setupExpressionSearchPanel( this.containerElement );
+			this.setupValueFillPanel( this.containerElement );
 			this.addTableTitle( this.containerElement );
 			
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
@@ -101,6 +107,29 @@ if (!window.mobmap) { window.mobmap={}; }
 			buttonContainer.appendChild(btn);
 			ec.appendChild(buttonContainer);
 			$(btn).click( this.onRunExpressionQueryButtonClick.bind(this) );
+		},
+		
+		setupValueFillPanel: function(containerElement) {
+			this.valfillExpandablePanel.setTitle("Value Fill");
+			containerElement.appendChild(this.valfillExpandablePanel.element);
+			this.valfillExpandablePanel.closedContentElement.innerHTML = '';
+			
+			var ec = this.valfillExpandablePanel.expandedContentElement;
+			ec.innerHTML = '';
+			var valInput = $H('input', 'mm-valfill-value');
+			valInput.size = 8;
+			var selAttr = $H('select');
+			var btn = $H('button');
+			
+			ec.appendChild(selAttr);
+			ec.appendChild($T('='));
+			ec.appendChild(valInput);
+			ec.appendChild($T(' '));
+			ec.appendChild(btn);
+
+			this.jValFillButton = $(btn).text('fill').click( this.onValueFillButtonClick.bind(this) );
+			this.valfillSelectElement = selAttr;
+			this.valfillInputElement = valInput;
 		},
 		
 		onRunExpressionQueryButtonClick: function() {
@@ -360,6 +389,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onTargetSelectChange: function() {
 			this.fetchTargetSelectValue();
+			this.updateValFillAttrSelection();
 		},
 		
 		fetchTargetSelectValue: function() {
@@ -374,6 +404,53 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.ownerApp) {
 				this.ownerApp.redrawMap();
 			}
+		},
+		
+		updateValFillAttrSelection: function() {
+			var lyr = this.getCurrentSourceLayer();
+			this.valfillSelectElement.innerHTML = '';
+			
+			if (!lyr) {return;}
+			var attrMap = lyr.attributeMapping;
+			if (!attrMap) {return;}
+			
+			var sel = this.valfillSelectElement;
+			
+			attrMap.forEachAttribute(function(attrName, attrMetadata) {
+				if (!isMMRequiredAttribute(attrName)) {
+					var opt = $H('option');
+					opt.appendChild($T(attrName));
+					sel.appendChild(opt);
+				}
+			});
+		},
+		
+		onValueFillButtonClick: function() {
+			// Check attribute name
+			var aname = this.getValueFillTargetAttributeName();
+			var valid = this.isValueFillTargetValid(aname);
+			if (!valid) {
+				return;
+			}
+
+			// Check target layer
+			var lyr = this.getCurrentSourceLayer();
+			if (!lyr) {return;}
+			var attrMap = lyr.attributeMapping;
+			if (!attrMap) {return;}
+			
+			lyr.fillValueAllTime(aname, this.valfillInputElement.value, true);
+		},
+		
+		getValueFillTargetAttributeName: function() {
+			return this.valfillSelectElement.value;
+		},
+		
+		isValueFillTargetValid: function(name) {
+			if (!name) { return false; }
+			if (name.length < 1) { return false; }
+
+			return true;
 		}
 	};
 

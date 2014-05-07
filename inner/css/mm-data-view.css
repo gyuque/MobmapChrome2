@@ -63,7 +63,7 @@ div[data-itemname=data_detail] {
 	text-align: right;
 }
 
-.mm-info-pane-box .mm-expandable-panel-expanded {
+.mm-info-pane-box[data-itemname=data_detail] .mm-expandable-panel-expanded {
 	background-color: #eee;
 	box-shadow: 0 -1px 4px #999 inset;
 }

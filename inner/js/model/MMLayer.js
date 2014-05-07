@@ -54,6 +54,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.markerGenerator.setParentEventElement(this.jElement[0]);
 		this.movingData = null;
+		this.attributeMapping = null;
 		this.tp_count_cache = -1;
 		this.localSelectionPool = new mobmap.SelectionPool();
 		this.dataReady = false;
@@ -156,6 +157,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.movingData = new mobmap.MovingData();
 			return this.movingData;
 		},
+		
+		setAttributeMapping: function(a) {
+			this.attributeMapping = a;
+		},
 
 		getSourceFileName: function() {
 			if (!this.sourceLoader) {
@@ -237,6 +242,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (this.sourceLoader.attrMap) {
 				registerAdditionalAttributes(this.movingData, this.sourceLoader.attrMap);
+				this.setAttributeMapping(this.sourceLoader.attrMap);
 			}
 
 			this.eventDispatcher().trigger(LayerEvent.LoadFinish, this);
@@ -333,6 +339,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return markerIndex;
+		},
+		
+		fillValueAllTime: function(attrName, newValue, useSelection) {
+			var selp = this.localSelectionPool;
+			var checkSel = useSelection && selp.isAnySelected();
+			
+			var mdat = this.movingData;
+			var idMap = mdat.idMap;
+			var convertedValue = this.attributeMapping.convertToColumnTypeWithAttributeName(attrName, newValue); 
+			
+			for (var objId in idMap) {
+				if (checkSel) {
+					if (!selp.isIDSelected(objId)) {
+						continue;
+					}
+				}
+
+				var tl = mdat.getTimeListOfId(objId);
+			}
 		}
 	};
 

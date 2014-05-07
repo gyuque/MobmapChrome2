@@ -85,6 +85,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		isTimeColumn: function(idx) { return this.isColumnNamed(idx, 'time'); },
 		isXColumn:    function(idx) { return this.isColumnNamed(idx, 'x');    },
 		isYColumn:    function(idx) { return this.isColumnNamed(idx, 'y');    },
+
+		convertToColumnTypeWithAttributeName: function(attrName, rawStr) {
+			var meta = this.getAttributeMetadata(attrName);
+			if (!meta) {
+				return null;
+			}
+
+			return this.convertToColumnType(meta.csvColumnIndex, rawStr);
+		},
 		
 		convertToColumnType: function(colIndex, rawStr) {
 			var meta = this.colIndexMap[colIndex] || null;
