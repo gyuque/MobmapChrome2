@@ -13,6 +13,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		LoadProgressChange: 'mm-layer-model-event-load-progress-change',
 		LoadFinish: 'mm-layer-model-event-load-progress-finish',
 		LoadError: 'mm-layer-model-event-load-error',
+		DataChange: 'mm-layer-model-event-data-change',
 		VisibilityChange: 'mm-layer-model-event-visibility-change',
 		RequestDelete: 'mm-layer-model-event-request-delete',
 		RequestGoDown: 'mm-layer-model-event-request-go-down',
@@ -359,6 +360,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				var tl = mdat.getTimeListOfId(objId);
 				tl.fillValue(attrName, convertedValue);
 			}
+			
+			this.fireDataChange();
+		},
+		
+		fireDataChange: function() {
+			this.eventDispatcher().trigger(LayerEvent.DataChange, this);
 		}
 	};
 

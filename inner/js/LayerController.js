@@ -23,7 +23,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(
 				mobmap.MMProject.LAYERLIST_SWAP_FAIL,
 				this.onProjectLayerlistSwapFail.bind(this)
-			);
+			 ).
+			 bind(
+				mobmap.LayerEvent.DataChange,
+				this.onAnyLayerDataChange.bind(this)
+			 );
 			
 			this.checkLayerList(prj);
 		},
@@ -326,6 +330,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onAnyLayerDataChange: function(e, sourceLayer) {
+			this.redrawMap();
+		},
+		
 		destroyOverlayForLayer: function(layer) {
 			var overlay = this.findMapOverlayFor(layer);
 			if (overlay) {
@@ -536,6 +544,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		notifySelectionChangeToExploreLayer: function(sourceLayer) {
+			this.notifyAnyChangeToExploreLayer(sourceLayer, 'updateSelectedObjects');
+		},
+		
+		notifyAnyChangeToExploreLayer: function(sourceLayer, methodName) {
 			var prj = this.ownerApp.getCurrentProject();
 			var ll = prj.layerList;
 			var len = ll.getCount();
@@ -543,7 +555,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < len;++i) {
 				var targetLayer = ll.getLayerAt(i);
 				if (targetLayer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
-					targetLayer.updateSelectedObjects(sourceLayer);
+					targetLayer[methodName](sourceLayer);
 				}
 			}
 		}
