@@ -194,6 +194,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.ExploreViewTypeChange, this.onLayerExploreViewTypeChange.bind(this)).
 			 bind(LE.ExploreViewOptionChange, this.onLayerExploreViewOptionChange.bind(this)).
 			 bind(LE.ExploreTargetSelectionChange, this.onLayerExploreTargetSelectionChange.bind(this)).
+			 bind(LE.ExploreTargetDataChange, this.onLayerExploreTargetDataChange.bind(this)).
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
@@ -330,8 +331,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onLayerExploreTargetDataChange: function(e, sourceLayer) {
+			var ov = this.findMapOverlayFor(sourceLayer);
+			if (ov) {
+				ov.refreshIfDependsData();
+			}
+		},
+		
 		onAnyLayerDataChange: function(e, sourceLayer) {
 			this.redrawMap();
+			this.notifyDataChangeToExploreLayer(sourceLayer);
 		},
 		
 		destroyOverlayForLayer: function(layer) {
@@ -545,6 +554,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		notifySelectionChangeToExploreLayer: function(sourceLayer) {
 			this.notifyAnyChangeToExploreLayer(sourceLayer, 'updateSelectedObjects');
+		},
+
+		notifyDataChangeToExploreLayer: function(sourceLayer) {
+			this.notifyAnyChangeToExploreLayer(sourceLayer, 'updateDataChangedObjects');
 		},
 		
 		notifyAnyChangeToExploreLayer: function(sourceLayer, methodName) {

@@ -71,6 +71,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		updateDataChangedObjects: function(sourceLayer) {
+			if (sourceLayer && this.targetLayerId === sourceLayer.layerId) {
+				this.eventDispatcher().trigger(mobmap.LayerEvent.ExploreTargetDataChange, this);
+			}
+		},
+		
 		clearTargetObjects: function() {
 			this.targetObjectIds.length = 0;
 		},

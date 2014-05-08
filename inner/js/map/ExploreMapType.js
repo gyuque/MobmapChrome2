@@ -205,6 +205,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	};
 	
+	ExploreMapType.prototype.refreshIfDependsData = function() {
+		if (this.getTrajectoryUseMarkerColor()) {
+			this.restartTrajectoryDrawing();
+		}
+	};
+	
 	ExploreMapType.prototype.isIDReffered = function(objId) {
 		return this.refTargetSelectedIDs.indexOf(objId) >= 0;
 	};

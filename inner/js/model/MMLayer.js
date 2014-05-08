@@ -22,7 +22,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		ExploreTargetSet: 'mm-layer-model-event-explore-target-set',
 		ExploreViewTypeChange: 'mm-layer-model-event-explore-viewtype-change',
 		ExploreViewOptionChange: 'mm-layer-model-event-explore-viewoption-change',
-		ExploreTargetSelectionChange: 'mm-layer-model-event-explore-target-selection-change'
+		ExploreTargetSelectionChange: 'mm-layer-model-event-explore-target-selection-change',
+		ExploreTargetDataChange: 'mm-layer-model-event-explore-target-data-change'
 	};
 	
 	var LayerCapability = {
