@@ -29,7 +29,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.onAnyLayerDataChange.bind(this)
 			 );
 			
+			prj.timeRangeSelection.eventDispatcher().
+			 bind(
+			  mobmap.TimeRangeSelection.CHANGE_EVENT,
+			  this.onTimeRangeSelectionChange.bind(this)
+			 );
+			
 			this.checkLayerList(prj);
+		},
+		
+		onTimeRangeSelectionChange: function(e) {
+			console.log("Impl here")
 		},
 		
 		onProjectLayerlistSwap: function(e, senderProject) {

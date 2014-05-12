@@ -91,31 +91,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.targetObjectIds;
 		},
 		
-		setTrajectoryDefaultColor: function(c) {
+		setTrajectoryDefaultColor: function(c, suppress_event) {
 			if (this.trajectoryDefaultColor !== c) {
 				this.trajectoryDefaultColor = c;
-				this.fireViewOptionChange();
+				if (!suppress_event) { this.fireViewOptionChange(); }
 			}
 		},
 		
-		setTrajectoryAddComposition: function(enabled) {
+		setTrajectoryAddComposition: function(enabled, suppress_event) {
 			if (this.trajectoryAddComposition !== enabled) {
 				this.trajectoryAddComposition = enabled;
-				this.fireViewOptionChange();
+				if (!suppress_event) { this.fireViewOptionChange(); }
 			}
 		},
 		
-		setTrajectoryColoringMode: function(m) {
+		setTrajectoryColoringMode: function(m, suppress_event) {
 			if (this.trajectoryColoringMode !== m) {
 				this.trajectoryColoringMode = m;
-				this.fireViewOptionChange();
+				if (!suppress_event) { this.fireViewOptionChange(); }
 			}
 		},
 		
-		setTrajectoryUseMarkerColor: function(enabled) {
+		setTrajectoryUseMarkerColor: function(enabled, suppress_event) {
 			if (this.trajectoryUseMarkerColor !== enabled) {
 				this.trajectoryUseMarkerColor = enabled;
-				this.fireViewOptionChange();
+				if (!suppress_event) { this.fireViewOptionChange(); }
 			}
 		},
 		

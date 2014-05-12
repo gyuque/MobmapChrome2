@@ -16,11 +16,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jTrajectoryColorPickerElement = null;
 		this.chkTrajectoryAddComposition = null;
 		this.chkTrajectoryUseMarkerColor = null; 
+		this.trajectoryColoringRadios = [];
 
 		this.selectedTargetId = -1;
 		this.configurePanelContent();
 		this.sendTrajectoryColor();
 		this.sendTrajectoryAddComposition();
+		this.syncFromModelColoringType();
+		this.coloringModeCheckOldValue = this.getTrajectoryColoringRadioValue();
 	}
 	
 	ExploreConfigurationPanel.prototype = {
@@ -67,7 +70,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.setTrajectoryPickerColor(64,128,255, 1);
 			
 			// Use marker color option
-			this.addUseMarkerColorCheckbox(fieldSet);
+			this.addColoringTypeRadio(fieldSet);
 			
 			// Composition option
 			var pair = generateCheckboxInLabel("Add composition", "mm-trajectory-composition", "mm-trajectory-composition-label");
@@ -76,13 +79,86 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(this.chkTrajectoryAddComposition).click(this.onTrajectoryAddCompositionChange.bind(this));
 		},
 		
-		addUseMarkerColorCheckbox: function(containerElement) {
-			var pair = generateCheckboxInLabel("Use marker color", "mm-trajectory-markercolor", "mm-trajectory-markercolor-label");
-			containerElement.appendChild(pair.label);
-			this.chkTrajectoryUseMarkerColor = pair.input;
-			$(this.chkTrajectoryUseMarkerColor).click(this.onTrajectoryUseMarkerColorChange.bind(this)); 
+		addColoringTypeRadio: function(containerElement) {
+			var pair_fix = generateRadioInLabel("Fixed color", "mm-trjcolormode-fixed", "mm-trajectory-markercolor-label");
+			var pair_mk  = generateRadioInLabel("Marker color", "mm-trjcolormode-fixed", "mm-trajectory-markercolor-label");
+			var pair_spd = generateRadioInLabel("Color by speed", "mm-trjcolormode-fixed", "mm-trajectory-markercolor-label");
+			
+			pair_fix.input.value = 'f';
+			pair_mk.input.value  = 'm';
+			pair_spd.input.value = 's';
+			
+			containerElement.appendChild(pair_fix.label);
+			containerElement.appendChild(pair_mk.label);
+			containerElement.appendChild(pair_spd.label);
+			
+			this.trajectoryColoringRadios.length = 0;
+			this.trajectoryColoringRadios.push(pair_fix.input, pair_mk.input, pair_spd.input);
+			$(this.trajectoryColoringRadios).click(this.onTrajectoryColoringRadioClick.bind(this));
 		},
 		
+		onTrajectoryColoringRadioClick: function() {
+			var val = this.getTrajectoryColoringRadioValue();
+			if (val !== this.coloringModeCheckOldValue) {
+				this.coloringModeCheckOldValue = val;
+				this.sendTrajectoryColoringType(val);
+			}
+		},
+		
+		sendTrajectoryColoringType: function(newValue) {
+			var lyr = this.boundLayer;
+			switch(newValue) {
+				case 'f':
+				lyr.setTrajectoryUseMarkerColor( false ,true);
+				lyr.setTrajectoryColoringMode( mobmap.MMExploreLayer.TrajectoryColoring.Fixed ,true);
+				lyr.fireViewOptionChange();
+				break;
+
+				case 'm':
+				lyr.setTrajectoryUseMarkerColor( true ,true);
+				lyr.setTrajectoryColoringMode( mobmap.MMExploreLayer.TrajectoryColoring.Fixed ,true);
+				lyr.fireViewOptionChange();
+				break;
+
+				case 's':
+				lyr.setTrajectoryUseMarkerColor( false ,true);
+				lyr.setTrajectoryColoringMode( mobmap.MMExploreLayer.TrajectoryColoring.Speed ,true);
+				lyr.fireViewOptionChange();
+				break;
+			}
+		},
+		
+		syncFromModelColoringType: function() {
+			var lyr = this.boundLayer;
+			
+			var v = 'f';
+			if (lyr.trajectoryUseMarkerColor) {
+				v = 'm';
+			} else if (lyr.trajectoryColoringMode === mobmap.MMExploreLayer.TrajectoryColoring.Speed) {
+				v = 's';
+			}
+			
+			this.setTrajectoryColoringRadioValue(v);
+		},
+		
+		setTrajectoryColoringRadioValue: function(newValue) {
+			var ls = this.trajectoryColoringRadios;
+			for (var i in ls) {
+				var chk = ls[i];
+				if (chk.value === newValue) { chk.checked = true; }
+			}
+		},
+		
+		getTrajectoryColoringRadioValue: function () {
+			var ls = this.trajectoryColoringRadios;
+			for (var i in ls) {
+				var chk = ls[i];
+				if (chk.checked) { return chk.value; }
+			}
+			
+			return null;
+		},
+
 		addTrajectoryColoringTypeRadio: function(containerElement, labelText, val) {
 			var pair = generateRadioInLabel(labelText, 'trajectory-coloring-type', 'mm-trajectory-coloring-type-label');
 			containerElement.appendChild(pair.label);
@@ -111,19 +187,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		onTrajectoryAddCompositionChange: function() {
 			this.sendTrajectoryAddComposition();
 		},
-		
-		onTrajectoryUseMarkerColorChange: function() {
-			this.sendTrajectoryUseMarkerColor();
-		},
-		
+
 		sendTrajectoryAddComposition: function() {
 			this.boundLayer.setTrajectoryAddComposition( this.chkTrajectoryAddComposition.checked );
 		},
-		
-		sendTrajectoryUseMarkerColor: function() {
-			this.boundLayer.setTrajectoryUseMarkerColor( this.chkTrajectoryUseMarkerColor.checked );
-		},
-		
+
 		addViewTypeRadio: function(containerElement) {
 			var outer = $H('div');
 			
