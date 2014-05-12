@@ -13,6 +13,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataSource = null;
 		this.doMarchingAnimationClosure = this.doMarchingAnimation.bind(this);
 		
+		this.timeRange = {
+			start: null
+		};
+		
 		google.maps.event.addListener(ownerMap, 'zoom_changed', this.onMapZoomChange.bind(this));
 	}
 	
@@ -210,6 +214,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.restartTrajectoryDrawing();
 		}
 	};
+
+	ExploreMapType.prototype.setTimeRange = function(startTime, endTime) {
+		this.timeRange.start = startTime;
+		this.restartTrajectoryDrawing();
+	},
 	
 	ExploreMapType.prototype.isIDReffered = function(objId) {
 		return this.refTargetSelectedIDs.indexOf(objId) >= 0;
@@ -460,7 +469,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var toy = (this.canvasStatus.minCY * th);
 			//console.log(tox, toy)
 			//var render_nodes = this.renderNodes;
-
+			
+			var rangeInfo = _shared_temp_TrajectoryRenderRangeData;
+			this.fillTrajectoryRangeInfo(rangeInfo, ds, polylineIndex);
+			console.log("R:  ",rangeInfo);
+			
 			if (!speed_clr) {
 				var markerBoundColor = null;
 				if (useMarkerColor) {
@@ -473,17 +486,59 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		fillTrajectoryRangeInfo: function(rg, dataSource, polylineIndex) {
+			rg.startIndex = -1;
+			
+			var plen = dataSource.tpCountVerticesOfPolyline(polylineIndex);
+			if (plen < 2) { return; }
+
+			var trange = this.ownerMapType.timeRange;
+			if (trange.start !== null) {
+				var tS = trange.start;
+				
+				var lastTimestamp = dataSource.tpGetVertexTimestamp(polylineIndex, plen-1);
+				if (tS > lastTimestamp) {
+					rg.startIndex = plen-1;
+				}
+				
+				var nSegs = plen - 1;
+				for (var i = 0;i < nSegs;++i) {
+					var t1 = dataSource.tpGetVertexTimestamp(polylineIndex, i);
+					var t2 = dataSource.tpGetVertexTimestamp(polylineIndex, i+1);
+					var tlen = t2 - t1;
+					if (tlen === 0) { tlen = 1; }
+					
+					if (tS >= t1 && tS < t2) {
+						var ratS = (tS - t1) / tlen;
+						rg.startIndex = i + ratS;
+					}
+				}
+			}
+		},
+		
 		drawTrajectoryLinesFixedColor: function(g, ds, polylineIndex, wsize, tox, toy, defaultColor) {
+			var rangeInfo = _shared_temp_TrajectoryRenderRangeData;
 			var len = ds.tpCountVerticesOfPolyline(polylineIndex);
 			var pj = this.ownerMap.getProjection();
 			
+			var startIndex = Math.max(Math.floor(rangeInfo.startIndex), 0);
+			var startHalfSegmentIndex = Math.floor(rangeInfo.startIndex);
+			
 			g.strokeStyle = defaultColor || this.defaultStrokeStyle;
 			g.beginPath();
-			for (var i = 0;i < len;++i) {
+			for (var i = startIndex;i < len;++i) {
 				var lat = ds.tpGetVertexLatitude(polylineIndex, i);
 				var lng = ds.tpGetVertexLongitude(polylineIndex, i);
-				var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
+				if (startHalfSegmentIndex === i) {
+					var lat2s = ds.tpGetVertexLatitude(polylineIndex, i+1);
+					var lng2s = ds.tpGetVertexLongitude(polylineIndex, i+1);
+					if (lat2s !== null) {
+						lat = calcSegmentMidPoint(rangeInfo.startIndex, lat, lat2s);
+						lng = calcSegmentMidPoint(rangeInfo.startIndex, lng, lng2s);
+					}
+				}
 
+				var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
 				var sx = wPos.x * wsize - tox;
 				var sy = wPos.y * wsize - toy;
 
@@ -822,7 +877,17 @@ if (!window.mobmap) { window.mobmap={}; }
 
 
 	// -- Utilities
-	
+	var _shared_temp_TrajectoryRenderRangeData = {
+		startIndex: -1
+	};
+
+	function calcSegmentMidPoint(indexAndRatio, val1, val2) {
+		var t = indexAndRatio - Math.floor(indexAndRatio);
+		var _t = 1.0 - t;
+		
+		return val1 * _t + val2 * t;
+	}
+
 	function setCanvasSize(el, w, h) {
 		var s = el.style;
 		s.width = Math.floor(w) + 'px';
@@ -831,7 +896,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		el.width = Math.floor(w);
 		el.height = Math.floor(h);
 	}
-	
 	
 	var PolylineDatasourceMethods = [
 		'tpCountPolylines',

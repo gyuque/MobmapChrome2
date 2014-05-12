@@ -39,7 +39,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onTimeRangeSelectionChange: function(e) {
-			console.log("Impl here")
+			var r = this.ownerApp.getCurrentProject().timeRangeSelection.getFirstSelection();
+			var st = r ? r.start : null;
+			var ed = r ? r.end   : null;
+			
+			this.forEachExploreLayer( (function(exploreLayer) {
+				var ov = this.findMapOverlayFor(exploreLayer);
+				ov.setTimeRange(st, ed);
+			}).bind(this) );
 		},
 		
 		onProjectLayerlistSwap: function(e, senderProject) {
@@ -571,6 +578,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		notifyAnyChangeToExploreLayer: function(sourceLayer, methodName) {
+			this.forEachExploreLayer(function(exploreLayer) {
+				exploreLayer[methodName](sourceLayer);
+			});
+		},
+		
+		forEachExploreLayer: function(proc) {
 			var prj = this.ownerApp.getCurrentProject();
 			var ll = prj.layerList;
 			var len = ll.getCount();
@@ -578,7 +591,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < len;++i) {
 				var targetLayer = ll.getLayerAt(i);
 				if (targetLayer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
-					targetLayer[methodName](sourceLayer);
+					proc(targetLayer);
 				}
 			}
 		}

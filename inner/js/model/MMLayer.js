@@ -286,14 +286,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tls = this.movingData.getFlattenTLArray();
 			var recs = tls[polylineIndex].getRecordList();
 			
-			return recs[vertexIndex].y
+			var rc = recs[vertexIndex];
+			return rc ? rc.y : null;
 		},
 
 		tpGetVertexLongitude: function(polylineIndex, vertexIndex) {
 			var tls = this.movingData.getFlattenTLArray();
 			var recs = tls[polylineIndex].getRecordList();
 			
-			return recs[vertexIndex].x;
+			var rc = recs[vertexIndex];
+			return rc ? rc.x : null;
 		},
 		
 		tpGetVertexTimestamp: function(polylineIndex, vertexIndex) {
@@ -331,7 +333,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return baseColorList[markerIndex] || null;
 		},
-		
+	
 		getMarkerIndexForRecord: function(rec) {
 			if (!rec) { return null; }
 
