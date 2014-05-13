@@ -14,7 +14,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.doMarchingAnimationClosure = this.doMarchingAnimation.bind(this);
 		
 		this.timeRange = {
-			start: null
+			start: null,
+			end: null
 		};
 		
 		google.maps.event.addListener(ownerMap, 'zoom_changed', this.onMapZoomChange.bind(this));
@@ -217,6 +218,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	ExploreMapType.prototype.setTimeRange = function(startTime, endTime) {
 		this.timeRange.start = startTime;
+		this.timeRange.end = endTime;
 		this.restartTrajectoryDrawing();
 	},
 	
@@ -472,7 +474,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var rangeInfo = _shared_temp_TrajectoryRenderRangeData;
 			this.fillTrajectoryRangeInfo(rangeInfo, ds, polylineIndex);
-			console.log("R:  ",rangeInfo);
+			// console.log("R:  ",rangeInfo);
 			
 			if (!speed_clr) {
 				var markerBoundColor = null;
@@ -488,6 +490,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		fillTrajectoryRangeInfo: function(rg, dataSource, polylineIndex) {
 			rg.startIndex = -1;
+			rg.endIndex = -1;
 			
 			var plen = dataSource.tpCountVerticesOfPolyline(polylineIndex);
 			if (plen < 2) { return; }
@@ -495,10 +498,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			var trange = this.ownerMapType.timeRange;
 			if (trange.start !== null) {
 				var tS = trange.start;
+				var tE = trange.end;
 				
-				var lastTimestamp = dataSource.tpGetVertexTimestamp(polylineIndex, plen-1);
+				var firstTimestamp = dataSource.tpGetVertexTimestamp(polylineIndex, 0);
+				var lastTimestamp  = dataSource.tpGetVertexTimestamp(polylineIndex, plen-1);
 				if (tS > lastTimestamp) {
 					rg.startIndex = plen-1;
+				}
+				
+				if (tE < firstTimestamp) {
+					rg.endIndex = 0;
 				}
 				
 				var nSegs = plen - 1;
@@ -512,6 +521,11 @@ if (!window.mobmap) { window.mobmap={}; }
 						var ratS = (tS - t1) / tlen;
 						rg.startIndex = i + ratS;
 					}
+					
+					if (tE >= t1 && tE < t2) {
+						var ratE = (tE - t1) / tlen;
+						rg.endIndex = i + ratE;
+					}
 				}
 			}
 		},
@@ -523,12 +537,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var startIndex = Math.max(Math.floor(rangeInfo.startIndex), 0);
 			var startHalfSegmentIndex = Math.floor(rangeInfo.startIndex);
+			var endIndex = (rangeInfo.endIndex >= 0) ? Math.ceil(rangeInfo.endIndex) : len;
 			
 			g.strokeStyle = defaultColor || this.defaultStrokeStyle;
 			g.beginPath();
-			for (var i = startIndex;i < len;++i) {
+			for (var i = startIndex;i < endIndex;++i) {
 				var lat = ds.tpGetVertexLatitude(polylineIndex, i);
 				var lng = ds.tpGetVertexLongitude(polylineIndex, i);
+				var lat1 = lat;
+				var lng1 = lng;
 				if (startHalfSegmentIndex === i) {
 					var lat2s = ds.tpGetVertexLatitude(polylineIndex, i+1);
 					var lng2s = ds.tpGetVertexLongitude(polylineIndex, i+1);
@@ -547,6 +564,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				} else {
 					g.lineTo(sx, sy);
 				}
+				
+				if (i === (endIndex - 1)) {
+					this.strokeEndMidPoint(g, tox, toy, wsize, pj, ds, polylineIndex, i+1, lat1, lng1, rangeInfo.endIndex);
+				}
 
 /*
 				if (render_nodes) {
@@ -559,6 +580,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		drawTrajectoryLinesMarkerColor: function(g, ds, polylineIndex, wsize, tox, toy, defaultColor) {
+			var rangeInfo = _shared_temp_TrajectoryRenderRangeData;
 			var len = ds.tpCountVerticesOfPolyline(polylineIndex);
 			var pj = this.ownerMap.getProjection();
 			if (len < 2) {return;}
@@ -567,10 +589,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.beginPath();
 			var vcount = 0;
 
-			for (var i = 0;i < len;++i) {
+			var startIndex = Math.max(Math.floor(rangeInfo.startIndex), 0);
+			var startHalfSegmentIndex = Math.floor(rangeInfo.startIndex);
+			var endIndex = (rangeInfo.endIndex >= 0) ? Math.ceil(rangeInfo.endIndex) : len;
+
+			for (var i = startIndex;i < endIndex;++i) {
 				var lat = ds.tpGetVertexLatitude(polylineIndex, i);
 				var lng = ds.tpGetVertexLongitude(polylineIndex, i);
+				var lat1 = lat;
+				var lng1 = lng;
 				var newColor = ds.tpGetMarkerBoundColor( ds.tpGetOwnerObjectId(polylineIndex), i );
+
+				if (startHalfSegmentIndex === i) {
+					var lat2s = ds.tpGetVertexLatitude(polylineIndex, i+1);
+					var lng2s = ds.tpGetVertexLongitude(polylineIndex, i+1);
+					if (lat2s !== null) {
+						lat = calcSegmentMidPoint(rangeInfo.startIndex, lat, lat2s);
+						lng = calcSegmentMidPoint(rangeInfo.startIndex, lng, lng2s);
+					}
+				}
 
 				// Projection - - - - -
 				var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
@@ -595,6 +632,12 @@ if (!window.mobmap) { window.mobmap={}; }
 					g.lineTo(sx, sy);
 				}
 
+				if (i === (endIndex - 1)) {
+					if (this.strokeEndMidPoint(g, tox, toy, wsize, pj, ds, polylineIndex, i+1, lat1, lng1, rangeInfo.endIndex)) {
+						++vcount;
+					}
+				}
+
 				++vcount;
 			}
 			
@@ -602,6 +645,22 @@ if (!window.mobmap) { window.mobmap={}; }
 				g.lineTo(sx, sy);
 				g.stroke();
 			}
+		},
+		
+		strokeEndMidPoint: function(g, tox, toy, wsize, projection, dataSource, polylineIndex, nextVertexIndex, lat1, lng1, endFloatIndex) {
+			var lat2e = dataSource.tpGetVertexLatitude(polylineIndex, nextVertexIndex);
+			var lng2e = dataSource.tpGetVertexLongitude(polylineIndex, nextVertexIndex);
+			if (lat2e !== null) {
+				var mlat = calcSegmentMidPoint(endFloatIndex, lat1, lat2e);
+				var mlng = calcSegmentMidPoint(endFloatIndex, lng1, lng2e);
+				var wPos = projection.fromLatLngToPoint( new google.maps.LatLng(mlat, mlng) );
+				var sx = wPos.x * wsize - tox;
+				var sy = wPos.y * wsize - toy;
+				g.lineTo(sx, sy);
+				return true;
+			}
+
+			return false;
 		},
 
 		drawTrajectoryLinesSpeedColor: function(g, ds, polylineIndex, wsize, tox, toy) {
@@ -878,7 +937,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// -- Utilities
 	var _shared_temp_TrajectoryRenderRangeData = {
-		startIndex: -1
+		startIndex: -1,
+		endIndex: -1
 	};
 
 	function calcSegmentMidPoint(indexAndRatio, val1, val2) {
