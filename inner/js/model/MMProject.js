@@ -3,10 +3,14 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	function MMProject() {
-		this.jElement = $(document.createElement('span'));
+		var eventElement = createEventDummyElement();
+		this.jElement = $( eventElement );
 		this.layerList = new LayerList(this.jElement[0]);
 		this.currentDateTime = new mobmap.DateTime();
 		this.timeRangeSelection = new mobmap.TimeRangeSelection();
+
+		this.annotationList = new mobmap.MMAnnotationList();
+		this.annotationList.setParentEventElement(eventElement);
 	}
 	
 	MMProject.LAYERLIST_CHANGE = "mmprj-event-layerlist-change";
