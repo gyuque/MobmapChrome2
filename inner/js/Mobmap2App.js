@@ -4,7 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function Mobmap2App(appScreen) {
-		this.toolPane = this.mapPane = this.infoPane = this.layersView = this.dataView = this.currentProject = null;
+		this.toolPane = this.mapPane = this.infoPane = this.layersView = this.dataView = this.annView = this.currentProject = null;
 		this.layerController = new mobmap.LayerController(this);
 		this.selectionController = new mobmap.SelectionController(this);
 		this.playController = new mobmap.PlayController(this);
@@ -308,11 +308,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.infoPane.observeScreenResize(this.appScreen);
 			this.infoPane.afterScreenResize();
 			
+			// View inside each pane
 			var layersBoxEl = this.infoPane.getBoxByName('layers');
 			this.layersView = new mobmap.LayersView(layersBoxEl);
 			
 			var dataBoxEl = this.infoPane.getBoxByName('data_detail');
 			this.dataView = new mobmap.DataDetailView(dataBoxEl);
+			
+			var annBoxEl = this.infoPane.getBoxByName('ann');
+			this.annView = new mobmap.AnnotationListView(annBoxEl);
 		},
 		
 		connectWithViews: function() {
