@@ -7,6 +7,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MMAnnotationList() {
 		this.jElement = $( createEventDummyElement() );
 		this.list = [];
+		
+		addTestAnnotation(this);
 	}
 	
 	MMAnnotationList.prototype = {
@@ -16,13 +18,29 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		eventDispatcher: function() {
 			return this.jElement;
+		},
+		
+		getRawList: function() {
+			return this.list;
+		},
+		
+		append: function(a) {
+			if (this.list.indexOf(a) < 0) {
+				this.list.push(a);
+			}
 		}
 	};
+
+	function addTestAnnotation(alist) {
+		var g1 = new MMGateAnnotation();
+		alist.append(g1);
+	}
 	
 	// annotation objects
 	
 	function MMGateAnnotation() {
-		this.id = ++gNextAnnId;
+		this.id = gNextAnnId++;
+		this.typeName = 'Line Gate';
 	}
 	
 	MMGateAnnotation.prototype = {

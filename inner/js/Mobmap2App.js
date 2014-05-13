@@ -325,6 +325,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.mapPane.setApp(this);
 			this.layersView.setApp(this);
 			this.dataView.setApp(this);
+			this.annView.setApp(this);
 		},
 		
 		observeInfoPaneEvents: function() {
