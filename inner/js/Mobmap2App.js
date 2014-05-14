@@ -413,6 +413,31 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onTimeRangeSelectionChange: function() {
+		},
+		
+		// Annotation operations
+		
+		invokeAnnotationCommand: function(annotationId, commandName) {
+			var ann = this.findAnnotationById(annotationId);
+			if (!ann) { return; }
+			
+			switch(commandName) {
+				case 'putgate':
+				this.putAnnotatedGate(ann);
+				break;
+			}
+		},
+		
+		findAnnotationById: function(aid) {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+
+			return prj.annotationList.findById(aid);
+		},
+		
+		putAnnotatedGate: function(gateAnnotation) {
+			var mp = this.getMapPane();
+			mp.putGate(gateAnnotation.startPos, gateAnnotation.endPos);
 		}
 	};
 

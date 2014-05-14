@@ -65,15 +65,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			var buttonItems = [];
 			
 			if (sourceItem.typeId === AnnotationItemType.GATE) {
-				buttonItems.push( this.generateAnnotationItemButton('images/annbtn-putgate.png', 'Put this gate', 'putgate') );
+				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/annbtn-putgate.png', 'Put this gate', 'putgate') );
 			}
 
 			
 			return "<div class=\"mm-ann-view-item-control\"> " +buttonItems.join(' ')+ " </div>";
 		},
 
-		generateAnnotationItemButton: function(iconURL, title, commandId) {
-			return '<img class="mm-ann-view-command-button" data-command="' +commandId+ '" title="' +title+ '" src="' +iconURL+ '">';
+		generateAnnotationItemButton: function(aid, iconURL, title, commandId) {
+			return '<img class="mm-ann-view-command-button" data-aid="' +aid+ '" data-command="' +commandId+ '" title="' +title+ '" src="' +iconURL+ '">';
 		},
 
 
@@ -100,7 +100,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onCommandButtonClick: function(commandName, buttonElement) {
-			console.log(commandName)
+			var aid = parseInt(buttonElement.getAttribute('data-aid'), 10);
+			if (this.ownerApp) {
+				this.ownerApp.invokeAnnotationCommand(aid, commandName);
+			}
 		}
 	};
 

@@ -375,6 +375,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		clearGate: function() {
+			this.gateUI.hide();
+		},
+		
 		gateuiOnOK: function(sourceGateUI) {
 			var e1  = sourceGateUI.getStartLocation();
 			var e2  = sourceGateUI.getEndLocation();
