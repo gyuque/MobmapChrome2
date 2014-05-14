@@ -41,6 +41,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MMGateAnnotation() {
 		this.id = gNextAnnId++;
 		this.typeName = 'Line Gate';
+		this.description = 'JR総武線乗客抽出';
+		this.contentString = '(35.5,139.7)-(35.6,139.8) single direction';
+		this.typeId = AnnotationItemType.GATE;
 	}
 	
 	MMGateAnnotation.prototype = {

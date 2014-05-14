@@ -33,7 +33,8 @@ div[data-itemname=data_detail] {
 	box-shadow: 0 -1px 2px -1px #000 inset;
 }
 
-.mm-detail-row-command-button {
+.mm-detail-row-command-button,
+.mm-ann-view-command-button {
 	vertical-align: middle;
 	cursor: pointer;
 	background: linear-gradient(to bottom, #eee, #ccc) #eee;
@@ -42,7 +43,8 @@ div[data-itemname=data_detail] {
 	margin-left: 2px;
 }
 
-.mm-detail-row-command-button:hover:active {
+.mm-detail-row-command-button:hover:active,
+.mm-ann-view-command-button:hover:active {
 	background: linear-gradient(to bottom, #b4b4b4, #bcbcbc) #ccc;
 	box-shadow: 0 1px 2px rgba(0,0,0,0.25) inset;
 }

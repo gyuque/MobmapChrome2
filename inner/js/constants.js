@@ -24,6 +24,10 @@ var AttributeType = {
 	INTEGER: 3
 };
 
+var AnnotationItemType = {
+	GATE: 1
+};
+
 var GateDirection = {
 	Forward      : 1,
 	Back         : 2,

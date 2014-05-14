@@ -377,4 +377,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		} ;
 	})();
 
+	aGlobal.mmEscapeHTML = function(raw) {
+	  var el = document.createElement('span');
+	  el.appendChild(document.createTextNode(raw));
+	  return el.innerHTML;
+	};
 })(window);

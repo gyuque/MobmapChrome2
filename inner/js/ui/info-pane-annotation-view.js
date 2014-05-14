@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jContainerElement = $(containerElement);
 
 		this.buildView(this.containerElement);
+		this.observeEvents();
 	}
 	
 	AnnotationListView.prototype = {
@@ -39,10 +40,43 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		buildView: function(containerElement) {
 			this.jContainerElement.kendoListView({
-				template: "<div class=\"mm-ann-lv-item\">#:typeName#</div>"
+				template: this.generateAnnotationItemTemplate.bind(this)
 			});
 		},
 		
+		observeEvents: function() {
+			this.jContainerElement.click( this.onContainerClick.bind(this) );
+		},
+		
+		// Item HTML generator
+		
+		generateAnnotationItemTemplate: function(sourceItem) {
+			var control = this.generateAnnotationItemControlArea(sourceItem);
+			var html = this.generateAnnotationItemCommonHTML(sourceItem, control);
+			
+			return html;
+		},
+		
+		generateAnnotationItemCommonHTML: function(sourceItem, additional) {
+			 return "<div class=\"mm-ann-view-item-box \"><h3>" +sourceItem.typeName+ "</h3> <div class=\"mm-ann-desc\">" +mmEscapeHTML(sourceItem.description)+ "</div> <div class=\"mm-ann-content\">" +mmEscapeHTML(sourceItem.contentString)+ "</div> "+additional+" </div>"
+		},
+
+		generateAnnotationItemControlArea: function(sourceItem) {
+			var buttonItems = [];
+			
+			if (sourceItem.typeId === AnnotationItemType.GATE) {
+				buttonItems.push( this.generateAnnotationItemButton('images/annbtn-putgate.png', 'Put this gate', 'putgate') );
+			}
+
+			
+			return "<div class=\"mm-ann-view-item-control\"> " +buttonItems.join(' ')+ " </div>";
+		},
+
+		generateAnnotationItemButton: function(iconURL, title, commandId) {
+			return '<img class="mm-ann-view-command-button" data-command="' +commandId+ '" title="' +title+ '" src="' +iconURL+ '">';
+		},
+
+
 		getListViewObject: function() {
 			return this.jContainerElement.data("kendoListView");
 		},
@@ -53,6 +87,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			});
 
 			this.getListViewObject().setDataSource(ds);
+		},
+		
+		onContainerClick: function(e) {
+			var el = e.target;
+			if (el) {
+				var cmd = el.getAttribute('data-command');
+				if (cmd && cmd.length > 0) {
+					this.onCommandButtonClick(cmd, el);
+				}
+			}
+		},
+		
+		onCommandButtonClick: function(commandName, buttonElement) {
+			console.log(commandName)
 		}
 	};
 
