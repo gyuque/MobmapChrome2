@@ -43,6 +43,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	function addTestAnnotation(alist) {
 		var g1 = new MMGateAnnotation(35.711596, 139.848082, 35.70954,139.850163, GateDirection.Back);
 		alist.append(g1);
+
+		var c1 = new MMObjectCollectionAnnotation([2000, 6000, 9000, 15000, 16000]);
+		alist.append(c1);
 	}
 	
 	// annotation objects
@@ -76,6 +79,34 @@ if (!window.mobmap) { window.mobmap={}; }
 			return '(' +l1.lat+ ',' +l1.lng+ ')-(' +l2.lat+ ',' +l2.lng+ ')';
 		}
 	};
+
+
+	function MMObjectCollectionAnnotation(idlist) {
+		this.id = gNextAnnId++;
+		this.typeName = 'ID Collection';
+		this.description = 'test-collection';
+
+		this.idlist = idlist;
+		this.contentString = 'ID:' + MMObjectCollectionAnnotation.generateCollectionSummary(idlist);
+		this.typeId = AnnotationItemType.OBJ_COLLECTION;
+	}
+
+
+	MMObjectCollectionAnnotation.generateCollectionSummary = function(list) {
+		if (!list || list.length === 0) { return '(none)'; }
+
+		if (list.length < 5) {
+			return list.join(',') + ' (' +list.length+ ')';
+		}
+		
+		return list[0] +','+ list[1] +','+ list[2] +'... (' +list.length+ ')';
+	};
+
+	/* test
+	console.log( MMObjectCollectionAnnotation.generateCollectionSummary([10]) );
+	console.log( MMObjectCollectionAnnotation.generateCollectionSummary([10,20]) );
+	console.log( MMObjectCollectionAnnotation.generateCollectionSummary([10,20,30,40,50,60]) );
+	*/
 	
 	mobmap.MMAnnotationList = MMAnnotationList;
 })(window);
