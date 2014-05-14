@@ -41,16 +41,18 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	function addTestAnnotation(alist) {
-		var g1 = new MMGateAnnotation(35.711596, 139.848082, 35.70954,139.850163);
+		var g1 = new MMGateAnnotation(35.711596, 139.848082, 35.70954,139.850163, GateDirection.Back);
 		alist.append(g1);
 	}
 	
 	// annotation objects
 	
-	function MMGateAnnotation(lat1, lng1, lat2, lng2) {
+	function MMGateAnnotation(lat1, lng1, lat2, lng2, dir) {
 		this.id = gNextAnnId++;
 		this.typeName = 'Line Gate';
 		this.description = 'JR総武線乗客抽出';
+		
+		this.direction = dir;
 		
 		this.startPos = {
 			lat: lat1,

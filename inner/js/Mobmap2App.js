@@ -438,6 +438,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		putAnnotatedGate: function(gateAnnotation) {
 			var mp = this.getMapPane();
 			mp.putGate(gateAnnotation.startPos, gateAnnotation.endPos);
+			mp.gateUI.setDirection(gateAnnotation.direction);
+			mp.moveToGate();
 		}
 	};
 

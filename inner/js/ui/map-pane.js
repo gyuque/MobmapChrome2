@@ -274,7 +274,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		selDidGateProcess: function(selController) {
 			this.ownerApp.closeGateBusyDialog();
-			this.gateUI.hide();
 		},
 		
 		
@@ -390,6 +389,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			 ownerApp.
 			 getSelectionController().
 			 runGateSelection(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir);
+		},
+		
+		moveToGate: function() {
+			var g = this.gateUI;
+			var p1 = g.getStartLocation();
+			var p2 = g.getEndLocation();
+			if (!p1 || !p2) {
+				return;
+			}
+			
+			var lat_p = Math.max(p1.lat(),p2.lat()) - Math.min(p1.lat(),p2.lat());
+			var lng_p = Math.max(p1.lng(),p2.lng()) - Math.min(p1.lng(),p2.lng());
+			
+			var sw = new google.maps.LatLng( Math.min(p1.lat(),p2.lat())-lat_p , Math.min(p1.lng(),p2.lng())-lng_p );
+			var ne = new google.maps.LatLng( Math.max(p1.lat(),p2.lat())+lat_p , Math.max(p1.lng(),p2.lng())+lng_p );
+
+			this.gmap.panToBounds( new google.maps.LatLngBounds(sw, ne) );
 		},
 		
 		// Utility functions

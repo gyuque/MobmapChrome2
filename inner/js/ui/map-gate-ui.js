@@ -156,6 +156,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.updateDirectionIcon();
 		},
 		
+		setDirection: function(d) {
+			this.direction = d;
+			this.configureArrow();
+			this.updateDirectionIcon();
+		},
+		
 		configureArrow: function() {
 			this.arrowDynamicIcon.enableFwdArrow  = (this.direction !== GateDirection.Back);
 			this.arrowDynamicIcon.enableBackArrow = (this.direction !== GateDirection.Forward);
@@ -292,6 +298,8 @@ window.mobmap.mm_initMapButtonsLayer = (function(pkg) {
 			var btn = this.findButtonByName(name);
 			if (btn) {
 				this.eventDispatcher().trigger(MapButtonsLayer.MAPBUTTONEVENT_CLICK, btn);
+				e.preventDefault();
+				e.stopPropagation();
 			}
 		}
 	};
