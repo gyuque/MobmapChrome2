@@ -11,6 +11,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		addTestAnnotation(this);
 	}
 	
+	MMAnnotationList.LIST_CHANGE = 'annotation-list-event-list-change';
+	
 	MMAnnotationList.prototype = {
 		setParentEventElement: function(parentEventElement) {
 			replaceParentEventElement(this.jElement[0], parentEventElement);
@@ -20,6 +22,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.jElement;
 		},
 		
+		fireChange: function() {
+			this.eventDispatcher().trigger(MMAnnotationList.LIST_CHANGE, this);
+		},
+		
 		getRawList: function() {
 			return this.list;
 		},
@@ -27,6 +33,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		append: function(a) {
 			if (this.list.indexOf(a) < 0) {
 				this.list.push(a);
+				this.fireChange();
 			}
 		},
 		
@@ -53,8 +60,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MMGateAnnotation(lat1, lng1, lat2, lng2, dir) {
 		this.id = gNextAnnId++;
 		this.typeName = 'Line Gate';
-		this.description = 'JR総武線乗客抽出';
-		
+		this.description = 'Untitled';
+
 		this.direction = dir;
 		
 		this.startPos = {
@@ -67,7 +74,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			lng: lng2
 		};
 		
-		this.contentString = this.makeLocationString() + ' single direction';
+		var dirString = (dir === GateDirection.Bidirectional) ? ' bi-direction' : ' single direction';
+		this.contentString = this.makeLocationString() + dirString;
 		this.typeId = AnnotationItemType.GATE;
 	}
 	
@@ -109,4 +117,5 @@ if (!window.mobmap) { window.mobmap={}; }
 	*/
 	
 	mobmap.MMAnnotationList = MMAnnotationList;
+	mobmap.MMGateAnnotation = MMGateAnnotation;
 })(window);

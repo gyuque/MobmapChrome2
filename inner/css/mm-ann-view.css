@@ -26,3 +26,16 @@
 	text-align: right;
 	padding: 2px;
 }
+
+.mm-ann-desc {
+	cursor: text;
+}
+
+.mm-ann-desc:hover {
+	background-color: #eee;
+	box-shadow: 0 1px 2px #999 inset;
+}
+
+input.mm-ann-inline-edit {
+	display: none;
+}

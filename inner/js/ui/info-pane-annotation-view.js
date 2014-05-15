@@ -4,6 +4,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	function AnnotationListView(containerElement) {
 		this.ownerApp = null;
+		this.dataSource = null;
+		this.newAnnotationId = null;
 		// -----------------		
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
@@ -17,6 +19,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.ownerApp = a;
 			this.observeApp();
 			this.observeProject();
+		},
+		
+		setNewAnnotationId: function(aid) {
+			this.newAnnotationId = aid;
 		},
 
 		observeApp: function() {
@@ -34,9 +40,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeProject: function() {
 			var prj = this.ownerApp.getCurrentProject();
 			if (prj) {
+				prj.eventDispatcher().bind(mobmap.MMAnnotationList.LIST_CHANGE, this.onListChange.bind(this));
 			}
 		},
 
+		onListChange: function() {
+			if (this.dataSource) {
+				var ds = this.dataSource;
+				this.dataSource.read();
+			}
+		},
 
 		buildView: function(containerElement) {
 			this.jContainerElement.kendoListView({
@@ -54,11 +67,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			var control = this.generateAnnotationItemControlArea(sourceItem);
 			var html = this.generateAnnotationItemCommonHTML(sourceItem, control);
 			
+			if (sourceItem.id === this.newAnnotationId) {
+				this.newAnnotationId = null;
+				this.triggerHighlightAnimation(sourceItem.uid);
+			}
+			
 			return html;
 		},
 		
 		generateAnnotationItemCommonHTML: function(sourceItem, additional) {
-			 return "<div class=\"mm-ann-view-item-box \"><h3>" +sourceItem.typeName+ "</h3> <div class=\"mm-ann-desc\">" +mmEscapeHTML(sourceItem.description)+ "</div> <div class=\"mm-ann-content\">" +mmEscapeHTML(sourceItem.contentString)+ "</div> "+additional+" </div>"
+			 return "<div data-uid=\"" +sourceItem.uid+ "\" class=\"mm-ann-view-item-box\"><h3>" +sourceItem.typeName+ "</h3> <div class=\"mm-ann-desc\"><span>" +mmEscapeHTML(sourceItem.description)+ "</span><input class=\"mm-ann-inline-edit\" type=\"text\"></div> <div class=\"mm-ann-content\">" +mmEscapeHTML(sourceItem.contentString)+ "</div> "+additional+" </div>"
 		},
 
 		generateAnnotationItemControlArea: function(sourceItem) {
@@ -68,12 +86,23 @@ if (!window.mobmap) { window.mobmap={}; }
 				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/annbtn-putgate.png', 'Put this gate', 'putgate') );
 			}
 
-			
 			return "<div class=\"mm-ann-view-item-control\"> " +buttonItems.join(' ')+ " </div>";
 		},
 
 		generateAnnotationItemButton: function(aid, iconURL, title, commandId) {
 			return '<img class="mm-ann-view-command-button" data-aid="' +aid+ '" data-command="' +commandId+ '" title="' +title+ '" src="' +iconURL+ '">';
+		},
+
+		triggerHighlightAnimation: function(uid) {
+			var selector = '[data-uid=' +uid+ ']';
+			var proc = function(b) {
+				$(selector).css('box-shadow', b ? '0 0 2px 2px #4af' : '');
+			};
+			
+			setTimeout(proc, 150, true);
+			setTimeout(proc, 300, false);
+			setTimeout(proc, 450, true);
+			setTimeout(proc, 600, false);
 		},
 
 
@@ -87,6 +116,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			});
 
 			this.getListViewObject().setDataSource(ds);
+			this.dataSource = ds;
 		},
 		
 		onContainerClick: function(e) {

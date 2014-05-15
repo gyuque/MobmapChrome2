@@ -7,6 +7,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var ONMAPBTN_OK  = "./images/onmapbutton-chk.png";
 	var ONMAPBTN_X   = "./images/onmapbutton-x.png";
 	var ONMAPBTN_DIR = "./images/onmapbutton-dir.png";
+	var ONMAPBTN_ADD = "./images/onmapbutton-add.png";
 
 	
 	function MapGateUI(gmap, listener) {
@@ -56,9 +57,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var btnOK  = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_OK, ONMAPBTN_SHADOW, 'ok');
 			var btnDir = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_DIR, ONMAPBTN_SHADOW, 'dir');
 			var btnX   = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_X, ONMAPBTN_SHADOW, 'cancel');
+			var btnAdd = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_ADD, ONMAPBTN_SHADOW, 'add');
 
 			this.buttonsOverlay.addButton(btnOK);
 			this.buttonsOverlay.addButton(btnDir);
+			this.buttonsOverlay.addButton(btnAdd);
 			this.buttonsOverlay.addButton(btnX);
 			
 			this.buttonsOverlay.hideAll();
@@ -147,6 +150,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.hide(); break;
 			case 'dir':
 				this.changeDirectionAndRedraw(); break;
+			case 'add':
+				this.onAdd(); break;
 			}
 		},
 		
@@ -170,6 +175,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		onOK: function() {
 			if (this.listener && this.listener.gateuiOnOK) {
 				this.listener.gateuiOnOK(this);
+			}
+		},
+		
+		onAdd: function() {
+			if (this.listener && this.listener.gateuiOnAdd) {
+				this.listener.gateuiOnAdd(this);
 			}
 		}
 	};

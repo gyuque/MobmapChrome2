@@ -390,6 +390,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			 getSelectionController().
 			 runGateSelection(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir);
 		},
+
+		gateuiOnAdd: function(sourceGateUI) {
+			var e1  = sourceGateUI.getStartLocation();
+			var e2  = sourceGateUI.getEndLocation();
+			var dir = sourceGateUI.getGateDirection();
+			this.ownerApp.addAnnotatedGate(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir);
+			this.ownerApp.revealAnnotationView();
+		},
 		
 		moveToGate: function() {
 			var g = this.gateUI;

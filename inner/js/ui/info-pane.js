@@ -46,6 +46,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.getTabStripObject().select(0);
 		},
 		
+		selectTabByName: function(name) {
+			this.getTabStripObject().select('[data-itemname=' +name+ ']');
+		},
+		
 		onSelectTab: function(e) {
 			if (e && e.item === this.li_dataView) {
 				this.eventDispatcher().

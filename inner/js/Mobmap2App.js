@@ -435,11 +435,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			return prj.annotationList.findById(aid);
 		},
 		
+		addAnnotatedGate: function(lat1, lng1, lat2, lng2, dir) {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+			
+			var a = new mobmap.MMGateAnnotation(lat1, lng1, lat2, lng2, dir);
+			this.annView.setNewAnnotationId(a.id);
+			prj.annotationList.append(a);
+		},
+		
 		putAnnotatedGate: function(gateAnnotation) {
 			var mp = this.getMapPane();
 			mp.putGate(gateAnnotation.startPos, gateAnnotation.endPos);
 			mp.gateUI.setDirection(gateAnnotation.direction);
 			mp.moveToGate();
+		},
+
+		revealAnnotationView: function() {
+			this.infoPane.selectTabByName('ann');
 		}
 	};
 
