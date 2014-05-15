@@ -87,6 +87,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (sourceItem.typeId === AnnotationItemType.GATE) {
 				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/annbtn-putgate.png', 'Put this gate', 'putgate') );
+			} else if (sourceItem.typeId === AnnotationItemType.OBJ_COLLECTION) {
+				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/drowbtn-only.png', 'Make selection', 'sel') );
 			}
 
 			return "<div class=\"mm-ann-view-item-control\"> " +buttonItems.join(' ')+ " </div>";

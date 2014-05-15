@@ -43,6 +43,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		addFromList: function(list, suppress_event, checkMap) {
+			var len = list.length;
+			for (var i = 0;i < len;++i) {
+				var objId = list[i];
+				
+				if (checkMap) {
+					if (!checkMap[objId]) { continue; }
+				}
+
+				this.addId(objId, true);
+			}
+
+			if (!suppress_event) { this.fire(); }
+		},
+		
 		isAnySelected: function() {
 			var m = this.idmap;
 			for (var i in m) { return true; }

@@ -21,6 +21,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			return prj.getLayerList();
 		},
 		
+		selectByIdList: function(ls) {
+			if (!ls) { return; }
+			if (ls.length === 0) { return; }
+			
+			var prj = this.ownerApp.getCurrentProject();
+			prj.forEachLayer(function(index, layer){
+				if (layer.capabilities & mobmap.LayerCapability.SpatialSelectable) {
+					layer.localSelectionPool.clear(true);
+					layer.localSelectionPool.addFromList(ls, false, layer.movingData.idMap);
+				}
+			});
+		},
+		
 		getSelectedTimeRage: function() {
 			var prj = this.ownerApp.getCurrentProject();
 			if (!prj) { return null; }

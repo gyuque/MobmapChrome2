@@ -425,6 +425,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				case 'putgate':
 				this.putAnnotatedGate(ann);
 				break;
+				case 'sel':
+				this.selectAnnotatedIDs(ann);
+				break;
 			}
 		},
 		
@@ -449,6 +452,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			mp.putGate(gateAnnotation.startPos, gateAnnotation.endPos);
 			mp.gateUI.setDirection(gateAnnotation.direction);
 			mp.moveToGate();
+		},
+		
+		selectAnnotatedIDs: function(collectionAnnotation) {
+			this.selectionController.selectByIdList(collectionAnnotation.idlist);
 		},
 
 		revealAnnotationView: function() {
