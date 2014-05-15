@@ -13,7 +13,10 @@
 }
 
 .mm-ann-desc {
-	margin: 2px;
+	margin: 1px;
+	display: block;
+	width: 90%;
+	border: none;
 }
 
 .mm-ann-content {
@@ -25,17 +28,4 @@
 .mm-ann-view-item-control {
 	text-align: right;
 	padding: 2px;
-}
-
-.mm-ann-desc {
-	cursor: text;
-}
-
-.mm-ann-desc:hover {
-	background-color: #eee;
-	box-shadow: 0 1px 2px #999 inset;
-}
-
-input.mm-ann-inline-edit {
-	display: none;
 }

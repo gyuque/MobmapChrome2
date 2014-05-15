@@ -58,7 +58,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		observeEvents: function() {
-			this.jContainerElement.click( this.onContainerClick.bind(this) );
+			this.jContainerElement.
+			 click( this.onContainerClick.bind(this) ).
+			 keydown( this.onContainerKeydown.bind(this) ).
+			 change( this.onAnyInputChange.bind(this) );
 		},
 		
 		// Item HTML generator
@@ -76,7 +79,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		generateAnnotationItemCommonHTML: function(sourceItem, additional) {
-			 return "<div data-uid=\"" +sourceItem.uid+ "\" class=\"mm-ann-view-item-box\"><h3>" +sourceItem.typeName+ "</h3> <div class=\"mm-ann-desc\"><span>" +mmEscapeHTML(sourceItem.description)+ "</span><input class=\"mm-ann-inline-edit\" type=\"text\"></div> <div class=\"mm-ann-content\">" +mmEscapeHTML(sourceItem.contentString)+ "</div> "+additional+" </div>"
+			 return "<div data-uid=\"" +sourceItem.uid+ "\" class=\"mm-ann-view-item-box\"><h3>" +sourceItem.typeName+ "</h3> <input data-editable-id=\"" +sourceItem.id+ "\" class=\"mm-ann-desc\" value=\"" +mmEscapeHTML(sourceItem.description)+ "\"> <div class=\"mm-ann-content\">" +mmEscapeHTML(sourceItem.contentString)+ "</div> "+additional+" </div>"
 		},
 
 		generateAnnotationItemControlArea: function(sourceItem) {
@@ -129,13 +132,68 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onContainerKeydown: function(e) {
+			handleEditableKeydown(e, this);
+		},
+		
+		onAnyInputChange: function(e) {
+			var targetId = findEditableTargetId(e);
+			if (targetId !== null) {
+				this.sendNewValue(targetId, e.target);
+			}
+		},
+		
 		onCommandButtonClick: function(commandName, buttonElement) {
 			var aid = parseInt(buttonElement.getAttribute('data-aid'), 10);
 			if (this.ownerApp) {
 				this.ownerApp.invokeAnnotationCommand(aid, commandName);
 			}
+		},
+		
+		editableOnReturn: function(targetId, element) {
+		},
+		
+		editableOnESC: function(targetId, element) {
+			var a = this.ownerApp.getCurrentProject().annotationList.findById(targetId);
+			if (a) {
+				element.value = a.description;
+			}
+		},
+		
+		sendNewValue: function(targetId, element) {
+			var a = this.ownerApp.getCurrentProject().annotationList.findById(targetId);
+			if (a) {
+				var newValue = element.value;
+				a.setDescription(newValue);
+			}
 		}
 	};
+
+	function handleEditableKeydown(e, listner) {
+		var targetId = findEditableTargetId(e);
+		if (targetId !== null) {
+			var isRet = (e.keyCode === 13);
+			var isESC = (e.keyCode === 27);
+			
+			if (isRet) {
+				listner.editableOnReturn(targetId, e.target);
+				e.target.blur();
+			} else if (isESC) {
+				listner.editableOnESC(targetId, e.target);
+				e.target.blur();
+			}
+		}
+	}
+	
+	function findEditableTargetId(e) {
+		if (!e.target) { return null; }
+		var i = e.target.getAttribute('data-editable-id');
+		if (i && i.length > 0) {
+			return parseInt(i, 10);
+		}
+		
+		return null;
+	}
 
 	// +++ Export +++
 	aGlobal.mobmap.AnnotationListView = AnnotationListView;

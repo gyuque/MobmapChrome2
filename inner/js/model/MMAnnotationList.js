@@ -56,6 +56,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	// annotation objects
+	function annbase_setDescription(d) {
+		this.description = d;
+	}
 	
 	function MMGateAnnotation(lat1, lng1, lat2, lng2, dir) {
 		this.id = gNextAnnId++;
@@ -85,7 +88,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			var l2 = this.endPos;
 			
 			return '(' +l1.lat+ ',' +l1.lng+ ')-(' +l2.lat+ ',' +l2.lng+ ')';
-		}
+		},
+		
+		setDescription: annbase_setDescription
 	};
 
 
@@ -99,6 +104,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.typeId = AnnotationItemType.OBJ_COLLECTION;
 	}
 
+	MMObjectCollectionAnnotation.prototype = {
+		setDescription: annbase_setDescription
+	};
 
 	MMObjectCollectionAnnotation.generateCollectionSummary = function(list) {
 		if (!list || list.length === 0) { return '(none)'; }
