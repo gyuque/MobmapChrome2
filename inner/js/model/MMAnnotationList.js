@@ -53,6 +53,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		var c1 = new MMObjectCollectionAnnotation([2000, 6000, 9000, 15000, 16000]);
 		alist.append(c1);
+
+		var l1 = new MMLocationAnnotation(35.7177096,139.7448731);
+		alist.append(l1);
 	}
 	
 	// annotation objects
@@ -116,6 +119,25 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 		
 		return list[0] +','+ list[1] +','+ list[2] +'... (' +list.length+ ')';
+	};
+
+
+	function MMLocationAnnotation(lat, lng) {
+		this.id = gNextAnnId++;
+		this.typeName = 'Location';
+		this.description = 'Untitled';
+		
+		this.coordinate = {
+			lat: lat,
+			lng: lng
+		};
+
+		this.contentString = lat + ', ' + lng;
+		this.typeId = AnnotationItemType.LOCATION;
+	}
+	
+	MMLocationAnnotation.prototype = {
+		setDescription: annbase_setDescription
 	};
 
 	/* test

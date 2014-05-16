@@ -89,6 +89,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/annbtn-putgate.png', 'Put this gate', 'putgate') );
 			} else if (sourceItem.typeId === AnnotationItemType.OBJ_COLLECTION) {
 				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/drowbtn-only.png', 'Make selection', 'sel') );
+			} else if (sourceItem.typeId === AnnotationItemType.LOCATION) {
+				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/annbtn-putpin.png', 'Toggle pin', 'pin') );
 			}
 
 			return "<div class=\"mm-ann-view-item-control\"> " +buttonItems.join(' ')+ " </div>";

@@ -428,6 +428,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				case 'sel':
 				this.selectAnnotatedIDs(ann);
 				break;
+				case 'pin':
+				this.toggleAnnotatedLocationPin(ann);
+				break;
 			}
 		},
 		
@@ -472,6 +475,11 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		revealAnnotationView: function() {
 			this.infoPane.selectTabByName('ann');
+		},
+		
+		toggleAnnotatedLocationPin: function(locationAnnotation) {
+			var mp = this.getMapPane();
+			console.log(locationAnnotation.coordinate)
 		}
 	};
 

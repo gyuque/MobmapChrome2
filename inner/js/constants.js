@@ -26,7 +26,8 @@ var AttributeType = {
 
 var AnnotationItemType = {
 	GATE: 1,
-	OBJ_COLLECTION: 2
+	OBJ_COLLECTION: 2,
+	LOCATION: 3
 };
 
 var GateDirection = {

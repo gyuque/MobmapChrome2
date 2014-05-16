@@ -17,6 +17,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.pointingMode = PMODE_DEFAULT;
 		this.nowCapturingDrag = false;
 		this.prevRenderTargetTime = -1;
+		this.annotatedPinList = [];
 
 		// Preview overlays
 		this.aimingMarker = null;
@@ -413,6 +414,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ne = new google.maps.LatLng( Math.max(p1.lat(),p2.lat())+lat_p , Math.max(p1.lng(),p2.lng())+lng_p );
 
 			this.gmap.panToBounds( new google.maps.LatLngBounds(sw, ne) );
+		},
+		
+		// Annotated location pins
+		showAnnotatedLocationPin: function(lat, lng) {
+			
+		},
+		
+		findAnnotatedLocationPin: function(aid) {
+			var ls = this.annotatedPinList;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var mk = ls[i];
+			}
+			
+			return null;
 		},
 		
 		// Utility functions
