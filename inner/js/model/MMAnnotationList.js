@@ -97,7 +97,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MMObjectCollectionAnnotation(idlist) {
 		this.id = gNextAnnId++;
 		this.typeName = 'ID Collection';
-		this.description = 'test-collection';
+		this.description = 'Untitled';
 
 		this.idlist = idlist;
 		this.contentString = 'ID:' + MMObjectCollectionAnnotation.generateCollectionSummary(idlist);
@@ -126,4 +126,5 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	mobmap.MMAnnotationList = MMAnnotationList;
 	mobmap.MMGateAnnotation = MMGateAnnotation;
+	mobmap.MMObjectCollectionAnnotation = MMObjectCollectionAnnotation;
 })(window);

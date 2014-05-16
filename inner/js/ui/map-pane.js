@@ -294,7 +294,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		showAimingMarker: function(lat, lng) {
-			console.log(lat, lng)
 			this.aimingMarker.setPosition(new google.maps.LatLng(lat, lng));
 			this.aimingMarker.setVisible(true);
 		},

@@ -447,6 +447,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			prj.annotationList.append(a);
 		},
 		
+		addCurrentSelectionToAnnotations: function(targetLayerId) {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+			
+			var layer = prj.getLayerById(targetLayerId);
+			if (layer && (layer.capabilities & mobmap.LayerCapability.SpatialSelectable) ) {
+				var ann = new mobmap.MMObjectCollectionAnnotation(layer.localSelectionPool.generateIDList());
+				this.annView.setNewAnnotationId(ann.id);
+				prj.annotationList.append(ann);
+			}
+		},
+		
 		putAnnotatedGate: function(gateAnnotation) {
 			var mp = this.getMapPane();
 			mp.putGate(gateAnnotation.startPos, gateAnnotation.endPos);

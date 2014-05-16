@@ -10,6 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jGridOuterElement = null;
 		this.jCollapseWarning = null;
 		this.jTableTitle = null;
+		this.jTitleContainer = null;
 		this.jExpressionInputBox = null;
 		this.targetSelectElement = null;
 		this.currentTargetId = -1;
@@ -212,17 +213,32 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addTableTitle: function(containerElement) {
+			var con = $H('div', 'mm-datatable-title-container');
 			var h = $H('h3', 'mm-datatable-title');
-			containerElement.appendChild(h);
-			this.jTableTitle = $(h).hide();
+
+			this.jTableTitle = $(h);
+			this.jTitleContainer = $(con).hide();
+			con.appendChild(h);
+			containerElement.appendChild(con);
+			
+			this.addTitleAreaButton(con);
+		},
+		
+		addTitleAreaButton: function(containerElement) {
+			var img = $H('img', 'mm-datatable-ontitle-button');
+			img.src = "images/drowbtn-add.png";
+			img.title = "Add to annotations";
+			$(img).click( this.onAddSelectionToAnnotationClick.bind(this) );
+			containerElement.appendChild(img);
 		},
 		
 		updateTableTitle: function(sel_enabled, n) {
 			if (sel_enabled) {
 				var postfix = (n > 1) ? ' selected objects' : ' selected object';
-				this.jTableTitle.text(n + postfix).show();
+				this.jTableTitle.text(n + postfix);
+				this.jTitleContainer.show();
 			} else {
-				this.jTableTitle.hide();
+				this.jTitleContainer.hide();
 			}
 		},
 		
@@ -451,6 +467,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (name.length < 1) { return false; }
 
 			return true;
+		},
+		
+		onAddSelectionToAnnotationClick: function() {
+			if (this.ownerApp) {
+				this.ownerApp.addCurrentSelectionToAnnotations(this.currentTargetId);
+				this.ownerApp.revealAnnotationView();
+			}
 		}
 	};
 

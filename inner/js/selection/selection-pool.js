@@ -69,6 +69,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			return !!( this.idmap[objId] );
 		},
 		
+		generateIDList: function() {
+			var ls = [];
+			
+			var m = this.idmap;
+			for (var i in m) {
+				ls.push(i);
+			}
+			
+			return ls;
+		},
+		
 		count: function() {
 			var m = this.idmap;
 			var n = 0;
