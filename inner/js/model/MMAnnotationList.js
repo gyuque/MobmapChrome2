@@ -32,6 +32,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		append: function(a) {
 			if (this.list.indexOf(a) < 0) {
+				a.setParentEventElement(this.jElement[0]);
 				this.list.push(a);
 				this.fireChange();
 			}
@@ -59,11 +60,14 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	// annotation objects
-	function annbase_setDescription(d) {
-		this.description = d;
+	function annbase_setDescription(d) { this.description = d; }
+	function make_event_element(a) { a._jElement = $(createEventDummyElement()); }
+	function annbase_setParentEventElement(parentEventElement) {
+		replaceParentEventElement(this._jElement[0], parentEventElement);
 	}
-	
+
 	function MMGateAnnotation(lat1, lng1, lat2, lng2, dir) {
+		make_event_element(this);
 		this.id = gNextAnnId++;
 		this.typeName = 'Line Gate';
 		this.description = 'Untitled';
@@ -93,11 +97,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return '(' +l1.lat+ ',' +l1.lng+ ')-(' +l2.lat+ ',' +l2.lng+ ')';
 		},
 		
-		setDescription: annbase_setDescription
+		setDescription: annbase_setDescription,
+		setParentEventElement: annbase_setParentEventElement
 	};
 
 
 	function MMObjectCollectionAnnotation(idlist) {
+		make_event_element(this);
 		this.id = gNextAnnId++;
 		this.typeName = 'ID Collection';
 		this.description = 'Untitled';
@@ -108,7 +114,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 
 	MMObjectCollectionAnnotation.prototype = {
-		setDescription: annbase_setDescription
+		setDescription: annbase_setDescription,
+		setParentEventElement: annbase_setParentEventElement
 	};
 
 	MMObjectCollectionAnnotation.generateCollectionSummary = function(list) {
@@ -123,6 +130,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 
 	function MMLocationAnnotation(lat, lng) {
+		make_event_element(this);
 		this.id = gNextAnnId++;
 		this.typeName = 'Location';
 		this.description = 'Untitled';
@@ -132,12 +140,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			lng: lng
 		};
 
-		this.contentString = lat + ', ' + lng;
+		this.contentString = this.makeContentString();
 		this.typeId = AnnotationItemType.LOCATION;
 	}
 	
 	MMLocationAnnotation.prototype = {
-		setDescription: annbase_setDescription
+		setDescription: annbase_setDescription,
+		setParentEventElement: annbase_setParentEventElement,
+		eventDispatcher: function() { return this._jElement; },
+
+		makeContentString: function() {
+			return this.coordinate.lat + ', ' + this.coordinate.lng;
+		},
+		
+		changeCoordinate: function(lat, lng) {
+			this.coordinate.lat = lat;
+			this.coordinate.lng = lng;
+			this.contentString = this.makeContentString();
+			
+			this.eventDispatcher().trigger(mobmap.MMAnnotationEvent.CONTENT_CHANGE, this);
+		}
 	};
 
 	/* test
@@ -146,6 +168,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	console.log( MMObjectCollectionAnnotation.generateCollectionSummary([10,20,30,40,50,60]) );
 	*/
 	
+	mobmap.MMAnnotationEvent = { CONTENT_CHANGE: 'mm-annotation-event-content-change' };
 	mobmap.MMAnnotationList = MMAnnotationList;
 	mobmap.MMGateAnnotation = MMGateAnnotation;
 	mobmap.MMObjectCollectionAnnotation = MMObjectCollectionAnnotation;

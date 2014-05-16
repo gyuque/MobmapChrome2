@@ -40,11 +40,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeProject: function() {
 			var prj = this.ownerApp.getCurrentProject();
 			if (prj) {
-				prj.eventDispatcher().bind(mobmap.MMAnnotationList.LIST_CHANGE, this.onListChange.bind(this));
+				prj.eventDispatcher().
+				 bind(mobmap.MMAnnotationList.LIST_CHANGE, this.onListChange.bind(this)).
+				 bind(mobmap.MMAnnotationEvent.CONTENT_CHANGE, this.onAnyAnnotationChange.bind(this));
 			}
 		},
 
 		onListChange: function() {
+			if (this.dataSource) {
+				var ds = this.dataSource;
+				this.dataSource.read();
+			}
+		},
+		
+		onAnyAnnotationChange: function(e) {
 			if (this.dataSource) {
 				var ds = this.dataSource;
 				this.dataSource.read();

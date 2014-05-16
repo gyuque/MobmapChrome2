@@ -468,7 +468,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			mp.gateUI.setDirection(gateAnnotation.direction);
 			mp.moveToGate();
 		},
-		
+
 		selectAnnotatedIDs: function(collectionAnnotation) {
 			this.selectionController.selectByIdList(collectionAnnotation.idlist);
 		},
@@ -476,10 +476,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		revealAnnotationView: function() {
 			this.infoPane.selectTabByName('ann');
 		},
-		
+
 		toggleAnnotatedLocationPin: function(locationAnnotation) {
-			var mp = this.getMapPane();
-			console.log(locationAnnotation.coordinate)
+			this.getMapPane().toggleAnnotatedLocationPin(locationAnnotation);
+		},
+
+		changeAnnotatedLocationCoordinate: function(annId, lat, lng) {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+
+			var ann = prj.annotationList.findById(annId);
+			if (ann) {
+				ann.changeCoordinate(lat, lng);
+			}
 		}
 	};
 

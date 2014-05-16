@@ -417,15 +417,52 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		// Annotated location pins
-		showAnnotatedLocationPin: function(lat, lng) {
+		createAnnotatedLocationPin: function(lat, lng) {
+			var mk = new google.maps.Marker({
+				icon: 'images/small-map-marker.png',
+				position: new google.maps.LatLng(lat, lng),
+				map: this.gmap,
+				draggable: true
+			});
 			
+			return mk;
 		},
 		
+		toggleAnnotatedLocationPin: function(locationAnnotation) {
+			var mk = this.findAnnotatedLocationPin(locationAnnotation.id);
+			var need_pan = false;
+			if (!mk) {
+				var coord = locationAnnotation.coordinate;
+				mk = this.createAnnotatedLocationPin(coord.lat, coord.lng);
+				mk.mmAnnotationId = locationAnnotation.id;
+				this.annotatedPinList.push(mk);
+
+				google.maps.event.addListener(mk, 'dragend', this.onAnnotatedLocationPinDragEnd.bind(this, mk));
+				need_pan = true;
+			} else {
+				var v = !mk.getVisible();
+				mk.setVisible(v);
+				need_pan = v;
+			}
+			
+			if (need_pan) {
+				this.gmap.panTo(mk.getPosition());
+			}
+		},
+
+		onAnnotatedLocationPinDragEnd: function(marker, e) {
+			var ll = marker.getPosition();
+			this.ownerApp.changeAnnotatedLocationCoordinate(marker.mmAnnotationId, ll.lat(), ll.lng());
+		},
+
 		findAnnotatedLocationPin: function(aid) {
 			var ls = this.annotatedPinList;
 			var len = ls.length;
 			for (var i = 0;i < len;++i) {
 				var mk = ls[i];
+				if (mk.mmAnnotationId === aid) {
+					return mk;
+				}
 			}
 			
 			return null;
