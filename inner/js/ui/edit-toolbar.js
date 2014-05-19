@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.addPresetColumns();
 		this.selectionButtonNameMap = this.addSelectionButtons('sel');
 		this.gateButtonNameMap = this.addGateButtons('gate');
+		this.annButtonNameMap = this.addAnnotationButtons('ann');
 		this.allButtonNameMap = this.makeAllButtonNameMap(this.selectionButtonNameMap, this.gateButtonNameMap);
 	}
 	
@@ -48,12 +49,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.observeSelectionButton.bind(this)
 			);
 		},
-		
+
 		addGateButtons: function(colName) {
 			return this.addButtons(colName, [
 					['gate_line', 5]
 				],
 				this.observeGateButton.bind(this)
+			);
+		},
+		
+		addAnnotationButtons: function(colName) {
+			return this.addButtons(colName, [
+					['ann_location', 9]
+				],
+				this.observeAnnotationButton.bind(this)
 			);
 		},
 		
@@ -101,6 +110,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			 click(this.onGateButtonClick.bind(this, btnObj));
 		},
 		
+		observeAnnotationButton: function(btnObj) {
+			btnObj.eventDispatcher().
+			 click(this.onAnnotationButtonClick.bind(this, btnObj));
+		},
+		
 		addGroupColumn: function(name, initialText) {
 			var tdHeadCol = document.createElement('th');
 			var tdBodyCol = document.createElement('td');
@@ -133,6 +147,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			case 'gate_line':
 				this.onGateButtonDown();
 				break;
+			}
+		},
+		
+		onAnnotationButtonClick: function(btnObj, e) {
+			if (this.ownerApp) {
+				console.log("Implement here");
 			}
 		},
 		

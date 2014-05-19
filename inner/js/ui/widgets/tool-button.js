@@ -104,7 +104,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var selector = '#' + i;
 			s.push( selector        +' {' + this.makeBackgroundProperty(ox, 0) + '}' );
-			s.push( selector  +':hover {' + this.makeBackgroundProperty(ox, oy1) + '}' );
+			// s.push( selector  +':hover {' + this.makeBackgroundProperty(ox, oy1) + '}' );
 			s.push( selector +':active,'+selector+'.selected {' + this.makeBackgroundProperty(ox, oy2) + '}' );
 		}
 		
