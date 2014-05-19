@@ -101,6 +101,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else if (sourceItem.typeId === AnnotationItemType.LOCATION) {
 				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/annbtn-putpin.png', 'Toggle pin', 'pin') );
 			}
+			
+			buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/drowbtn-remove.png', 'Remove', 'remove') );
 
 			return "<div class=\"mm-ann-view-item-control\"> " +buttonItems.join(' ')+ " </div>";
 		},

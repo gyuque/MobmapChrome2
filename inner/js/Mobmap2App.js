@@ -16,6 +16,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
 		this.loadErrorDialog = new mobmap.LoadErrorDialog();
 		this.gateBusyDialog = new mobmap.GateBusyDialog();
+		this.annotationRemoveDialog = new mobmap.AnnotationRemoveDialog();
 
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);
@@ -431,6 +432,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				case 'pin':
 				this.toggleAnnotatedLocationPin(ann);
 				break;
+				case 'remove':
+				this.confirmAnnotationRemove(ann);
+				break;
 			}
 		},
 		
@@ -488,6 +492,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ann = prj.annotationList.findById(annId);
 			if (ann) {
 				ann.changeCoordinate(lat, lng);
+			}
+		},
+		
+		confirmAnnotationRemove: function(ann) {
+			this.annotationRemoveDialog.openWithAnnotation(
+				ann,
+				this.onAnnotationRemoveOK.bind(this, ann.id)
+			);
+		},
+		
+		onAnnotationRemoveOK: function(targetAnnotationId) {
+			this.removeAnnotation(targetAnnotationId);
+		},
+		
+		removeAnnotation: function(targetAnnotationId) {
+			var prj = this.getCurrentProject();
+			if (prj) {
+				prj.annotationList.removeById(targetAnnotationId);
 			}
 		}
 	};

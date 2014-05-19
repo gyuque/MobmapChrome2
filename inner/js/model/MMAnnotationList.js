@@ -38,6 +38,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		removeById: function(aid) {
+			var index = this.findIndexById(aid);
+			if (index >= 0) {
+				this.list.splice(index, 1);
+			}
+			
+			this.fireChange();
+		},
+		
+		findIndexById: function(aid) {
+			var ls = this.list;
+			for (var i in ls) {
+				if (ls[i].id === aid) { return i - 0; }
+			}
+			
+			return -1;
+		},
+		
 		findById: function(aid) {
 			var ls = this.list;
 			for (var i in ls) {
