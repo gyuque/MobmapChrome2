@@ -31,7 +31,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var list = [
 			// Internal name | Label text
 				["sel",       "Selection"],
-				["gate",      "Gate"     ]
+				["gate",      "Gate"     ],
+				["ann",       "Location Annotation"]
 			];
 			
 			for (var i in list) {

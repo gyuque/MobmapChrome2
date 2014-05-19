@@ -17,6 +17,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.loadErrorDialog = new mobmap.LoadErrorDialog();
 		this.gateBusyDialog = new mobmap.GateBusyDialog();
 		this.annotationRemoveDialog = new mobmap.AnnotationRemoveDialog();
+		this.valueFillDialog = new mobmap.FillValueDialog();
 
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);

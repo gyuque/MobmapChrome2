@@ -455,7 +455,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			var attrMap = lyr.attributeMapping;
 			if (!attrMap) {return;}
 			
-			lyr.fillValueAllTime(aname, this.valfillInputElement.value, true);
+			this.ownerApp.valueFillDialog.open( (function() {
+				lyr.fillValueAllTime(aname, this.valfillInputElement.value, true);
+			}).bind(this) );
 		},
 		
 		getValueFillTargetAttributeName: function() {
