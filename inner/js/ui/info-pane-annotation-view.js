@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		// -----------------		
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
+		this.containerElement.style.overflowY = 'auto';
 
 		this.buildView(this.containerElement);
 		this.observeEvents();

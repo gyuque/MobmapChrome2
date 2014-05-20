@@ -8,7 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $( createEventDummyElement() );
 		this.list = [];
 		
-		addTestAnnotation(this);
+		//addTestAnnotation(this);
 	}
 	
 	MMAnnotationList.LIST_CHANGE = 'annotation-list-event-list-change';
