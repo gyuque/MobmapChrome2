@@ -55,7 +55,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			orientation: "horizontal",
 			panes:[{collapsible: true, size:'240px', scrollable:false},{scrollable:false}],
 			collapse: this.onInfoPaneCollapse.bind(this),
-			expand: this.onInfoPaneExpand.bind(this)
+			expand: this.onInfoPaneExpand.bind(this),
+			resize: this.onInfoPaneSplitterResize.bind(this)
 		});
 		
 		// Pick up child panes
@@ -90,6 +91,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	proto.onInfoPaneExpand = function() {
+		this.fitToWindow();
+	};
+	
+	proto.onInfoPaneSplitterResize = function() {
 		this.fitToWindow();
 	};
 	
