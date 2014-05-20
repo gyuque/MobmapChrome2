@@ -152,7 +152,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onAnnotationButtonClick: function(btnObj, e) {
 			if (this.ownerApp) {
-				console.log("Implement here");
+				var newAnnotation = this.ownerApp.putNewLocationAnnotation();
+				this.ownerApp.revealAnnotationView();
+				if (newAnnotation) {
+					this.ownerApp.toggleAnnotatedLocationPin(newAnnotation);
+				}
 			}
 		},
 		

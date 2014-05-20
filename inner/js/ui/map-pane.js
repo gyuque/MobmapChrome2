@@ -438,6 +438,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.annotatedPinList.push(mk);
 
 				google.maps.event.addListener(mk, 'dragend', this.onAnnotatedLocationPinDragEnd.bind(this, mk));
+				this.observeLocationAnnotation(locationAnnotation);
 				need_pan = true;
 			} else {
 				var v = !mk.getVisible();
@@ -447,6 +448,26 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (need_pan) {
 				this.gmap.panTo(mk.getPosition());
+			}
+		},
+		
+		observeLocationAnnotation: function(locationAnnotation) {
+			locationAnnotation.eventDispatcher().bind(mobmap.MMAnnotationEvent.WILL_REMOVE, this.onAnnotationWillRemove.bind(this));
+		},
+
+		onAnnotationWillRemove: function(e, locationAnnotation) {
+			var marker = this.findAnnotatedLocationPin(locationAnnotation.id);
+			if (marker) {
+				this.removeLocationAnnotationMarker(marker);
+			}
+		},
+		
+		removeLocationAnnotationMarker: function(mk) {
+			mk.setMap(null);
+			
+			var index = this.annotatedPinList.indexOf(mk);
+			if (index >= 0) {
+				this.annotatedPinList.splice(index, 1);
 			}
 		},
 

@@ -485,6 +485,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		toggleAnnotatedLocationPin: function(locationAnnotation) {
 			this.getMapPane().toggleAnnotatedLocationPin(locationAnnotation);
 		},
+		
+		putNewLocationAnnotation: function() {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+			
+			var center = this.getMapPane().getGoogleMaps().getCenter();
+			var ann = new mobmap.MMLocationAnnotation(center.lat(), center.lng());
+			this.annView.setNewAnnotationId(ann.id);
+			prj.annotationList.append(ann);
+			
+			return ann;
+		},
 
 		changeAnnotatedLocationCoordinate: function(annId, lat, lng) {
 			var prj = this.getCurrentProject();

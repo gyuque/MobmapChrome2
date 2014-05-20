@@ -41,6 +41,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		removeById: function(aid) {
 			var index = this.findIndexById(aid);
 			if (index >= 0) {
+				this.fireBeforeRemove(this.list[index]);
 				this.list.splice(index, 1);
 			}
 			
@@ -63,6 +64,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return null;
+		},
+		
+		fireBeforeRemove: function(ann) {
+			ann.eventDispatcher().trigger(mobmap.MMAnnotationEvent.WILL_REMOVE, ann);
 		}
 	};
 
@@ -186,8 +191,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	console.log( MMObjectCollectionAnnotation.generateCollectionSummary([10,20,30,40,50,60]) );
 	*/
 	
-	mobmap.MMAnnotationEvent = { CONTENT_CHANGE: 'mm-annotation-event-content-change' };
+	mobmap.MMAnnotationEvent = { CONTENT_CHANGE: 'mm-annotation-event-content-change', WILL_REMOVE: 'mm-annotation-event-will-remove' };
 	mobmap.MMAnnotationList = MMAnnotationList;
 	mobmap.MMGateAnnotation = MMGateAnnotation;
+	mobmap.MMLocationAnnotation = MMLocationAnnotation;
 	mobmap.MMObjectCollectionAnnotation = MMObjectCollectionAnnotation;
 })(window);
