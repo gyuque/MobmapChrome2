@@ -12,12 +12,14 @@ function doTest() {
 		{id:4, x:40.1, z:-4}
 	];
 	
+	doExpressionTest(TestRecords, "", -1, true);
 	doExpressionTest(TestRecords, "x >", -1, true);
 	doExpressionTest(TestRecords, "x > y", -1, true);
 	doExpressionTest(TestRecords, "x y z", -1, true);
 	doExpressionTest(TestRecords, "1 = 2", -1, true);
 	doExpressionTest(TestRecords, "1 = x", 0,        false);
 	doExpressionTest(TestRecords, "1 = x =", -1, true);
+	doExpressionTest(TestRecords, "1 = x &&", -1, true);
 	
 	doExpressionTest(TestRecords, "x > .2", 4, false);
 	doExpressionTest(TestRecords, "9.9 > z", 4, false);
@@ -29,6 +31,10 @@ function doTest() {
 	doExpressionTest(TestRecords, "x == 40.1", 1, false);
 	doExpressionTest(TestRecords, "x <= 30", 3, false);
 	doExpressionTest(TestRecords, "x >= 30", 2, false);
+	doExpressionTest(TestRecords, "x >= 20 && x <= 30", 2, false);
+	doExpressionTest(TestRecords, "x <= 20 || x >= 40", 3, false);
+	doExpressionTest(TestRecords, "x == 20 || x == 35", 1, false);
+	doExpressionTest(TestRecords, "x == 20 || x == 30", 2, false);
 }
 
 function doExpressionTest(sourceData, ex, expectNFound, containError) {

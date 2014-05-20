@@ -14,15 +14,18 @@ if (!window.mobmap) { window.mobmap={}; }
 	var TOK_NUMBER = 1;
 	var TOK_IDENT  = 2;
 	var TOK_COMP   = 3;
+	var TOK_LOGIC  = 4;
 	var TOK_WS     = 9;
 	
 	var EXPECTING_LEFTHAND = 1;
+	var EXPECTING_LOGICAL  = 2;
 	
 	var lexRegexs = [
 		{id: TOK_NUMBER, re: /^[-+]?[.0-9]+/  },
 		{id: TOK_IDENT , re: /^[_0-9a-zA-Z]+/ },
 		{id: TOK_COMP  , re: /^(<>|<=|>=|==|=|<|>|!=)/ },
-		{id: TOK_WS    , re: /^[\t \r\n]+/ }
+		{id: TOK_WS    , re: /^[\t \r\n]+/ },
+		{id: TOK_LOGIC , re: /^(\&\&|\|\|)/ }
 	];
 	
 	ExpressionQuery.prototype = {
@@ -55,9 +58,15 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			for (var i = 0;i < 999;++i) {
 				if (!this.pickToken()) {
+					if (this.expecting === EXPECTING_LEFTHAND) {
+						// BAD eof
+						this.hasError = true;
+						return;
+					}
+					
 					break;
 				}
-				
+
 				if (this.expecting === EXPECTING_LEFTHAND) {
 					var bx = this.buildBinaryExpressionNode();
 					if (!bx) {
@@ -66,11 +75,34 @@ if (!window.mobmap) { window.mobmap={}; }
 					}
 					
 					ls.push(bx);
+					this.expecting = EXPECTING_LOGICAL;
+				} else if (this.expecting === EXPECTING_LOGICAL) {
+					var lo = this.buildLogicalOperationNode();
+					if (!lo) {
+						this.hasError = true;
+						return;
+					}
+					
+					ls.push(lo);
+					this.expecting = EXPECTING_LEFTHAND;
 				}
+				
+				this.reduce(ls);
 			}
-			
+
 			// XXX
 			this.rootNode = ls[0] || null;
+		},
+		
+		buildLogicalOperationNode: function() {
+			var t1 = this.pickToken();
+			if (t1.tok_id !== TOK_LOGIC) {
+				return null;
+			}
+
+			var op = (t1.content == '&&') ? LogicalOperationNode.OP_AND : LogicalOperationNode.OP_OR;
+			++this.lookingTokenIndex;
+			return new LogicalOperationNode(op);
 		},
 		
 		buildBinaryExpressionNode: function() {
@@ -152,8 +184,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return nFounds;
+		},
+		
+		reduce: function(nodeList) {
+			if (nodeList.length < 3) {
+				return;
+			}
+
+			if (nodeList[1].isLogicalOperation) {
+				this.reduceLogicalOperation(nodeList);
+			}
+		},
+		
+		reduceLogicalOperation: function(nodeList) {
+			var lh     = nodeList.shift();
+			var parent = nodeList.shift();
+			var rh     = nodeList.shift();
+			
+			parent.leftHand = lh;
+			parent.rightHand = rh;
+			
+			nodeList.unshift(parent);
 		}
 	};
+	
+	
+	// Nodes ========================================
 	
 	function BinaryExpressionNode(lh, cmp, rh) {
 		this.leftHand = lh;
@@ -207,6 +263,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return null;
 	};
+	
+	
+	function LogicalOperationNode(op) {
+		this.operation = op;
+		this.leftHand  = null;
+		this.rightHand = null;
+		
+		this.isLogicalOperation = true;
+	}
+	
+	LogicalOperationNode.prototype.evaluate = function(record) {
+		var r1 = this.leftHand.evaluate(record);
+		var r2 = this.rightHand.evaluate(record);
+		
+		if (this.operation === LogicalOperationNode.OP_AND) {
+			return r1 && r2;
+		} else {
+			return r1 || r2;
+		}
+	};
+	
+	
+	LogicalOperationNode.OP_AND = 0;
+	LogicalOperationNode.OP_OR  = 1;
 	
 	window.mobmap.ExpressionQuery = ExpressionQuery;
 })();
