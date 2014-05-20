@@ -145,7 +145,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		onGateButtonClick: function(btnObj, e) {
 			switch(btnObj.name) {
 			case 'gate_line':
-				this.onGateButtonDown();
+				if (!this.deselectLineGateButton()) {
+					this.onGateButtonDown();
+				}
 				break;
 			}
 		},
@@ -180,13 +182,21 @@ if (!window.mobmap) { window.mobmap={}; }
 				c.startLineGateSession();
 			}
 		},
-		
-		deselectSelectionRectButton: function() {
+
+		deselectButtonIfSelectionSessionActive: function(session_type) {
 			var c = this.getOwnerSelectionController();
-			if (c) { return c.cancelSessionIfType(mobmap.SelectionSessionType.Rect, true); }
+			if (c) { return c.cancelSessionIfType(session_type, true); }
 			return false;
 		},
-		
+
+		deselectSelectionRectButton: function() {
+			return this.deselectButtonIfSelectionSessionActive(mobmap.SelectionSessionType.Rect);
+		},
+
+		deselectLineGateButton: function() {
+			return this.deselectButtonIfSelectionSessionActive(mobmap.SelectionSessionType.LineGate);
+		},
+
 		getOwnerSelectionController: function() {
 			if (!this.ownerApp) {return null;}
 			return this.ownerApp.getSelectionController() || null;
