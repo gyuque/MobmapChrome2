@@ -4,6 +4,8 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 
+	var HIDE_SPEED_COLOR = true;
+
 	function ExploreConfigurationPanel(layer) {
 		this.boundLayer = layer;
 
@@ -83,6 +85,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var pair_fix = generateRadioInLabel("Fixed color", "mm-trjcolormode-fixed", "mm-trajectory-markercolor-label");
 			var pair_mk  = generateRadioInLabel("Marker color", "mm-trjcolormode-fixed", "mm-trajectory-markercolor-label");
 			var pair_spd = generateRadioInLabel("Color by speed", "mm-trjcolormode-fixed", "mm-trajectory-markercolor-label");
+			
+			if (HIDE_SPEED_COLOR) {
+				pair_spd.label.style.display = "none";
+			}
 			
 			pair_fix.input.value = 'f';
 			pair_mk.input.value  = 'm';

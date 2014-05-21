@@ -1,0 +1,111 @@
+<head>
+	<script type="text/plain" id="test-source-1"><?xml version="1.0" encoding="UTF-8"?>
+	<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+	<Document>
+		<name>TestP1.kml</name>
+		<Style id="sn_ylw-pushpin">
+			<IconStyle>
+				<scale>1.1</scale>
+				<Icon>
+					<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+				</Icon>
+				<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+			</IconStyle>
+			<PolyStyle>
+				<color>ff18a764</color>
+			</PolyStyle>
+		</Style>
+		<StyleMap id="msn_ylw-pushpin">
+			<Pair>
+				<key>normal</key>
+				<styleUrl>#sn_ylw-pushpin</styleUrl>
+			</Pair>
+			<Pair>
+				<key>highlight</key>
+				<styleUrl>#sh_ylw-pushpin</styleUrl>
+			</Pair>
+		</StyleMap>
+		<Style id="sh_ylw-pushpin">
+			<IconStyle>
+				<scale>1.3</scale>
+				<Icon>
+					<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+				</Icon>
+				<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+			</IconStyle>
+			<PolyStyle>
+				<color>ff18a764</color>
+			</PolyStyle>
+		</Style>
+		<Placemark>
+			<name>TestP1</name>
+			<styleUrl>#msn_ylw-pushpin</styleUrl>
+			<Polygon>
+				<tessellate>1</tessellate>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+139.8524248388972,35.64526308586525,0
+139.8545836781609,35.64418324876138,0
+139.8559652925388,35.64602515401978,0
+139.8619763782636,35.64500606098855,0
+139.8625581235314,35.65049641183028,0
+139.8507390854652,35.65311289534171,0
+139.8498433949071,35.64289685248417,0
+139.8524248388972,35.64526308586525,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+	</Document>
+	</kml>
+	</script>
+
+	<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+	<script type="text/javascript" src="inner/js/jquery-1.10.2.js"></script>
+	<script type="text/javascript" src="inner/js/data/MMKMLLoader.js"></script>
+
+	<script type="text/javascript">
+var gmap = null;
+
+function setupMap() {
+	var box = document.getElementById('map-box');
+	
+	var mapOptions = {
+	          center: new google.maps.LatLng(35.65, 139.85),
+	          zoom: 12,
+	          mapTypeId: google.maps.MapTypeId.ROADMAP
+	        };
+
+	gmap = new google.maps.Map(box, mapOptions);
+}
+
+function launch_test() {
+	setupMap();
+	
+	var sourceXML = $('#test-source-1').text();
+	var parser = new DOMParser();
+	var xmlDoc = parser.parseFromString(sourceXML, "application/xml");
+	var valid = mobmap.KMLLoader.isDocumentValid(xmlDoc);
+	console.log(valid);
+	
+	var loader = new mobmap.KMLLoader(xmlDoc);
+	var n = loader.getNumOfPolygons();
+	var pg = loader.getPolygonAt(0);
+	
+	console.log((n == 1) ? 'N : OK' : 'N : **BAD**' );
+	console.log(pg ? 'Pg: OK' : 'Pg: **BAD**' );
+	
+	var polygon = new google.maps.Polygon({
+		paths: pg.generateGoogleMapsPaths(),
+		map: gmap
+	});
+}
+
+	</script>
+</head>
+<body onload="void launch_test()">
+	<div id="map-box" style="height: 380px">
+	</div>
+</body>
