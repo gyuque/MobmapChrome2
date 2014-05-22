@@ -116,6 +116,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	function KMLPolygon() {
+		this.cachedGPolygon = null;
 		this.outerCoordinates = null;
 		this.innerBoundaries = [];
 	}
@@ -158,6 +159,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		getNumOfInnerBoundaries: function() {
 			if (!this.innerBoundaries) { return 0; }
 			return this.innerBoundaries.length;
+		},
+		
+		getGMapPolygon: function() {
+			if (!this.cachedGPolygon) {
+				this.cachedGPolygon = new google.maps.Polygon({
+					paths: this.generateGoogleMapsPaths()
+				});
+			}
+			
+			return this.cachedGPolygon;
 		}
 	};
 

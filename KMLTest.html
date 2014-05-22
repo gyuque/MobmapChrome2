@@ -83,6 +83,13 @@
 	<script type="text/javascript">
 var gmap = null;
 
+var QueryLines = [
+	[35.657296,139.853983,  35.63979,139.850121],
+	[35.657174,139.861096,  35.64599,139.858449]
+];
+
+var TestColors = ['#00f', '#f00', '#0f0', '#088'];
+
 function setupMap() {
 	var box = document.getElementById('map-box');
 	
@@ -103,6 +110,22 @@ function observeTestClick(targetPolygon, e) {
 	
 }
 
+function doCrossTest(lineList) {
+	for (var i in lineList) {
+		var ln = lineList[i];
+		var y1 = ln[0];
+		var x1 = ln[1];
+		var y2 = ln[2];
+		var x2 = ln[3];
+		
+		var g_polyline = new google.maps.Polyline({
+			path: [ new google.maps.LatLng(y1, x1) , new google.maps.LatLng(y2, x2) ],
+			map: gmap,
+			strokeColor: TestColors[i-0]
+		});
+	}
+}
+
 function launch_test() {
 	setupMap();
 	
@@ -119,13 +142,13 @@ function launch_test() {
 	console.log((n == 1) ? 'N : OK' : 'N : **BAD**' );
 	console.log(pg ? 'Pg: OK' : 'Pg: **BAD**' );
 	
-	var polygon = new google.maps.Polygon({
-		paths: pg.generateGoogleMapsPaths(),
-		map: gmap
-	});
+	var polygon = pg.getGMapPolygon();
+	polygon.setMap(gmap);
 	
 	google.maps.event.addListener(polygon, 'click', observeTestClick.bind(null, polygon));
 	google.maps.event.addListener(gmap, 'click', observeTestClick.bind(null, polygon));
+	
+	doCrossTest(QueryLines);
 }
 
 	</script>
