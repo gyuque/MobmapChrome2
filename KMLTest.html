@@ -56,6 +56,20 @@
 						</coordinates>
 					</LinearRing>
 				</outerBoundaryIs>
+
+				<innerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+						139.8547897831066,35.64952679731244,0
+						139.852931753997,35.64805987155131,0
+						139.853028184009,35.65116768678917,0
+						139.8573400046863,35.65044164358734,0
+						139.8567715453534,35.64696027254656,0
+						139.8547897831066,35.64952679731244,0 
+						</coordinates>
+					</LinearRing>
+				</innerBoundaryIs>
+
 			</Polygon>
 		</Placemark>
 	</Document>
@@ -81,6 +95,14 @@ function setupMap() {
 	gmap = new google.maps.Map(box, mapOptions);
 }
 
+function observeTestClick(targetPolygon, e) {
+	var ll = e.latLng;
+	var hit = google.maps.geometry.poly.containsLocation(ll, targetPolygon);
+	
+	console.log(ll.lat(), ll.lng(), hit);
+	
+}
+
 function launch_test() {
 	setupMap();
 	
@@ -101,6 +123,9 @@ function launch_test() {
 		paths: pg.generateGoogleMapsPaths(),
 		map: gmap
 	});
+	
+	google.maps.event.addListener(polygon, 'click', observeTestClick.bind(null, polygon));
+	google.maps.event.addListener(gmap, 'click', observeTestClick.bind(null, polygon));
 }
 
 	</script>

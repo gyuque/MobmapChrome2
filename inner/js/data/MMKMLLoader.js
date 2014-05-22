@@ -82,6 +82,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				pg = new KMLPolygon();
 				pg.outerCoordinates = outerCoords;
 			}
+
+			if (pg) {
+				var innerBoundaries = jPolygons.find("innerBoundaryIs");
+				for (var i = 0;i < innerBoundaries.length;++i) {
+					this.registerInnerBoundary(pg, innerBoundaries[i]);
+				}
+			}
 			
 			return pg;
 		},
@@ -92,6 +99,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			KMLLoader.removeDuplicatedEndPoint(parsedList);
 
 			return parsedList;
+		},
+
+		registerInnerBoundary: function(outPolygon, boundaryElement) {
+			var coords = this.readPolygonBoundary(boundaryElement);
+			outPolygon.addInnerBoundary(coords);
 		},
 		
 		getNumOfPolygons: function() {
@@ -105,6 +117,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function KMLPolygon() {
 		this.outerCoordinates = null;
+		this.innerBoundaries = [];
 	}
 	
 	KMLPolygon.prototype = {
@@ -113,6 +126,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			paths.push(
 				this.generatePathOfLoop(this.outerCoordinates)
 			);
+			
+			if (this.getNumOfInnerBoundaries()) {
+				var ls = this.innerBoundaries;
+				var n = ls.length;
+				for (var i = 0;i < n;++i) {
+					paths.push(
+						this.generatePathOfLoop(ls[i])
+					);
+				}
+			}
 			
 			return paths;
 		},
@@ -126,6 +149,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return outArray;
+		},
+		
+		addInnerBoundary: function(coords) {
+			this.innerBoundaries.push(coords);
+		},
+		
+		getNumOfInnerBoundaries: function() {
+			if (!this.innerBoundaries) { return 0; }
+			return this.innerBoundaries.length;
 		}
 	};
 
