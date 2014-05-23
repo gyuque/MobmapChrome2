@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+		<script type="text/javascript" src="inner/js/jquery-1.10.2.js"></script>
+		<script type="text/javascript" src="inner/js/mm-utils.js"></script>
+		<script type="text/javascript" src="inner/js/map/PolygonOverlay.js"></script>
+		
+<script type="text/javascript">
+'use strict';
+var gmap = null;
+var gPolygonOverlay = null;
+
+function launch() {
+	setupMap();
+}
+
+function setupMap() {
+	var box = document.getElementById('map-box');
+	
+	var mapOptions = {
+	          center: new google.maps.LatLng(35.65, 139.85),
+	          zoom: 12,
+	          mapTypeId: google.maps.MapTypeId.ROADMAP
+	        };
+
+	gmap = new google.maps.Map(box, mapOptions);	
+	gPolygonOverlay = new mobmap.PolygonOverlay();
+	gPolygonOverlay.setMap(gmap);
+}
+
+
+</script>
+
+	</head>
+	<body onload="void launch()">
+		<div id="map-box" style="height: 380px;">
+		</div>
+	</body>
+</html>
