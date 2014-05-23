@@ -2,11 +2,13 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var ENABLE_POLYGON = true;
 	
 	var kMenuNameAttr = "data-menuitem-name";
 	var kMenuItemNameMOCSV = "add-movobjs-csv";
 	var kMenuItemNameMeshCSV = "add-mesh-csv";
 	var kMenuItemNameDigitalTyphoon = "add-digital-typhoon";
+	var kMenuItemNamePolygonKML = "add-polygon-kml";
 
 	function LayersView(containerElement) {
 		this.ownerApp = null;
@@ -103,22 +105,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Sub menu
 			var ls_newLayers = $H('ul');
 			li_add.appendChild(ls_newLayers);
-			var li_mov = $H('li');
-			li_mov.setAttribute(kMenuNameAttr, kMenuItemNameMOCSV);
-			li_mov.appendChild( $T('Moving objects CSV') );
-			ls_newLayers.appendChild(li_mov);
-			var li_mesh = $H('li');
-			li_mesh.setAttribute(kMenuNameAttr, kMenuItemNameMeshCSV);
-			li_mesh.appendChild( $T('Mesh CSV') );
-			ls_newLayers.appendChild(li_mesh);
-			var li_ty = $H('li');
-			li_ty.setAttribute(kMenuNameAttr, kMenuItemNameDigitalTyphoon);
-			li_ty.appendChild( $T('Digital Typhoon') );
-			ls_newLayers.appendChild(li_ty);
+			
+			this.addNewLayerMenuItem(ls_newLayers, 'Moving objects CSV', kMenuItemNameMOCSV);
+			this.addNewLayerMenuItem(ls_newLayers, 'Mesh CSV'          , kMenuItemNameMeshCSV);
+			this.addNewLayerMenuItem(ls_newLayers, 'Digital Typhoon'   , kMenuItemNameDigitalTyphoon);
+
+			if (ENABLE_POLYGON) {
+				this.addNewLayerMenuItem(ls_newLayers, 'Polygons KML', kMenuItemNamePolygonKML);
+			}
 
 			el.appendChild(li_add);
 			this.containerElement.appendChild(el);
 			return el;
+		},
+		
+		addNewLayerMenuItem: function(parentList, labelText, itemName) {
+			var li = $H('li');
+			li.setAttribute(kMenuNameAttr, itemName);
+			li.appendChild( $T(labelText) );
+			parentList.appendChild(li);
 		},
 		
 		// Layer menu handlers - - - - - - - - - - -
