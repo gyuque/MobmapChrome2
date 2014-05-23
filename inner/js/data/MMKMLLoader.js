@@ -169,8 +169,79 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			return this.cachedGPolygon;
+		},
+
+		// High level collision API  - - - - - - - - -
+		checkCrossOrContain: function(x1, y1, x2, y2) {
+			// [Contain] case
+			if (this.checkLatLngContained(y1, x1) || this.checkLatLngContained(y2, x2)) {
+				return true;
+			}
+
+			// [Through] case
+			if (this.checkAnyEdgeCross(x1, y1, x2, y2)) {
+				return true;
+			}
+			
+			return false;
+		},
+		// - - - - - - - - - - - - - - - - - - - - - -
+		
+		checkLatLngContained: function(lat, lng) {
+			var ll = _tempLatLng;
+			ll._lat = lat;
+			ll._lng = lng;
+
+			return google.maps.geometry.poly.containsLocation(ll, this.getGMapPolygon());
+		},
+
+		checkAnyEdgeCross: function(x1, y1, x2, y2) {
+			if (this.checkCrossWithLoop(this.outerCoordinates, x1, y1, x2, y2)) {
+				return true;
+			}
+			
+			if (this.getNumOfInnerBoundaries() > 0) {
+				var ins = this.innerBoundaries;
+				for (var i in ins) {
+					if (this.checkCrossWithLoop(ins[i], x1, y1, x2, y2)) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		},
+		
+		checkCrossWithLoop: function(loopCoordinates, ex1, ey1, ex2, ey2) {
+			var len = loopCoordinates.length;
+			for (var i = 0;i < len;++i) {
+				var p1 = loopCoordinates[i];
+				var p2 = loopCoordinates[(i+1) % len];
+				
+				if (testSegmentCross(p1.x, p1.y, p2.x, p2.y, ex1, ey1, ex2, ey2, false) !== null) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+	};
+	
+	function LightLatLng() {
+		this._lat = 0;
+		this._lng = 0;
+	}
+	
+	LightLatLng.prototype = {
+		lat: function() {
+			return this._lat;
+		},
+		
+		lng: function() {
+			return this._lng;
 		}
 	};
 
+	var _tempLatLng = new LightLatLng();
 	aGlobal.mobmap.KMLLoader = KMLLoader;
 })(window);

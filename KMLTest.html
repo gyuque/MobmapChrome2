@@ -78,6 +78,7 @@
 
 	<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
 	<script type="text/javascript" src="inner/js/jquery-1.10.2.js"></script>
+	<script type="text/javascript" src="inner/js/mm-utils.js"></script>
 	<script type="text/javascript" src="inner/js/data/MMKMLLoader.js"></script>
 
 	<script type="text/javascript">
@@ -85,10 +86,13 @@ var gmap = null;
 
 var QueryLines = [
 	[35.657296,139.853983,  35.63979,139.850121],
-	[35.657174,139.861096,  35.64599,139.858449]
+	[35.657174,139.861096,  35.64599,139.858449],
+	[35.657174,139.88,  35.64599,139.88],
+	[35.65,139.86,  35.64599,139.86],
+	[35.65,139.855,  35.649,139.856]
 ];
 
-var TestColors = ['#00f', '#f00', '#0f0', '#088'];
+var TestColors = ['#00f', '#f00', '#0f0', '#088', '#dd0'];
 
 function setupMap() {
 	var box = document.getElementById('map-box');
@@ -110,7 +114,9 @@ function observeTestClick(targetPolygon, e) {
 	
 }
 
-function doCrossTest(lineList) {
+function doCrossTest(lineList, mmpolygon) {
+	var should_be = [true, true, false, true,false];
+	
 	for (var i in lineList) {
 		var ln = lineList[i];
 		var y1 = ln[0];
@@ -123,6 +129,12 @@ function doCrossTest(lineList) {
 			map: gmap,
 			strokeColor: TestColors[i-0]
 		});
+		
+		var hit = mmpolygon.checkCrossOrContain(x1, y1, x2, y2);
+		console.log(i, hit)
+		if (should_be[i-0] !== hit) {
+			console.log("     **** BAD ****")
+		}
 	}
 }
 
@@ -148,7 +160,9 @@ function launch_test() {
 	google.maps.event.addListener(polygon, 'click', observeTestClick.bind(null, polygon));
 	google.maps.event.addListener(gmap, 'click', observeTestClick.bind(null, polygon));
 	
-	doCrossTest(QueryLines);
+	setTimeout(function(){
+		doCrossTest(QueryLines, pg);
+	}, 200);
 }
 
 	</script>
