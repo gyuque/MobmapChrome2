@@ -136,9 +136,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!itemName) { return; }
 			
 			switch(itemName) {
-			case kMenuItemNameMOCSV: return this.onLayerMenuAddMovingObjectsCSVSelect();
-			case kMenuItemNameMeshCSV: return this.onLayerMenuAddMeshCSVSelect();
+			case kMenuItemNameMOCSV:          return this.onLayerMenuAddMovingObjectsCSVSelect();
+			case kMenuItemNameMeshCSV:        return this.onLayerMenuAddMeshCSVSelect();
 			case kMenuItemNameDigitalTyphoon: return this.onLayerMenuAddDigitalTyphoon();
+			case kMenuItemNamePolygonKML:     return this.onLayerMenuAddPolygonsFromKML();
 			}
 		},
 		
@@ -154,6 +155,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.ownerApp.loadDigitalTyphoon();
 		},
 		
+		onLayerMenuAddPolygonsFromKML: function() {
+			this.ownerApp.loadPolygonsFromKML();
+		},
+
 		// - - - - - - - - - - - - - - - - - - - - -
 
 		generateWelcomeBox: function() {

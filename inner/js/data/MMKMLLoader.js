@@ -11,6 +11,31 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.parse();
 	}
 	
+	KMLLoader.createFromFileObject = function(file, callback) {
+		var reader = new FileReader();
+		reader.onloadend = function(e) {
+			if (e.target.readyState == FileReader.DONE) {
+				var body = e.target.result;
+
+				var parser = new DOMParser();
+				var xmlDoc = parser.parseFromString(body, "application/xml");
+				var valid = mobmap.KMLLoader.isDocumentValid(xmlDoc);
+				if (!valid) {
+					if (callback) {
+						callback(null);
+					}
+				}
+
+				var loader = new KMLLoader(xmlDoc);
+				if (callback) {
+					callback(loader);
+				}
+			}
+		};
+		
+		reader.readAsText(file);
+	};
+	
 	KMLLoader.isDocumentValid = function(xmlDocument) {
 		return $(xmlDocument).find("Placemark").length > 0;
 	};

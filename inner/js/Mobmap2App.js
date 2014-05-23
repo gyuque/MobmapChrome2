@@ -11,6 +11,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jEventDispatcherElement = $(document.body);
 		this.localfilePicker = new mobmap.LocalFilePicker( this.afterLocalCSVPick.bind(this) );
 		this.localMeshFilePicker = new mobmap.LocalFilePicker( this.afterLocalMeshCSVPick.bind(this) );
+		this.localPolygonsKMLFilePicker = new mobmap.LocalFilePicker( this.afterLocalPolygonsKMLPick.bind(this) );
 		this.csvPreview = new mobmap.CSVPreviewWindow(this);
 		this.meshLoaderCtrl = new mobmap.MeshLoaderController(this);
 		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
@@ -235,6 +236,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			loader.loadFromObject(j);
 		},
 		
+		// KML polygons
+		loadPolygonsFromKML: function() {
+			this.localPolygonsKMLFilePicker.open();
+		},
+		
+		afterLocalPolygonsKMLPick: function(pickedFile) {
+			mobmap.KMLLoader.createFromFileObject(
+				pickedFile,
+				this.afterLocalPolygonsKMLRead.bind(this)
+			);
+		},
+
+		afterLocalPolygonsKMLRead: function(kmlLoader) {
+			console.log(kmlLoader)
+		},
+
 		removeBadLayer: function(targetLayer) {
 			this.getCurrentProject().removeLayerAndNotify(targetLayer);
 			this.loadErrorDialog.showDialog();
