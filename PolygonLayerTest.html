@@ -4,6 +4,7 @@
 		<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
 		<script type="text/javascript" src="inner/js/jquery-1.10.2.js"></script>
 		<script type="text/javascript" src="inner/js/mm-utils.js"></script>
+		<script type="text/javascript" src="inner/js/data/MMKMLLoader.js"></script>
 		<script type="text/javascript" src="inner/js/map/PolygonOverlay.js"></script>
 		
 <script type="text/javascript">
@@ -13,6 +14,8 @@ var gPolygonOverlay = null;
 
 function launch() {
 	setupMap();
+	var kmlloader = loadTestKML();
+	gPolygonOverlay.setDataSource(kmlloader);
 }
 
 function setupMap() {
@@ -29,6 +32,16 @@ function setupMap() {
 	gPolygonOverlay.setMap(gmap);
 }
 
+function loadTestKML() {
+	var src = $('#src-kml').text();
+	
+	var parser = new DOMParser();
+	var xmlDoc = parser.parseFromString(src, "application/xml");
+	var valid = mobmap.KMLLoader.isDocumentValid(xmlDoc);
+
+	var loader = new mobmap.KMLLoader(xmlDoc);
+	return loader;
+}
 
 </script>
 
@@ -36,5 +49,56 @@ function setupMap() {
 	<body onload="void launch()">
 		<div id="map-box" style="height: 380px;">
 		</div>
+		
+<script type="text/plain" id="src-kml"><?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>TDOME.kml</name>
+	<Style id="s_ylw-pushpin_hl">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<StyleMap id="m_ylw-pushpin">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#s_ylw-pushpin</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#s_ylw-pushpin_hl</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="s_ylw-pushpin">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<Placemark>
+		<name>TDOME</name>
+		<styleUrl>#m_ylw-pushpin</styleUrl>
+		<Polygon>
+			<tessellate>1</tessellate>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						139.7548105832773,35.70285724272041,0 139.7541542206817,35.70554784701792,0 139.7523531636015,35.70683700780138,0 139.7481675568224,35.70706732285642,0 139.7475041993418,35.70391870645182,0 139.7548105832773,35.70285724272041,0 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+</Document>
+</kml>
+
+</script>
 	</body>
 </html>

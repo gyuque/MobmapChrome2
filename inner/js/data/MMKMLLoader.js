@@ -144,9 +144,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.cachedGPolygon = null;
 		this.outerCoordinates = null;
 		this.innerBoundaries = [];
+		this._svgElements = null;
 	}
 	
 	KMLPolygon.prototype = {
+		getOuterBoundary: function() {
+			return this.outerCoordinates;
+		},
+
 		generateGoogleMapsPaths: function() {
 			var paths = [];
 			paths.push(
@@ -176,7 +181,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return outArray;
 		},
-		
+
 		addInnerBoundary: function(coords) {
 			this.innerBoundaries.push(coords);
 		},
