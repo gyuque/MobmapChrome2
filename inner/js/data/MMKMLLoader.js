@@ -151,6 +151,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		getOuterBoundary: function() {
 			return this.outerCoordinates;
 		},
+		
+		getInnerBoundaryAt: function(i) {
+			return this.innerBoundaries[i] || null;
+		},
 
 		generateGoogleMapsPaths: function() {
 			var paths = [];

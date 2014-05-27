@@ -5,6 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var kSVGNS = 'http://www.w3.org/2000/svg';
 	
 	function PolygonOverlay() {
+		this.zoomListener = null;
 		this.svgElementList = [];
 		this.targetPane = 'overlayLayer';
 		this.polygonDataSource = null;
@@ -22,10 +23,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		var panes = this.getPanes();
 		panes[this.targetPane].appendChild( this.ensureContainerElement() );
 		this.ensureSVGElementGenerated();
+		
+		var map = this.getMap();
+		this.zoomListener = google.maps.event.addListener(map, 'zoom_changed', this.onMapZoomChanged.bind(this) );
 	};
 	
 	PolygonOverlay.prototype.onRemove = function() {
 		
+	};
+
+	PolygonOverlay.prototype.onMapZoomChanged = function() {
+		this.clearCurrentPaths();
+		setTimeout(this.updatePolygonCoordinates.bind(this), 17);
 	};
 
 	PolygonOverlay.prototype.ensureContainerElement = function() {
@@ -68,21 +77,44 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.featuresContainerElement.appendChild(svgElement);
 		
 		var outerBounds = {};
+		var coordList = [];
 		var outer = sourcePolygon.getOuterBoundary();
-		var outerPolygon = this.createPolygonElementFromCoordinates(outer, outerBounds);
-		svgG.appendChild(outerPolygon);
-		console.log(outerBounds)
 		
-		svgG.setAttribute('fill', 'red');
+		var pathElement = document.createElementNS(kSVGNS, 'path');
+		this.generatePathCoordinates(coordList, outer, outerBounds);
+		this.generateInnderBoundaryCoordinates(coordList, sourcePolygon);
+		pathElement.setAttribute('d', coordList.join(' '));
+	
+		svgG.setAttribute('fill', 'rgba(10,30,255, 0.7)');
+		svgG.setAttribute('fill-rule', 'evenodd');
 
 		sourcePolygon._svgElements = {
 			svg: svgElement,
 			g: svgG,
-			outerPolygon: outerPolygon
+			path: pathElement
 		};
 		
-		var ow = outerBounds.maxX-outerBounds.minX;
-		var oh = outerBounds.maxY-outerBounds.minY;
+		svgG.appendChild(pathElement);
+		this.applyPolygonBounds(svgElement, outerBounds);
+	};
+	
+	PolygonOverlay.prototype.generateInnderBoundaryCoordinates = function(outList, sourcePolygon) {
+		var n = sourcePolygon.getNumOfInnerBoundaries();
+		if (n < 1) {
+			return 0;
+		}
+		
+		for (var i = 0;i < n;++i) {
+			var innerCoords = sourcePolygon.getInnerBoundaryAt(i);
+			this.generatePathCoordinates(outList, innerCoords, null);
+		}
+		
+		return n;
+	};
+
+	PolygonOverlay.prototype.applyPolygonBounds = function(svgElement, outerBounds) {
+		var ow = outerBounds.maxX - outerBounds.minX;
+		var oh = outerBounds.maxY - outerBounds.minY;
 		svgElement.setAttribute('viewBox', outerBounds.minX +' '+ outerBounds.minY + ' ' + ow +' '+ oh);
 		svgElement.setAttribute('width', ow);
 		svgElement.setAttribute('height', oh);
@@ -91,11 +123,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		setElementStylePosition(svgElement.style, outerBounds.minX, outerBounds.minY);
 	};
 	
-	PolygonOverlay.prototype.createPolygonElementFromCoordinates = function(coords, boundsOut) {
+	PolygonOverlay.prototype.generatePathCoordinates = function(outList, coords, boundsOut) {
 		var prj = this.getProjection();
 		if (!prj) {return null;}
 		
-		var svgCoords = [];
 		var minX = 0x7fffffff;
 		var minY = 0x7fffffff;
 		var maxX = -minX;
@@ -105,17 +136,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		for (var i = 0;i < n;++i) {
 			var pt = coords[i];
 			var divPt = prj.fromLatLngToDivPixel(new google.maps.LatLng(pt.y, pt.x));
-			svgCoords.push(divPt.x+','+divPt.y);
+			
+			outList.push( ((i==0) ? 'M' : 'L') + divPt.x+','+divPt.y);
 			
 			minX = Math.min(divPt.x, minX);
 			minY = Math.min(divPt.y, minY);
 			maxX = Math.max(divPt.x, maxX);
 			maxY = Math.max(divPt.y, maxY);
 		}
-		
-		var svgPolygon = document.createElementNS(kSVGNS, 'polygon');
-		svgPolygon.setAttribute('points', svgCoords.join(' '));
-		
+
 		if (boundsOut) {
 			boundsOut.minX = minX;
 			boundsOut.minY = minY;
@@ -123,7 +152,48 @@ if (!window.mobmap) { window.mobmap={}; }
 			boundsOut.maxY = maxY;
 		}
 		
-		return svgPolygon;
+		return outList;
+	};
+	
+	PolygonOverlay.prototype.updatePolygonCoordinates = function() {
+		var ds = this.polygonDataSource;
+		if (!ds) { return; }
+		
+		var n = ds.getNumOfPolygons();
+		for (var i = 0;i < n;++i) {
+			var pg = ds.getPolygonAt(i);
+			if (pg._svgElements) {
+				this.updatePolygonCoordinatesOfKMLPolygon(pg);
+			}
+		}
+	};
+
+	PolygonOverlay.prototype.updatePolygonCoordinatesOfKMLPolygon = function(kmlPolygon) {
+		var elementSet = kmlPolygon._svgElements;
+		var pathElement = elementSet.path;
+		
+		var outer = kmlPolygon.getOuterBoundary();
+		var outerBounds = {};
+		var coordList = [];
+		
+		this.generatePathCoordinates(coordList, outer, outerBounds);
+		this.generateInnderBoundaryCoordinates(coordList, kmlPolygon);
+		
+		pathElement.setAttribute('d', coordList.join(' '));
+		this.applyPolygonBounds(elementSet.svg, outerBounds);
+	};
+	
+	PolygonOverlay.prototype.clearCurrentPaths = function() {
+		var ds = this.polygonDataSource;
+		if (!ds) { return; }
+		
+		var n = ds.getNumOfPolygons();
+		for (var i = 0;i < n;++i) {
+			var pg = ds.getPolygonAt(i);
+			if (pg._svgElements) {
+				pg._svgElements.path.setAttribute('d', 'M0,0');
+			}
+		}
 	};
 	
 	function setElementStylePosition(s, x, y) {
