@@ -249,7 +249,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		afterLocalPolygonsKMLRead: function(kmlLoader) {
-			console.log(kmlLoader)
+			var newLayer = this.currentProject.addPolygonLayer();
+			newLayer.setSourceLoader(kmlLoader);
+			newLayer.afterLoadFinish();
 		},
 
 		removeBadLayer: function(targetLayer) {

@@ -30,6 +30,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		MarkerRenderable: 0x01,
 		MeshRenderable  : 0x02,
 		TyphoonMarkerRecommended: 0x04,
+		PolygonRenderable  : 0x08,
 		SpatialSelectable: 0x10,
 		FixOnBottom: 0x100,
 		ExploreOtherLayer: 0x200

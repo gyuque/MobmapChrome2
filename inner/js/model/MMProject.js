@@ -88,6 +88,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			return lyr;
 		},
 		
+		addPolygonLayer: function() {
+			var lyr = new mobmap.MMPolygonLayer();
+			this.appendLayerAndNotify(lyr);
+			return lyr;
+		},
+		
 		addMeshLayer: function() {
 			var lyr = new mobmap.MMMeshLayer();
 			this.appendLayerAndNotify(lyr);

@@ -148,6 +148,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		createNewOverlayForLayer: function(lyr) {
 			if (lyr.capabilities & mobmap.LayerCapability.MarkerRenderable) {
 				return this.createMovingObjectsOverlay(lyr);
+			} else if (lyr.capabilities & mobmap.LayerCapability.PolygonRenderable) {
+				return this.createPolygonOverlay(lyr);
 			} else if (lyr.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
 				return this.createExploreOverlay(lyr);
 			} else {
@@ -174,6 +176,17 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		createMeshOverlay: function(lyr) {
 			var mapOverlay = new mobmap.MeshCanvasOverlay();
+			var mapPane = this.ownerApp.getMapPane();
+			var gmap = mapPane.getGoogleMaps();
+
+			mapOverlay.setMap(gmap);
+			mapOverlay.ownerObject = lyr;
+			this.mapOverlayList.push(mapOverlay);
+			return mapOverlay;
+		},
+		
+		createPolygonOverlay: function(lyr) {
+			var mapOverlay = new mobmap.PolygonOverlay();
 			var mapPane = this.ownerApp.getMapPane();
 			var gmap = mapPane.getGoogleMaps();
 

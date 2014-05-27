@@ -22,6 +22,7 @@ var theApp = null;
 	function startApp() {
 		mobmap.installMobLayer();
 		mobmap.installMeshOverlay();
+		mobmap.installPolygonOverlay();
 		$('#content-pane').empty();
 		observeMessage();
 		

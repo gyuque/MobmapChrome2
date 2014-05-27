@@ -496,7 +496,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	LayerItemView.prototype = {
 		build: function() {
-			var use_marker = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable);
+			var use_marker  = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MarkerRenderable);
+			var use_polygon = !!(this.boundLayer.capabilities & mobmap.LayerCapability.PolygonRenderable);
 			var use_mesh   = !!(this.boundLayer.capabilities & mobmap.LayerCapability.MeshRenderable);
 			var use_exp    = !!(this.boundLayer.capabilities & mobmap.LayerCapability.ExploreOtherLayer);
 			var no_updown = use_exp;
@@ -589,6 +590,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				return "Moving objects";
 			} else if (caps & mobmap.LayerCapability.ExploreOtherLayer) {
 				return "Explore";
+			} else if (caps & mobmap.LayerCapability.PolygonRenderable) {
+				return "Polygon";
 			} else {
 				return "Mesh";
 			}
