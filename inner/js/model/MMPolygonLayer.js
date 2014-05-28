@@ -9,7 +9,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.ownerList = null;
 		this.visible = true;
 		this.primaryView = null;
-		this.capabilities = mobmap.LayerCapability.PolygonRenderable;
+		this.capabilities = 
+		 mobmap.LayerCapability.PolygonRenderable |
+		 mobmap.LayerCapability.PolygonSelectable | 
+		 mobmap.LayerCapability.StaticData;
 
 		this._lvObserved = false;
 		this._markerOptions = null;

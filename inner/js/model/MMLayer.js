@@ -32,8 +32,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		TyphoonMarkerRecommended: 0x04,
 		PolygonRenderable  : 0x08,
 		SpatialSelectable: 0x10,
+		PolygonSelectable: 0x20,
 		FixOnBottom: 0x100,
-		ExploreOtherLayer: 0x200
+		ExploreOtherLayer: 0x200,
+		StaticData: 0x400
 	};
 
 	function MovingObjectLayer() {

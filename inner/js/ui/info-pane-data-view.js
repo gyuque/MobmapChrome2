@@ -2,6 +2,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var kShortTableLimit = 100;
 
 	function DataDetailView(containerElement) {
 		this.ownerApp = null;
@@ -282,7 +283,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var len = layerList.getCount();
 			for (var i = 0;i < len;++i) {
 				var layer = layerList.getLayerAt(i);
-				if (layer.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+				if ( this.canLayerBeTarget(layer) ) {
 					var desc = layer.getShortDescription();
 					
 					var op = $H('option');
@@ -293,6 +294,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 		},
+		
+		canLayerBeTarget: function(layer) {
+			var c = layer.capabilities;
+			return !!(c & mobmap.LayerCapability.MarkerRenderable) || !!(c & mobmap.LayerCapability.PolygonSelectable);
+		},
+		
+		// Update data
 		
 		notifyMovingDataPicked: function(sourceLayer, pickedArray, count) {
 			var nToShow = count;
@@ -309,9 +317,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				nToShow = sel_count;
 			}
 			
-			if (!this.forceShowAll && nToShow > 100) {
+			if (!this.forceShowAll && nToShow > kShortTableLimit) {
 				this.showCollapseWarning(nToShow);
-				nToShow = 100;
+				nToShow = kShortTableLimit;
 			} else {
 				this.hideCollapseWarning();
 			}
@@ -350,6 +358,46 @@ if (!window.mobmap) { window.mobmap={}; }
 			gr.hideColumn("_fwdKeyTime");
 
 //			console.log("renew", count)
+		},
+		
+		updateStaticLayerDataView: function() {
+			var prj = this.ownerApp.getCurrentProject();
+			if (!prj) {return;}
+			
+			var targetLayer = prj.getLayerById(this.currentTargetId);
+			if (targetLayer.capabilities & mobmap.LayerCapability.StaticData) {
+				// Static data layer
+				
+				if (targetLayer.capabilities & mobmap.LayerCapability.PolygonSelectable) {
+					this.updateTableFromStaticPolygon(targetLayer);
+				}
+				
+			}
+		},
+		
+		updateTableFromStaticPolygon: function(targetLayer) {
+			var polygonDataSource = targetLayer.getPolygonDataSource();
+			var allCount = polygonDataSource.getNumOfPolygons();
+			var nToShow = allCount;
+			
+			if (!this.forceShowAll && nToShow > kShortTableLimit) {
+				this.showCollapseWarning(nToShow);
+				nToShow = kShortTableLimit;
+			} else {
+				this.hideCollapseWarning();
+			}
+			
+			var DMY_REC = {'_id': 1234};
+			
+			// Refer records
+			var i;
+			var arr = this.dataSourceArray;
+			arr.length = nToShow;
+			for (i = 0;i < nToShow;++i) {
+				arr[i] = DMY_REC;
+			}
+
+			this.dataSourceForGrid.read();
 		},
 		
 		onClickInsideGrid: function(e) {
@@ -406,6 +454,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		onTargetSelectChange: function() {
 			this.fetchTargetSelectValue();
 			this.updateValFillAttrSelection();
+			
+			this.updateStaticLayerDataView();
 		},
 		
 		fetchTargetSelectValue: function() {
