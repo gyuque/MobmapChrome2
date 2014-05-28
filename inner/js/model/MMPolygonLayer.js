@@ -37,11 +37,28 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		getSourceFileName: function() {
-			return "not_impl";
+			if (!this.sourceLoader) {
+				return "unknown";
+			}
+			
+			return this.sourceLoader.fileName;
 		},
-		
+
+		generateCountLabel: function() {
+			var n = 0;
+			var postfix = ' polygon)';
+			if (this.sourceLoader) {
+				n = this.sourceLoader.getNumOfPolygons();
+				if (n > 1) {
+					postfix = ' polygons)';
+				}
+			}
+			
+			return '(' + n + postfix;
+		},
+
 		getShortDescription: function() {
-			return "not_impl";
+			return this.getSourceFileName() +' '+ this.generateCountLabel();
 		},
 		
 		bindOverlay: function(mapOverlay) {

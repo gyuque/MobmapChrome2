@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function installPolygonOverlay(pkg) {
 	
 		function PolygonOverlay() {
+			this.visible = true;
 			this.zoomListener = null;
 			this.svgElementList = [];
 			this.targetPane = 'overlayLayer';
@@ -197,6 +198,15 @@ if (!window.mobmap) { window.mobmap={}; }
 					pg._svgElements.path.setAttribute('d', 'M0,0');
 				}
 			}
+		};
+
+		PolygonOverlay.prototype.setVisibility = function(v) {
+			if (this.visible === v) {
+				return;
+			}
+			
+			this.featuresContainerElement.style.visibility = v ? '' : 'hidden';
+			this.visible = v;
 		};
 
 		// Polygon overlay does not have 'canvas' as a variable.

@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	
 	function KMLLoader(xmlDocument) {
+		this.fileName = 'unknown';
 		this.polygonList = [];
 		this.xmlDocument = xmlDocument;
 		this.jXMLDocument = $(xmlDocument);
@@ -12,6 +13,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	KMLLoader.createFromFileObject = function(file, callback) {
+		
 		var reader = new FileReader();
 		reader.onloadend = function(e) {
 			if (e.target.readyState == FileReader.DONE) {
@@ -27,6 +29,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 
 				var loader = new KMLLoader(xmlDoc);
+				loader.setFilename(file.name);
 				if (callback) {
 					callback(loader);
 				}
@@ -86,6 +89,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	KMLLoader.prototype = {
+		setFilename: function(n) {
+			this.fileName = n;
+		},
+		
 		parse: function() {
 			this.jXMLDocument.find("Placemark").each(this.readPlacemark.bind(this));
 		},
