@@ -160,6 +160,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var n = 0;
 			var sourceLayer = this.getCurrentSourceLayer();
 			if (sourceLayer) {
+				if (!(sourceLayer.capabilities & mobmap.LayerCapability.MarkerRenderable)) {
+					// Not supported for this layer
+					return '';
+				}
+				
 				var tl = sourceLayer.movingData.getTimeListOfId(objId);
 				if (tl) {
 					n = tl.getRecordList().length;
@@ -177,6 +182,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (item._backKeyTime && item._fwdKeyTime) {
 				var sourceLayer = this.getCurrentSourceLayer();
 				if (sourceLayer) {
+					if (!(sourceLayer.capabilities & mobmap.LayerCapability.MarkerRenderable)) {
+						// Not supported for this layer
+						return '';
+					}
+
 					var rec1 = sourceLayer.movingData.getKeyFrameRecord(item._id, item._backKeyTime);
 					var rec2 = sourceLayer.movingData.getKeyFrameRecord(item._id, item._fwdKeyTime);
 					
