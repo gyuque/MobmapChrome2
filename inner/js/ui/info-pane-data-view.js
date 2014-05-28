@@ -251,6 +251,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onCollapseWarningClick: function() {
 			this.forceShowAll = true;
 			this.requestRedraw();
+			this.updateStaticLayerDataView();
 			this.forceShowAll = false;
 		},
 		
@@ -357,6 +358,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			gr.hideColumn("_backKeyTime");
 			gr.hideColumn("_fwdKeyTime");
 
+			gr.showColumn("x");
+			gr.showColumn("y");
+			gr.showColumn("_time");
 //			console.log("renew", count)
 		},
 		
@@ -398,6 +402,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			this.dataSourceForGrid.read();
+
+			var gr = this.getDataGridObject();
+			gr.hideColumn("x");
+			gr.hideColumn("y");
+			gr.hideColumn("_time");
 		},
 		
 		onClickInsideGrid: function(e) {
