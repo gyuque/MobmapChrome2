@@ -387,14 +387,14 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.hideCollapseWarning();
 			}
 			
-			var DMY_REC = {'_id': 1234};
 			
 			// Refer records
 			var i;
 			var arr = this.dataSourceArray;
 			arr.length = nToShow;
 			for (i = 0;i < nToShow;++i) {
-				arr[i] = DMY_REC;
+				var pg = polygonDataSource.getPolygonAt(i);
+				arr[i] = pg.getAttributesMap();
 			}
 
 			this.dataSourceForGrid.read();

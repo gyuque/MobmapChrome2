@@ -99,10 +99,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		readPlacemark: function(i, element) {
 			var j = $(element);
+			
+			var pid = element.getAttribute('id');
+			
 			var jPolygons = j.find('Polygon');
 			if (jPolygons.length > 0) {
 				var pg = this.readPolygon(jPolygons);
 				this.polygonList.push(pg);
+				
+				if (pid) {
+					pg.setId(pid);
+				}
 			}
 		},
 		
@@ -152,9 +159,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.outerCoordinates = null;
 		this.innerBoundaries = [];
 		this._svgElements = null;
+		this.attributes = {
+			_id: generateAutoId()
+		};
 	}
 	
 	KMLPolygon.prototype = {
+		setId: function(id) {
+			this.attributes._id = id;
+		},
+		
+		getAttributesMap: function() {
+			return this.attributes;
+		},
+		
 		getOuterBoundary: function() {
 			return this.outerCoordinates;
 		},
@@ -282,6 +300,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this._lng;
 		}
 	};
+	
+	var generateAutoId = (function() {
+		var nextid = 1;
+		return function() {
+			return 'autoid_' + (nextid++);
+		};
+	})();
 
 	var _tempLatLng = new LightLatLng();
 	aGlobal.mobmap.KMLLoader = KMLLoader;
