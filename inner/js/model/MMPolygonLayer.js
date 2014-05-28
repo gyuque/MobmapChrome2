@@ -23,6 +23,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return false;
 		},
 		
+		getPolygonDataSource: function() {
+			return this.sourceLoader;
+		},
+		
 		setSourceLoader: function(ldr) {
 			this.sourceLoader = ldr;
 		},
@@ -38,6 +42,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getShortDescription: function() {
 			return "not_impl";
+		},
+		
+		bindOverlay: function(mapOverlay) {
+			mapOverlay.setDataSource(this.getPolygonDataSource());
 		}
 	};
 

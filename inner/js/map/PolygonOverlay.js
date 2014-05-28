@@ -198,7 +198,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 		};
-	
+
+		// Polygon overlay does not have 'canvas' as a variable.
+		Object.defineProperty(PolygonOverlay.prototype, "canvas", {
+			get: function canvas() { return this.featuresContainerElement; }
+		});
+		
 		function setElementStylePosition(s, x, y) {
 			s.left = x + 'px';
 			s.top = y + 'px';
