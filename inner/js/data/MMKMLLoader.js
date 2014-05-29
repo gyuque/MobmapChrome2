@@ -334,5 +334,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	})();
 
 	var _tempLatLng = new LightLatLng();
+	KMLLoader.LightLatLng = LightLatLng;
 	aGlobal.mobmap.KMLLoader = KMLLoader;
 })(window);

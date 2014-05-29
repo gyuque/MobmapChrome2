@@ -576,6 +576,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.redrawMap();
 			this.applySelectionViewIfNeeded(sourceLayer);
 			this.notifySelectionChangeToExploreLayer(sourceLayer);
+			this.notifySelectionChangeToDataView(sourceLayer);
 		},
 
 
@@ -618,6 +619,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.forEachExploreLayer(function(exploreLayer) {
 				exploreLayer[methodName](sourceLayer);
 			});
+		},
+		
+		notifySelectionChangeToDataView: function(sourceLayer) {
+			this.ownerApp.getDataView().updateStaticLayerDataView();
 		},
 		
 		forEachExploreLayer: function(proc) {

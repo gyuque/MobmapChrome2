@@ -235,6 +235,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.objectIDList = [];
 		
 		this.tickClosure = this.tick.bind(this);
+		this.testFunctionProvider = null;
 	}
 	
 	GateSelectionJob.prototype = {

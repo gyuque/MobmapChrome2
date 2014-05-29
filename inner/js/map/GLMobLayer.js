@@ -546,7 +546,10 @@ function installMobLayer(pkg) {
 		var mapNE = map.getBounds().getNorthEast();
 		var mapSW = map.getBounds().getSouthWest();
 
-		grid.setOffset(-this.canvasOffset.x, -this.canvasOffset.y);
+		if (this.canvasOffset) {
+			grid.setOffset(-this.canvasOffset.x, -this.canvasOffset.y);
+		}
+
 		grid.update(pj, mapSW.lat(), mapSW.lng(), mapNE.lat(), mapNE.lng());
 		return true;
 	};

@@ -15,15 +15,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.targetPane = 'overlayLayer';
 			this.polygonDataSource = null;
 			this.featuresContainerElement = null;
+			this.projectionGrid = new mobmap.FastProjectionGrid(9);
 
 			this.ownerObject = null;
 		}
 
 		// Inherit
 		PolygonOverlay.prototype = new google.maps.OverlayView();
+		PolygonOverlay.prototype.updateProjectionGrid = mobmap.GLMobLayer.overlaybase_updateProjectionGrid;
 
 		PolygonOverlay.prototype.draw = function() {
-		
+			this.clearCurrentPaths();
+			setTimeout(this.updatePolygonCoordinates.bind(this), 17);
 		};
 
 		PolygonOverlay.prototype.onAdd = function() {
@@ -40,8 +43,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 
 		PolygonOverlay.prototype.onMapZoomChanged = function() {
-			this.clearCurrentPaths();
-			setTimeout(this.updatePolygonCoordinates.bind(this), 17);
 		};
 
 		PolygonOverlay.prototype.ensureContainerElement = function() {
@@ -67,6 +68,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				return;
 			}
 		
+			this.updateProjectionGrid(this.projectionGrid);
 			var n = ds.getNumOfPolygons();
 			for (var i = 0;i < n;++i) {
 				var pg = ds.getPolygonAt(i);
@@ -131,7 +133,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			svgElement.style.position = 'absolute';
 			setElementStylePosition(svgElement.style, outerBounds.minX, outerBounds.minY);
 		};
-	
+		
+		var _tempProjPoint = {
+			screenX:0, screenY:0,
+			lat:0, lng:0
+		};
+
 		PolygonOverlay.prototype.generatePathCoordinates = function(outList, coords, boundsOut) {
 			var prj = this.getProjection();
 			if (!prj) {return null;}
@@ -141,17 +148,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			var maxX = -minX;
 			var maxY = -minY;
 
+			var pgrid = this.projectionGrid;
+			var projPt = _tempProjPoint;
 			var n = coords.length;
 			for (var i = 0;i < n;++i) {
 				var pt = coords[i];
-				var divPt = prj.fromLatLngToDivPixel(new google.maps.LatLng(pt.y, pt.x));
+				projPt.lat = pt.y;
+				projPt.lng = pt.x;
+				pgrid.calc(projPt);
+				var dx = projPt.screenX;
+				var dy = projPt.screenY;
+
+				outList.push( ((i==0) ? 'M' : 'L') + dx+','+dy);
 			
-				outList.push( ((i==0) ? 'M' : 'L') + divPt.x+','+divPt.y);
-			
-				minX = Math.min(divPt.x, minX);
-				minY = Math.min(divPt.y, minY);
-				maxX = Math.max(divPt.x, maxX);
-				maxY = Math.max(divPt.y, maxY);
+				minX = Math.min(dx, minX);
+				minY = Math.min(dy, minY);
+				maxX = Math.max(dx, maxX);
+				maxY = Math.max(dy, maxY);
 			}
 
 			if (boundsOut) {
@@ -168,6 +181,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ds = this.polygonDataSource;
 			if (!ds) { return; }
 		
+			this.updateProjectionGrid(this.projectionGrid);
 			var n = ds.getNumOfPolygons();
 			for (var i = 0;i < n;++i) {
 				var pg = ds.getPolygonAt(i);

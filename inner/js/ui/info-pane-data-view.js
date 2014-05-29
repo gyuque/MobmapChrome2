@@ -153,6 +153,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				buttons += this.generateDetailRowButton('deselect', item, 'images/drowbtn-remove.png', 'Deselect this');
 			}
 			
+			if (this.hasCurrentSourceLayerPolygonOperation()) {
+				buttons += this.generateDetailRowButton('rungate', item, 'images/drowbtn-rungate.png', 'Run gate');
+			}
+			
 			return '<div class="mm-datatable-detail-box">'+ count+velo+buttons+ '</div>';
 		},
 		
@@ -209,6 +213,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!prj) { return null; }
 			
 			return prj.getLayerById(this.currentTargetId);
+		},
+		
+		hasCurrentSourceLayerPolygonOperation: function() {
+			var lyr = this.getCurrentSourceLayer();
+			if (!lyr) { return false; }
+			
+			return !!(lyr.capabilities & mobmap.LayerCapability.PolygonSelectable);
 		},
 		
 		generateDetailRowButton: function(commandName, boundItem, iconURL, title) {
@@ -392,24 +403,48 @@ if (!window.mobmap) { window.mobmap={}; }
 			var polygonDataSource = targetLayer.getPolygonDataSource();
 			var allCount = polygonDataSource.getNumOfPolygons();
 			var nToShow = allCount;
-			
+
+
+			var any_selected = false;
+			var sel_count = 0;
+			var selp = targetLayer.localSelectionPool;
+			if (selp.isAnySelected()) {
+				any_selected = true;
+				sel_count = selp.count();
+				nToShow = sel_count;
+			}
+
+
 			if (!this.forceShowAll && nToShow > kShortTableLimit) {
 				this.showCollapseWarning(nToShow);
 				nToShow = kShortTableLimit;
 			} else {
 				this.hideCollapseWarning();
 			}
-			
+						
 			
 			// Refer records
 			var i;
 			var arr = this.dataSourceArray;
 			arr.length = nToShow;
-			for (i = 0;i < nToShow;++i) {
+			var wroteCount = 0;
+			for (i = 0;i < allCount;++i) {
 				var pg = polygonDataSource.getPolygonAt(i);
-				arr[i] = pg.getAttributesMap();
+				if (any_selected) {
+					if (!selp.isIDSelected(pg.getId())) {
+						continue;
+					}
+				}
+				
+				arr[wroteCount++] = pg.getAttributesMap();
+
+				if (wroteCount >= nToShow) {
+					break;
+				}
 			}
 
+			this.nowShowingSelectedOnly = any_selected;
+			this.updateTableTitle(any_selected, sel_count);
 			this.dataSourceForGrid.read();
 
 			var gr = this.getDataGridObject();
@@ -451,6 +486,11 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.selectOneId(oid);
 					break;
 				}
+
+				case 'rungate': {
+					this.runGateBy(oid);
+					break;
+				}
 			}
 		},
 		
@@ -466,6 +506,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (lyr && lyr.localSelectionPool) {
 				lyr.localSelectionPool.clear(true);
 				lyr.localSelectionPool.addId(objId);
+			}
+		},
+		
+		runGateBy: function(objId) {
+			if (this.hasCurrentSourceLayerPolygonOperation()) {
+				
 			}
 		},
 		
