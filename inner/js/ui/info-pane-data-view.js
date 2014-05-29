@@ -179,14 +179,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var dispV1 = '0';
 			var dispV2 = '0';
 			
-			if (item._backKeyTime && item._fwdKeyTime) {
-				var sourceLayer = this.getCurrentSourceLayer();
-				if (sourceLayer) {
-					if (!(sourceLayer.capabilities & mobmap.LayerCapability.MarkerRenderable)) {
-						// Not supported for this layer
-						return '';
-					}
-
+			var sourceLayer = this.getCurrentSourceLayer();
+			if (sourceLayer) {
+				if (!(sourceLayer.capabilities & mobmap.LayerCapability.MarkerRenderable)) {
+					// Not supported for this layer
+					return '';
+				}
+				if (item._backKeyTime && item._fwdKeyTime) {
 					var rec1 = sourceLayer.movingData.getKeyFrameRecord(item._id, item._backKeyTime);
 					var rec2 = sourceLayer.movingData.getKeyFrameRecord(item._id, item._fwdKeyTime);
 					

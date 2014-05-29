@@ -120,6 +120,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				var outerCoords = this.readPolygonBoundary(outerBoundaries[0]);
 				pg = new KMLPolygon();
 				pg.outerCoordinates = outerCoords;
+				pg.calcCenter();
 			}
 
 			if (pg) {
@@ -160,6 +161,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.innerBoundaries = [];
 		this._svgElements = null;
 		this.attributes = {
+			x:0, y:0,
 			_id: generateAutoId()
 		};
 	}
@@ -179,6 +181,25 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getInnerBoundaryAt: function(i) {
 			return this.innerBoundaries[i] || null;
+		},
+
+		calcCenter: function() {
+			var o = this.outerCoordinates;
+			if (!o) {
+				return;
+			}
+			
+			var sum_x = 0;
+			var sum_y = 0;
+			
+			for (var i in o) {
+				var pt = o[i];
+				sum_x += pt.x;
+				sum_y += pt.y;
+			}
+			
+			this.attributes.x = sum_x / o.length;
+			this.attributes.y = sum_y / o.length;
 		},
 
 		generateGoogleMapsPaths: function() {
