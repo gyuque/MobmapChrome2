@@ -574,11 +574,35 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLocalSelectionChange: function(sourceLayer, e) {
 			this.redrawMap();
+			this.applySelectionViewIfNeeded(sourceLayer);
 			this.notifySelectionChangeToExploreLayer(sourceLayer);
 		},
-		
+
+
+		applySelectionViewIfNeeded: function(sourceLayer) {
+			// Update view if layer is a polygon layer
+			if (sourceLayer.capabilities & mobmap.LayerCapability.PolygonSelectable) {
+				this.applyPolygonSelectionView(sourceLayer);
+			}
+		},
+
+		applyPolygonSelectionView: function(sourceLayer) {
+			var ov = this.findMapOverlayFor(sourceLayer);
+			var selp = sourceLayer.localSelectionPool;
+
+			var idmap = null;
+			if (selp.isAnySelected()) {
+				idmap = selp.idmap;
+			}
+
+			ov.updateSelectionView(idmap);
+		},
+
+
 		hasLayerSelectionPool: function(targetLayer) {
-			return !!((targetLayer.capabilities & mobmap.LayerCapability.SpatialSelectable) &&
+			var caps = targetLayer.capabilities;
+			return !!(
+				 ((caps & mobmap.LayerCapability.SpatialSelectable) || (caps & mobmap.LayerCapability.PolygonSelectable)) &&
 			     targetLayer.localSelectionPool);
 		},
 		

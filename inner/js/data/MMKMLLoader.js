@@ -171,6 +171,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.attributes._id = id;
 		},
 		
+		getId: function() {
+			return this.attributes._id;
+		},
+		
 		getAttributesMap: function() {
 			return this.attributes;
 		},

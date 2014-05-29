@@ -3,12 +3,15 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	var kSVGNS = 'http://www.w3.org/2000/svg';
+	var kDefaultFillColor = 'rgba(10,30,255, 0.8)';
+	var kWeakFillColor = 'rgba(120,128,136, 0.5)';
+	
 	function installPolygonOverlay(pkg) {
 	
 		function PolygonOverlay() {
 			this.visible = true;
 			this.zoomListener = null;
-			this.svgElementList = [];
+			this.svgGroupElementList = [];
 			this.targetPane = 'overlayLayer';
 			this.polygonDataSource = null;
 			this.featuresContainerElement = null;
@@ -89,7 +92,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.generateInnderBoundaryCoordinates(coordList, sourcePolygon);
 			pathElement.setAttribute('d', coordList.join(' '));
 	
-			svgG.setAttribute('fill', 'rgba(10,30,255, 0.7)');
+			svgG.setAttribute('fill', kDefaultFillColor);
 			svgG.setAttribute('fill-rule', 'evenodd');
 
 			sourcePolygon._svgElements = {
@@ -97,9 +100,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				g: svgG,
 				path: pathElement
 			};
-		
+
+			svgG.setAttribute('data-id', sourcePolygon.getId());
 			svgG.appendChild(pathElement);
 			this.applyPolygonBounds(svgElement, outerBounds);
+			this.svgGroupElementList.push(svgG);
 		};
 	
 		PolygonOverlay.prototype.generateInnderBoundaryCoordinates = function(outList, sourcePolygon) {
@@ -207,6 +212,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.featuresContainerElement.style.visibility = v ? '' : 'hidden';
 			this.visible = v;
+		};
+		
+		PolygonOverlay.prototype.updateSelectionView = function(idmap) {
+			var glist = this.svgGroupElementList;
+			var len = glist.length;
+			
+			for (var i = 0;i < len;++i) {
+				var gElement = glist[i];
+				var pid = gElement.getAttribute('data-id');
+				var clr = kDefaultFillColor;
+				
+				if (idmap) {
+					if (!idmap[pid]) {
+						clr = kWeakFillColor;
+					}
+				}
+				
+				gElement.setAttribute('fill', clr);
+			}
 		};
 
 		// Polygon overlay does not have 'canvas' as a variable.

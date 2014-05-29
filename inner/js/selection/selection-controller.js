@@ -52,7 +52,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		clear: function(suppress_event) {
 			var prj = this.ownerApp.getCurrentProject();
 			prj.forEachLayer(function(index, layer){
-				if (layer.capabilities & mobmap.LayerCapability.SpatialSelectable) {
+				if (
+						(layer.capabilities & mobmap.LayerCapability.SpatialSelectable) ||
+						(layer.capabilities & mobmap.LayerCapability.PolygonSelectable) 
+					) {
 					layer.localSelectionPool.clear(suppress_event);
 				}
 			});
