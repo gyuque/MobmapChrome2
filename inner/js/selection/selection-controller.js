@@ -173,6 +173,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			job.run();
 		},
 		
+		runGateSelectionWithTestProvider: function(testProvider) {
+			var job = new GateSelectionJob(this,
+				0, 0, 0, 0, GateDirection.Bidirectional, testProvider);
+				
+			job.run();
+		},
+		
 		// Expression
 		doExpressionSelection: function(targetLayerId, expressionString) {
 			var prj = this.ownerApp.getCurrentProject();
@@ -222,7 +229,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	// GATE
-	function GateSelectionJob(owner, lat1, lng1, lat2, lng2, direction) {
+	function GateSelectionJob(owner, lat1, lng1, lat2, lng2, direction, alternativeTestProvider) {
 		this.end1 = {lat:lat1, lng:lng1};
 		this.end2 = {lat:lat2, lng:lng2};
 		this.direction = direction;
@@ -235,7 +242,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.objectIDList = [];
 		
 		this.tickClosure = this.tick.bind(this);
-		this.testFunctionProvider = null;
+		this.testFunctionProvider = alternativeTestProvider || null;
 	}
 	
 	GateSelectionJob.prototype = {
@@ -404,6 +411,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		doCrossTestBetweenRecords: function(rec1, rec2) {
+			if (this.testFunctionProvider) {
+				return this.testFunctionProvider.testBetweenRecords(rec1, rec2);
+			}
+			
 			var g1 = this.end1;
 			var g2 = this.end2;
 

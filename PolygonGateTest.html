@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+		<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&amp;libraries=geometry"></script>
 		<script type="text/javascript" src="inner/js/jquery-1.10.2.js"></script>
 		<script type="text/javascript" src="inner/js/mm-utils.js"></script>
 		<script type="text/javascript" src="inner/js/constants.js"></script>
@@ -13,16 +13,47 @@
 		<script type="text/javascript" src="inner/js/data/DateTimeModel.js"></script>
 		<script type="text/javascript" src="inner/js/data/TimeRangeSelectionModel.js"></script>
 		<script type="text/javascript" src="inner/js/data/MMKMLLoader.js"></script>
+		<script type="text/javascript" src="inner/js/data/moving-data.js"></script>
 		<script type="text/javascript" src="inner/js/selection/selection-pool.js"></script>
+		<script type="text/javascript" src="inner/js/selection/selection-controller.js"></script>
+		<script type="text/javascript" src="inner/js/selection/PolygonGateTester.js"></script>
 		
 		<script type="text/javascript">
 'use strict';
 
 var gTestKMLLoader = null;
 var gTestProject = null;
+var gDriverApp = null;
 
 function launch() {
+	setupMap();
 	loadTestData();
+	
+	// polygon check
+	if (gTestKMLLoader.getNumOfPolygons() < 1) {
+		throw "No valid polygons";
+	}
+	
+	var testPolygon = gTestKMLLoader.getPolygonAt(0);
+	console.log("Test polygon", testPolygon);
+	
+	gDriverApp = new DriverApp(testPolygon, gTestProject);
+	setTimeout(function() {
+		gDriverApp.run();
+		console.log(gTestProject.getLayerList().getLayerAt(0).localSelectionPool.count());
+	}, 90);
+}
+
+function setupMap() {
+	var box = document.getElementById('map-box');
+	
+	var mapOptions = {
+	          center: new google.maps.LatLng(35.7, 139.8),
+	          zoom: 15,
+	          mapTypeId: google.maps.MapTypeId.ROADMAP
+	        };
+
+	var gmap = new google.maps.Map(box, mapOptions);	
 }
 
 function loadTestData() {
@@ -40,24 +71,53 @@ function loadTestDataKML() {
 	}
 
 	gTestKMLLoader = new mobmap.KMLLoader(xmlDoc);
+	
 }
 
 function loadTrajectoryData() {
 	var TestTrj = [
-		{id:1, t: 0, y:35.692001, x:139.739592},
-		{id:1, t:20, y:35.695678, x:139.749784},
-		{id:1, t:40, y:35.70589,  x:139.749355}
+		{_id:1, _time: 0, y:35.692001, x:139.739592},
+		{_id:1, _time:20, y:35.695678, x:139.749784},
+		{_id:1, _time:40, y:35.70589,  x:139.749355}
 	];
 	
 	gTestProject = new mobmap.MMProject();
-	gTestProject.addMovingObjectLayer();
+	var newLayer = gTestProject.addMovingObjectLayer();
+	newLayer.initTimeRange();
+	
+	var mdat = newLayer.newMovingData();
+	for (var i in TestTrj) {
+		var sourceRecord = TestTrj[i];
+		 newLayer.registerNewMovingObjectRecord(sourceRecord);
+	}
+	mdat.close();
+	
+	console.log(newLayer.dataTimeRange)
 }
+
+function DriverApp(testPolygon, prj) {
+	this.testPolygon = testPolygon;
+	this.testProject = prj;
+	this.selectionController = new mobmap.SelectionController(this);
+}
+
+DriverApp.prototype = {
+	run: function() {
+		var tester = new mobmap.PolygonGateTester(this.testPolygon);
+		this.selectionController.runGateSelectionWithTestProvider(tester);
+	},
+	
+	getCurrentProject: function() {
+		return this.testProject;
+	}
+};
 
 
 		</script>
 		
 	</head>
 	<body onload="void launch()">
+		<div id="map-box" style="height: 200px"></div>
 		
 <script type="text/plain" id="test-kml"><?xml version="1.0" encoding="UTF-8"?>
 	<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
