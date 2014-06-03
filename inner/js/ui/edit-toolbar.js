@@ -44,7 +44,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		addSelectionButtons: function(colName) {
 			return this.addButtons(colName, [
 					['sel_clear', 0],
-					['sel_rect', 1]
+					['sel_rect', 1],
+					['sel_poly', 10]
 				],
 				this.observeSelectionButton.bind(this)
 			);
@@ -139,6 +140,12 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.onSelectionRectButtonDown();
 				}
 				break;
+
+				case 'sel_poly':
+				if (!this.deselectSelectionPolygonButton()) {
+					this.onSelectionPolygonButtonDown();
+				}
+				break;
 			}
 		},
 
@@ -176,6 +183,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onSelectionPolygonButtonDown: function() {
+			var c = this.getOwnerSelectionController();
+			if (c) {
+				console.log("IMPL HERE")
+			}
+		},
+		
 		onGateButtonDown: function() {
 			var c = this.getOwnerSelectionController();
 			if (c) {
@@ -191,6 +205,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		deselectSelectionRectButton: function() {
 			return this.deselectButtonIfSelectionSessionActive(mobmap.SelectionSessionType.Rect);
+		},
+
+		deselectSelectionPolygonButton: function() {
+			return this.deselectButtonIfSelectionSessionActive(mobmap.SelectionSessionType.PolygonPick);
 		},
 
 		deselectLineGateButton: function() {
@@ -223,11 +241,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		updateSelectionButtonsState: function(currentSessionType) {
 			var sel_name = null;
 			switch(currentSessionType) {
-				case mobmap.SelectionSessionType.Rect:      sel_name = 'sel_rect';  break;
-				case mobmap.SelectionSessionType.LineGate:  sel_name = 'gate_line'; break;
+				case mobmap.SelectionSessionType.Rect:        sel_name = 'sel_rect';  break;
+				case mobmap.SelectionSessionType.PolygonPick: sel_name = 'sel_poly';  break;
+				case mobmap.SelectionSessionType.LineGate:    sel_name = 'gate_line'; break;
 			}
 			
-			var setButtonNames = ['sel_rect', 'gate_line'];
+			var setButtonNames = ['sel_rect', 'sel_poly', 'gate_line'];
 			var len = setButtonNames.length;
 			for (var i = 0;i < len;++i) {
 				var targetName = setButtonNames[i];

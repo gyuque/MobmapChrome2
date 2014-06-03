@@ -79,23 +79,29 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 		},
-		
+
+
 		startRectSelectionSession: function() {
-			this.disposeCurrentSession();
-			
-			this.fireNewSession();
-			this.currentSelectionSession = new mobmap.RectSelectionSession();
-			this.fireAfterNewSession();
+			this.startSessionOfType(mobmap.RectSelectionSession);
+		},
+
+		startPolygonPickSelectionSession: function() {
+			this.startSessionOfType(mobmap.PolygonPickSelectionSession);
+		},
+
+		startLineGateSession: function() {
+			this.startSessionOfType(mobmap.LineGateSession);
 		},
 		
-		startLineGateSession: function() {
+		startSessionOfType: function(sessionClass) {
 			this.disposeCurrentSession();
 
 			this.fireNewSession();
-			this.currentSelectionSession = new mobmap.LineGateSession();
+			this.currentSelectionSession = new sessionClass();
 			this.fireAfterNewSession();
 		},
-		
+
+
 		cancelSessionIfType: function(stype, fireAfter) {
 			if (this.currentSelectionSession) {
 				if (this.currentSelectionSession.getType() === stype) {
@@ -177,7 +183,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var job = new GateSelectionJob(this,
 				0, 0, 0, 0, GateDirection.Bidirectional, testProvider);
 			
-			job.chunkSize = 200;
+			job.chunkSize = 500;
 			job.run();
 		},
 

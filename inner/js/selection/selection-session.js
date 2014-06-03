@@ -6,10 +6,20 @@ if (!window.mobmap) { window.mobmap={}; }
 	var SelectionSessionType = {
 		Unknown: 0,
 		Rect: 1,
+		PolygonPick: 5,
 		LineGate: 11
 	};
 	
 	var SelectionSessionBase = {
+		installSinglePointSessionAPI: function(proto) {
+			proto.setPosition = function(lat, lng) {
+				this.pos.lat = lat;
+				this.pos.lng = lng;
+			};
+
+			proto.getPosition = function() { return this.pos; };
+		},
+		
 		installTwoPointsSessionAPI: function(proto) {
 			proto.setStartPos = function(lat, lng) {
 				this.startPos.lat = lat;
@@ -102,6 +112,32 @@ if (!window.mobmap) { window.mobmap={}; }
 	 installTwoPointsSessionAPI(RectSelectionSession.prototype);
 
 	// ------------------------------------
+	function PolygonPickSelectionSession() {
+		this.pos = new mobmap.MMLatLng();
+	}
+
+	PolygonPickSelectionSession.prototype = {
+		getType: function() {
+			return SelectionSessionType.PolygonPick;
+		},
+	
+		isDraggingSelectionRecommended: function() {
+			return false;
+		},
+	
+		isRectangleFeedbackRecommended: function() {
+			return false;
+		},
+
+		isLineFeedbackRecommended: function() {
+			return false;
+		}
+	}
+	
+	SelectionSessionBase.
+	 installSinglePointSessionAPI(PolygonPickSelectionSession.prototype);
+
+	// ------------------------------------
 	function LineGateSession()  {
 		this.startPos = new mobmap.MMLatLng();
 		this.endPos = new mobmap.MMLatLng();
@@ -143,5 +179,6 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	aGlobal.mobmap.SelectionSessionType = SelectionSessionType;
 	aGlobal.mobmap.RectSelectionSession = RectSelectionSession;
+	aGlobal.mobmap.PolygonPickSelectionSession = PolygonPickSelectionSession;
 	aGlobal.mobmap.LineGateSession = LineGateSession;
 })(window);
