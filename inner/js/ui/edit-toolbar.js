@@ -60,7 +60,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		addAnnotationButtons: function(colName) {
 			return this.addButtons(colName, [
-					['ann_location', 9]
+					['ann_location', 11]
 				],
 				this.observeAnnotationButton.bind(this)
 			);
