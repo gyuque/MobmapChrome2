@@ -152,6 +152,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getPolygonAt: function(i) {
 			return this.polygonList[i] || null;
+		},
+		
+		findPolygonById: function(pid) {
+			var ls = this.polygonList;
+			if (!ls) { return null; }
+			
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var pg = ls[i];
+				if (pg.getId() === pid) {
+					return pg;
+				}
+			}
+			
+			return null;
 		}
 	};
 	

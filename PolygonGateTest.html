@@ -39,9 +39,34 @@ function launch() {
 	
 	gDriverApp = new DriverApp(testPolygon, gTestProject);
 	setTimeout(function() {
-		gDriverApp.run();
-		console.log(gTestProject.getLayerList().getLayerAt(0).localSelectionPool.count());
+		doHitTest(null);
+		doHitTest({start:0, end:10});
+		doHitTest({start:25*60, end:40*60});
+		doHitTest({start:0, end:1});
 	}, 90);
+}
+
+function doHitTest(range) {
+	var layer = gTestProject.getLayerList().getLayerAt(0);
+	var selp = layer.localSelectionPool;
+	selp.clear();
+	
+	gTestProject.timeRangeSelection.clear();
+	console.log('-----------------------------');
+	if (!range) {
+		console.log("TimeRange: None");
+	} else {
+		console.log("TimeRange: " + range.start + " - " + range.end);
+		gTestProject.timeRangeSelection.selectSingleRange(range.start, range.end);
+	}
+
+	gDriverApp.run();
+	var n = selp.count();
+	
+	console.log('N=',n);
+	for (var i in selp.idmap) {
+		console.log('      ' + i);
+	}
 }
 
 function setupMap() {
@@ -76,9 +101,18 @@ function loadTestDataKML() {
 
 function loadTrajectoryData() {
 	var TestTrj = [
-		{_id:1, _time: 0, y:35.692001, x:139.739592},
-		{_id:1, _time:20, y:35.695678, x:139.749784},
-		{_id:1, _time:40, y:35.70589,  x:139.749355}
+		{_id:1, _time: 0*60, y:35.692001, x:139.739592},
+		{_id:1, _time:20*60, y:35.695678, x:139.749784},
+		{_id:1, _time:40*60, y:35.70589,  x:139.749355},
+
+		{_id:2, _time: 0*60, y:35.692001, x:139.729592},
+		{_id:2, _time:20*60, y:35.695678, x:139.739784},
+		{_id:2, _time:40*60, y:35.70589,  x:139.739355},
+		
+		{_id:3, _time: 2*60, y:35.7014, x:139.746},
+		{_id:3, _time:20*60, y:35.7008, x:139.7469},
+		
+		{_id:4, _time:10, y:35.700331, x:139.747}
 	];
 	
 	gTestProject = new mobmap.MMProject();
@@ -109,6 +143,9 @@ DriverApp.prototype = {
 	
 	getCurrentProject: function() {
 		return this.testProject;
+	},
+	
+	updateGateBusyDialog: function(r) {
 	}
 };
 

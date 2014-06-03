@@ -37,7 +37,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		getSelectedTimeRage: function() {
 			var prj = this.ownerApp.getCurrentProject();
 			if (!prj) { return null; }
-			
+
 			return prj.timeRangeSelection.getFirstSelection();
 		},
 		
@@ -176,8 +176,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		runGateSelectionWithTestProvider: function(testProvider) {
 			var job = new GateSelectionJob(this,
 				0, 0, 0, 0, GateDirection.Bidirectional, testProvider);
-				
+			
+			job.chunkSize = 200;
 			job.run();
+		},
+
+		notifyGateJobProgress: function(rate) {
+			this.ownerApp.updateGateBusyDialog(rate);
 		},
 		
 		// Expression
@@ -305,6 +310,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				targetLayer.localSelectionPool.fire();
 			}
 			
+			if (this.owner.notifyGateJobProgress) {
+				this.owner.notifyGateJobProgress(this.objectIndex / idCount);
+			}
+			
 			return shouldContinue;
 		},
 
@@ -336,7 +345,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		runGateOnTimedList: function(layer, timedList, selectedTimeRange, objectID) {
-			if (!timedList.hasMoreTwoEnds()) { return false; }
+			if (!timedList.hasMoreTwoEnds()) {
+				return this.runGateOnSingleRecord(layer, timedList, objectID);
+			}
 			
 			var minT = layer.dataTimeRange.start;
 			var maxT = layer.dataTimeRange.end;
@@ -346,12 +357,30 @@ if (!window.mobmap) { window.mobmap={}; }
 				maxT = selectedTimeRange.end;
 			}
 			
+			var selp = layer.localSelectionPool;
 			var recordList = timedList.getRecordList();
 			var firstRecord = recordList[0];
 			var lastRecord  = recordList[ recordList.length-1 ];
 
 			var recMinTime = firstRecord._time;
 			var recMaxTime = lastRecord._time;
+			
+			// Outside time range
+			if (recMaxTime <= minT) {
+				if (this.testFunctionProvider) {
+					if (this.testFunctionProvider.testSingleRecord(lastRecord)) {
+						selp.addId(objectID, true);
+					}
+				}
+			}
+
+			if (recMinTime >= maxT) {
+				if (this.testFunctionProvider) {
+					if (this.testFunctionProvider.testSingleRecord(firstRecord)) {
+						selp.addId(objectID, true);
+					}
+				}
+			}
 
 			// Find start point
 			var nextIndex = 0;
@@ -378,7 +407,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Loop in timelist
 			var tlIndex = nextIndex-1;
 			var segmentPrevRecord = null;
-			var selp = layer.localSelectionPool;
 			for (;;) {
 				if (currentRecord && segmentPrevRecord) {
 					if (this.doCrossTestBetweenRecords(segmentPrevRecord, currentRecord)) {
@@ -407,6 +435,23 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
+			return false;
+		},
+		
+		runGateOnSingleRecord: function(layer, timedList, objectID) {
+			if (!this.testFunctionProvider) {
+				return false;
+			}
+			
+			var records = timedList.getRecordList();
+			if (records.length > 0) {
+				if (this.testFunctionProvider.testSingleRecord(records[0])) {
+					console.log("SINGLE")
+					layer.localSelectionPool.addId(objectID, true);
+					return true;
+				}
+			}
+
 			return false;
 		},
 

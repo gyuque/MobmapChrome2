@@ -511,7 +511,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		runGateBy: function(objId) {
 			if (this.hasCurrentSourceLayerPolygonOperation()) {
+
+				var layer = this.getCurrentSourceLayer();
+				var pgDataSource = layer.getPolygonDataSource();
+				var gatePolygon = pgDataSource.findPolygonById(objId);
+				console.log(gatePolygon)
+				if (gatePolygon) {
+					this.ownerApp.showGateBusyDialog();
+					var tester = new mobmap.PolygonGateTester(gatePolygon);
 				
+					this.
+					 ownerApp.
+					 getSelectionController().
+					 runGateSelectionWithTestProvider(tester);
+				}
 			}
 		},
 		

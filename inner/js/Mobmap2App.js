@@ -285,6 +285,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		showGateBusyDialog: function() { this.gateBusyDialog.showDialog(); },
 		closeGateBusyDialog: function() { this.gateBusyDialog.close(); },
+		updateGateBusyDialog: function(progressRate) {
+			this.gateBusyDialog.showProgress(progressRate);
+		},
 		
 		// Selection operations
 		clearSelection: function() {
