@@ -143,6 +143,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		generateRowDetailBox: function(item) {
+			var gateOptionBox = '';
 			var count = this.generateRowDetailRecordsCount(item._id);
 			var velo  = this.generateRowDetailVelocity(item);
 			var buttons = 
@@ -155,9 +156,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (this.hasCurrentSourceLayerPolygonOperation()) {
 				buttons += this.generateDetailRowButton('rungate', item, 'images/drowbtn-rungate.png', 'Run gate');
+				gateOptionBox = '<div class="mm-drow-gate-option-box" style="display:none"><img src="images/drow-option-a.png" alt="" class="mm-drow-option-a">' +
+				                  this.generateGateOptionBuuttons() + '</div>';
 			}
 			
-			return '<div class="mm-datatable-detail-box">'+ count+velo+buttons+ '</div>';
+			
+			return '<div class="mm-datatable-detail-box">'+ count+velo+buttons+ gateOptionBox +'</div>';
+		},
+		
+		generateGateOptionBuuttons: function() {
+			return '<button>Points + edges</button><button>Record points only</button>';
 		},
 		
 		generateRowDetailRecordsCount: function(objId) {
@@ -488,7 +496,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 
 				case 'rungate': {
-					this.runGateBy(oid);
+					// this.runGateBy(oid);
+					this.toggleGateOptionBox(sourceElement);
 					break;
 				}
 			}
@@ -507,6 +516,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				lyr.localSelectionPool.clear(true);
 				lyr.localSelectionPool.addId(objId);
 			}
+		},
+		
+		toggleGateOptionBox: function(sourceElement) {
+			$(sourceElement.parentNode).find('.mm-drow-gate-option-box').toggle();
 		},
 		
 		runGateBy: function(objId) {
