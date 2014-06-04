@@ -25,6 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (!valid) {
 					if (callback) {
 						callback(null);
+						return;
 					}
 				}
 

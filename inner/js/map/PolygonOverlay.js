@@ -37,9 +37,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var map = this.getMap();
 			this.zoomListener = google.maps.event.addListener(map, 'zoom_changed', this.onMapZoomChanged.bind(this) );
 		};
+
+		PolygonOverlay.prototype.willRemove = function() {
+		
+		};
 	
 		PolygonOverlay.prototype.onRemove = function() {
-		
+			this.canvas.parentNode.removeChild(this.canvas);
 		};
 
 		PolygonOverlay.prototype.onMapZoomChanged = function() {
@@ -48,6 +52,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		PolygonOverlay.prototype.ensureContainerElement = function() {
 			if (!this.featuresContainerElement) {
 				this.featuresContainerElement = document.createElement('div');
+				this.featuresContainerElement.className = 'mm-pg-svg-container';
 			}
 		
 			return this.featuresContainerElement;
@@ -90,6 +95,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var outer = sourcePolygon.getOuterBoundary();
 		
 			var pathElement = document.createElementNS(kSVGNS, 'path');
+			// pathElement.setAttribute('class', 'mm-polygon-path');
 			this.generatePathCoordinates(coordList, outer, outerBounds);
 			this.generateInnderBoundaryCoordinates(coordList, sourcePolygon);
 			pathElement.setAttribute('d', coordList.join(' '));

@@ -242,6 +242,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// KML polygons
 		loadPolygonsFromKML: function() {
+			this.localPolygonsKMLFilePicker.reset();
 			this.localPolygonsKMLFilePicker.open();
 		},
 		
@@ -253,6 +254,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		afterLocalPolygonsKMLRead: function(kmlLoader) {
+			if (!kmlLoader) {
+				// bad file
+				this.loadErrorDialog.showDialog();
+				return;
+			}
+			
 			var newLayer = this.currentProject.addPolygonLayer();
 			newLayer.setSourceLoader(kmlLoader);
 			newLayer.afterLoadFinish();
