@@ -186,7 +186,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onSelectionPolygonButtonDown: function() {
 			var c = this.getOwnerSelectionController();
 			if (c) {
-				console.log("IMPL HERE")
+				c.startPolygonPickSelectionSession();
 			}
 		},
 		

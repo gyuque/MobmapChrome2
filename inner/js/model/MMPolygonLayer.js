@@ -67,6 +67,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		bindOverlay: function(mapOverlay) {
 			mapOverlay.setDataSource(this.getPolygonDataSource());
+		},
+		
+		pickPolygonByPoint: function(lat, lng) {
+			var selp = this.localSelectionPool;
+			var ds = this.getPolygonDataSource();
+			
+			var sel_changed = false;
+			var idmap = selp.idmap;
+
+			var n = ds.getNumOfPolygons();
+			for (var i = 0;i < n;++i) {
+				var pg = ds.getPolygonAt(i);
+				if (pg.checkLatLngContained(lat, lng)) {
+					var pid = pg.getId();
+					if (!idmap[pid]) {
+						selp.addId(pid, true);
+						sel_changed = true;
+					}
+				}
+			}
+			
+			if (sel_changed) {
+				selp.fire();
+			}
 		}
 	};
 

@@ -15,6 +15,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			proto.setPosition = function(lat, lng) {
 				this.pos.lat = lat;
 				this.pos.lng = lng;
+				
+				if (this.afterPositionSet) {
+					this.afterPositionSet();
+				}
 			};
 
 			proto.getPosition = function() { return this.pos; };
@@ -50,6 +54,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		isDraggingSelectionRecommended: function() {
 			return true;
+		},
+
+		isClickingSelectionRecommended: function() {
+			return false;
 		},
 		
 		isRectangleFeedbackRecommended: function() {
@@ -124,13 +132,29 @@ if (!window.mobmap) { window.mobmap={}; }
 		isDraggingSelectionRecommended: function() {
 			return false;
 		},
-	
+
+		isClickingSelectionRecommended: function() {
+			return true;
+		},
+
 		isRectangleFeedbackRecommended: function() {
 			return false;
 		},
 
 		isLineFeedbackRecommended: function() {
 			return false;
+		},
+		
+		makeIDCollection: function(targetProject) {
+			var ls = targetProject.getLayerList();
+			var len = ls.getCount();
+
+			for (var i = 0;i < len;++i) {
+				var lyr = ls.getLayerAt(i);
+				if (lyr.capabilities & mobmap.LayerCapability.PolygonSelectable) {
+					lyr.pickPolygonByPoint(this.pos.lat, this.pos.lng);
+				}
+			}
 		}
 	}
 	
@@ -152,7 +176,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		isDraggingSelectionRecommended: function() {
 			return true;
 		},
-		
+
+		isClickingSelectionRecommended: function() {
+			return false;
+		},
+
 		isRectangleFeedbackRecommended: function() {
 			return false;
 		},

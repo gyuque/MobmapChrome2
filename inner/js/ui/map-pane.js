@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	var PMODE_DEFAULT  = 0;
 	var PMODE_DRAG_SEL = 1;
+	var PMODE_CLICK_SEL = 2;
 	
 	var SEL_FEEDBACK_RECT = 0;
 	var SEL_FEEDBACK_LINE = 1;
@@ -163,6 +164,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.pointingMode = PMODE_DRAG_SEL;
 			this.changePointerStyle();
 		},
+
+		enterClickSelectionMode: function() {
+			this.pointingMode = PMODE_CLICK_SEL;
+			this.changePointerStyle();
+		},
 		
 		leaveSpecialPointingMode: function() {
 			this.nowCapturingDrag = false;
@@ -173,9 +179,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		changePointerStyle: function() {
 			var j = this.jContainerElement;
 			if (this.pointingMode === PMODE_DRAG_SEL) {
-				j.addClass('on-selection');
+				j.addClass('on-selection').removeClass('on-click-selection');
+			} else if (this.pointingMode === PMODE_CLICK_SEL) {
+				j.addClass('on-click-selection').removeClass('on-selection');
 			} else {
-				j.removeClass('on-selection');
+				j.removeClass('on-selection').removeClass('on-click-selection');
 			}
 		},
 		
@@ -218,6 +226,13 @@ if (!window.mobmap) { window.mobmap={}; }
 					var sc = this.ownerApp.getSelectionController();
 					sc.putSessionFirstPoint(pos.lat(), pos.lng());
 				}
+			} else if (this.pointingMode === PMODE_CLICK_SEL) {
+				var pos = this.latLngFromClick(e);
+				if (pos) {
+					var sc = this.ownerApp.getSelectionController();
+					sc.putSessionClickPoint(pos.lat(), pos.lng());
+					sc.commitClickingSelection();
+				}
 			}
 		},
 		
@@ -247,6 +262,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				var drg_mode = sess.isDraggingSelectionRecommended();
 				if (drg_mode) {
 					this.enterDragSelectionMode();
+				}
+				
+				var clk_mode = sess.isClickingSelectionRecommended();
+				if (clk_mode) {
+					this.enterClickSelectionMode();
 				}
 			}
 			

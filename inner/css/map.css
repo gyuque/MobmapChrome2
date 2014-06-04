@@ -2,6 +2,9 @@
 	cursor: crosshair !important;
 }
 
+.on-click-selection>div>div>div {
+	cursor: default !important;
+}
 .onmap-button-image:active {
 	padding-top: 1px;
 }

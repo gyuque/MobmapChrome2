@@ -128,6 +128,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		putSessionClickPoint: function(lat, lng) {
+			var s = this.currentSelectionSession;
+			if (s && s.setPosition) {
+				s.setPosition(lat, lng);
+				this.fireAfterSessionStateUpdate(s);
+			}
+		},
+		
 		commitDraggingSelection: function() {
 			if (this.currentSelectionSession) {
 				var prj = this.ownerApp.getCurrentProject();
@@ -141,6 +149,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			this.disposeCurrentSession(true);
+		},
+		
+		commitClickingSelection: function() {
+			if (this.currentSelectionSession) {
+				var prj = this.ownerApp.getCurrentProject();
+				this.currentSelectionSession.makeIDCollection(prj);
+			}
 		},
 		
 		fireSessionDispose: function() { this.callResponders('selWillDisposeCurrentSession'); },
