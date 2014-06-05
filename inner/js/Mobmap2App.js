@@ -172,6 +172,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.getMapPane().panTo(lat, lng);
 		},
 		
+		openExportSelectionWindow: function(targetLayer) {
+			console.log("IMPL HERE", targetLayer);
+		},
+		
 		loadLocalCSVMovingData: function() {
 			this.localfilePicker.open();
 		},

@@ -83,6 +83,11 @@ div[data-itemname=data_detail] {
 	right: 2px;
 }
 
+.mm-datatable-title-container img.mm-datatable-ontitle-button-i2 {
+	right: 25px;
+}
+
+
 .mm-drow-gate-option-box {
 	position: relative;
 	margin: 2px;

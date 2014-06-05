@@ -258,10 +258,29 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addTitleAreaButton: function(containerElement) {
-			var img = $H('img', 'mm-datatable-ontitle-button');
-			img.src = "images/drowbtn-add.png";
-			img.title = "Add to annotations";
-			$(img).click( this.onAddSelectionToAnnotationClick.bind(this) );
+			this.generateTitleAreaButton(
+				containerElement,
+				"images/drowbtn-add.png",
+				"Add to annotations",
+				this.onAddSelectionToAnnotationClick.bind(this), false);
+
+			this.generateTitleAreaButton(
+				containerElement,
+				"images/drowbtn-export.png",
+				"Export",
+				this.onExportButtonClick.bind(this), true);
+		},
+		
+		generateTitleAreaButton: function(containerElement, iconURL, title, closure, second) {
+			var cls = 'mm-datatable-ontitle-button';
+			if (second) {
+				cls += ' mm-datatable-ontitle-button-i2';
+			}
+
+			var img = $H('img', cls);
+			img.src = iconURL;
+			img.title = title;
+			$(img).click( closure );
 			containerElement.appendChild(img);
 		},
 		
@@ -541,7 +560,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				var layer = this.getCurrentSourceLayer();
 				var pgDataSource = layer.getPolygonDataSource();
 				var gatePolygon = pgDataSource.findPolygonById(objId);
-				console.log(gatePolygon)
+
 				if (gatePolygon) {
 					this.ownerApp.showGateBusyDialog();
 					var tester = new mobmap.PolygonGateTester(gatePolygon, pointIncOnly);
@@ -628,6 +647,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.ownerApp) {
 				this.ownerApp.addCurrentSelectionToAnnotations(this.currentTargetId);
 				this.ownerApp.revealAnnotationView();
+			}
+		},
+		
+		onExportButtonClick: function() {
+			if (this.ownerApp) {
+				this.ownerApp.openExportSelectionWindow( this.getCurrentSourceLayer() );
 			}
 		}
 	};
