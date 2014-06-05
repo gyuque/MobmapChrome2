@@ -43,16 +43,23 @@ function launch() {
 		doHitTest({start:0, end:10});
 		doHitTest({start:25*60, end:40*60});
 		doHitTest({start:0, end:1});
+		doHitTest(null, true);
 	}, 90);
 }
 
-function doHitTest(range) {
+function doHitTest(range, ptonly) {
+	ptonly = !!ptonly;
+	
 	var layer = gTestProject.getLayerList().getLayerAt(0);
 	var selp = layer.localSelectionPool;
 	selp.clear();
 	
 	gTestProject.timeRangeSelection.clear();
 	console.log('-----------------------------');
+	if (ptonly) {
+		console.log(": : Points only");
+	}
+	
 	if (!range) {
 		console.log("TimeRange: None");
 	} else {
@@ -60,7 +67,7 @@ function doHitTest(range) {
 		gTestProject.timeRangeSelection.selectSingleRange(range.start, range.end);
 	}
 
-	gDriverApp.run();
+	gDriverApp.run(ptonly);
 	var n = selp.count();
 	
 	console.log('N=',n);
@@ -136,8 +143,8 @@ function DriverApp(testPolygon, prj) {
 }
 
 DriverApp.prototype = {
-	run: function() {
-		var tester = new mobmap.PolygonGateTester(this.testPolygon);
+	run: function(ptonly) {
+		var tester = new mobmap.PolygonGateTester(this.testPolygon, ptonly);
 		this.selectionController.runGateSelectionWithTestProvider(tester);
 	},
 	

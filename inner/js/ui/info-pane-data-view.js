@@ -157,15 +157,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.hasCurrentSourceLayerPolygonOperation()) {
 				buttons += this.generateDetailRowButton('rungate', item, 'images/drowbtn-rungate.png', 'Run gate');
 				gateOptionBox = '<div class="mm-drow-gate-option-box" style="display:none"><img src="images/drow-option-a.png" alt="" class="mm-drow-option-a">' +
-				                  this.generateGateOptionBuuttons() + '</div>';
+				                  this.generateGateOptionBuuttons(item) + '</div>';
 			}
 			
 			
 			return '<div class="mm-datatable-detail-box">'+ count+velo+buttons+ gateOptionBox +'</div>';
 		},
 		
-		generateGateOptionBuuttons: function() {
-			return '<button>Points + edges</button><button>Record points only</button>';
+		generateGateOptionBuuttons: function(item) {
+			function makebtn(label, cmd) {
+				return '<button data-command="' +cmd+ '" data-objid="' +item._id+ '">' +label+ '</button>';
+			}
+			
+			return makebtn('Points + edges', 'rungate-e') + makebtn('Record points only', 'rungate-p');
 		},
 		
 		generateRowDetailRecordsCount: function(objId) {
@@ -496,8 +500,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 
 				case 'rungate': {
-					// this.runGateBy(oid);
 					this.toggleGateOptionBox(sourceElement);
+					break;
+				}
+				
+				case 'rungate-e': {
+					this.runGateBy(oid, false);
+					break;
+				}
+				
+				case 'rungate-p': {
+					this.runGateBy(oid, true);
 					break;
 				}
 			}
@@ -522,7 +535,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(sourceElement.parentNode).find('.mm-drow-gate-option-box').toggle();
 		},
 		
-		runGateBy: function(objId) {
+		runGateBy: function(objId, pointIncOnly) {
 			if (this.hasCurrentSourceLayerPolygonOperation()) {
 
 				var layer = this.getCurrentSourceLayer();
@@ -531,7 +544,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				console.log(gatePolygon)
 				if (gatePolygon) {
 					this.ownerApp.showGateBusyDialog();
-					var tester = new mobmap.PolygonGateTester(gatePolygon);
+					var tester = new mobmap.PolygonGateTester(gatePolygon, pointIncOnly);
 				
 					this.
 					 ownerApp.

@@ -198,7 +198,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var job = new GateSelectionJob(this,
 				0, 0, 0, 0, GateDirection.Bidirectional, testProvider);
 			
-			job.chunkSize = 500;
+			job.chunkSize = 1000;
 			job.run();
 		},
 

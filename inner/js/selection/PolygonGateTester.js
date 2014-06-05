@@ -3,7 +3,8 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	
-	function PolygonGateTester(gatePolygon) {
+	function PolygonGateTester(gatePolygon, pointIncludeTestOnly) {
+		this.pointIncludeTestOnly = pointIncludeTestOnly;
 		this.gatePolygon = gatePolygon;
 		this.bounds = {
 			xMin: -999,
@@ -27,6 +28,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (record1.x > xMax && record2.x > xMax) { return false; }
 			if (record1.y < yMin && record2.y < yMin) { return false; }
 			if (record1.y > yMax && record2.y > yMax) { return false; }
+			
+			if (this.pointIncludeTestOnly) {
+				// Return true ONLY WHEN record point is inside the polygon. Passed edges are ignored.
+				return this.gatePolygon.checkLatLngContained(record1.y, record1.x) || this.gatePolygon.checkLatLngContained(record2.y, record2.x);
+			}
 
 			if (this.gatePolygon.checkCrossOrContain(record1.x, record1.y, record2.x, record2.y)) {
 				// console.log("  + HIT");

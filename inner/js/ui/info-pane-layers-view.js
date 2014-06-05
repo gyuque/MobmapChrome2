@@ -487,6 +487,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.visibilityButton = null;
 		this.jSelCountIndicator = null;
+		this.jSelCountIndicatorText = null;
 		this.element = $H('div', 'mm-layer-view-item-box');
 		this.jElement = $(this.element);
 		this.build();
@@ -506,10 +507,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var caption = $H('h3');
 			caption.appendChild($T( this.makeLayerTypeString() ));
 
-			var selCountEl = $H('span', 'mm-layer-view-selection-count');
-			caption.appendChild(selCountEl);
-			this.jSelCountIndicator = $(selCountEl);
-			
+			this.generateSelectionCountIndicator(caption);
 			this.element.appendChild(caption);
 
 			// Buttons on caption bar
@@ -549,6 +547,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (parent) {
 				parent.removeChild(this.element);
 			}
+		},
+		
+		generateSelectionCountIndicator: function(containerElement) {
+			var selCountEl = $H('span', 'mm-layer-view-selection-count');
+			containerElement.appendChild(selCountEl);
+			
+			var tx = $H('span');
+			selCountEl.appendChild(tx);
+
+			var clearButton = $H('img', 'mm-layer-view-selection-clear');
+			clearButton.src = "images/mini-x.png";
+			selCountEl.appendChild(clearButton);
+
+			this.jSelCountIndicator = $(selCountEl);
+			this.jSelCountIndicatorText = $(tx);
+			
+			$(clearButton).click(this.onSelectionClearClick.bind(this));
 		},
 		
 		addCaptionButtons: function(containerElement, noUpDown) {
@@ -678,7 +693,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			if (n > 0) {
-				this.jSelCountIndicator.show().text(n);
+				this.jSelCountIndicator.show();
+				this.jSelCountIndicatorText.text(n);
 			} else {
 				this.jSelCountIndicator.hide();
 			}
@@ -702,6 +718,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerVisibilityButtonClick: function() {
 			this.boundLayer.toggleVisibility();
+		},
+		
+		onSelectionClearClick: function() {
+			if (this.boundLayer && this.boundLayer.localSelectionPool) {
+				this.boundLayer.localSelectionPool.clear();
+			}
 		},
 		
 		setVisibilityButtonHiddenStyle: function (h) {
