@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.gateBusyDialog = new mobmap.GateBusyDialog();
 		this.annotationRemoveDialog = new mobmap.AnnotationRemoveDialog();
 		this.valueFillDialog = new mobmap.FillValueDialog();
+		this.exportSelectionDialog = new mobmap.ExportSelectionDialog();
 
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);
@@ -173,7 +174,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		openExportSelectionWindow: function(targetLayer) {
-			console.log("IMPL HERE", targetLayer);
+			this.exportSelectionDialog.showDialog(targetLayer);
 		},
 		
 		loadLocalCSVMovingData: function() {

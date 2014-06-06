@@ -32,6 +32,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			document.body.appendChild(el);
 		},
 		
+		insertElementBeforeButtonArea: function(el) {
+			this.element.insertBefore(el, this.buttonAreaElement);
+		},
+		
 		getDialog: function() {
 			return this.jElement.data("kendoWindow");
 		},
