@@ -467,7 +467,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var records = timedList.getRecordList();
 			if (records.length > 0) {
 				if (this.testFunctionProvider.testSingleRecord(records[0])) {
-					console.log("SINGLE")
+					//console.log("SINGLE")
 					layer.localSelectionPool.addId(objectID, true);
 					return true;
 				}

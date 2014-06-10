@@ -3,6 +3,7 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	var kShortTableLimit = 100;
+	var kEnableExport = true;
 
 	function DataDetailView(containerElement) {
 		this.ownerApp = null;
@@ -264,11 +265,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				"Add to annotations",
 				this.onAddSelectionToAnnotationClick.bind(this), false);
 
-			this.generateTitleAreaButton(
-				containerElement,
-				"images/drowbtn-export.png",
-				"Export",
-				this.onExportButtonClick.bind(this), true);
+			if (kEnableExport) {
+				this.generateTitleAreaButton(
+					containerElement,
+					"images/drowbtn-export.png",
+					"Export",
+					this.onExportButtonClick.bind(this), true);
+			}
 		},
 		
 		generateTitleAreaButton: function(containerElement, iconURL, title, closure, second) {
@@ -282,6 +285,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			img.title = title;
 			$(img).click( closure );
 			containerElement.appendChild(img);
+		},
+		
+		hideTitleAreaButton: function() { $('.mm-datatable-ontitle-button').hide(); },
+		showTitleAreaButton: function() { $('.mm-datatable-ontitle-button').show(); },
+		
+		updateTitleButtonsState: function() {
+			var show = false;
+
+			var lyr = this.getCurrentSourceLayer();
+			if (lyr && (lyr.capabilities & mobmap.LayerCapability.SpatialSelectable)) {
+				show = true;
+			}
+			
+			if (show) {
+				this.showTitleAreaButton();
+			} else {
+				this.hideTitleAreaButton();
+			}
 		},
 		
 		updateTableTitle: function(sel_enabled, n) {
@@ -578,6 +599,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.updateValFillAttrSelection();
 			
 			this.updateStaticLayerDataView();
+			this.updateTitleButtonsState();
 		},
 		
 		fetchTargetSelectValue: function() {

@@ -40,12 +40,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.jElement.data("kendoWindow");
 		},
 		
-		showDialogOnCenter: function(title, dontAnimate) {
+		showDialogOnCenter: function(title, dontAnimate, specified_height) {
 			var opt = {
 				modal:true,
 				pinned: true,
 				width: 384,
-				height: 72,
+				height: specified_height || 72,
 				title: title
 			};
 			

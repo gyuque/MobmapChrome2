@@ -121,7 +121,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		setDescription: annbase_setDescription,
-		setParentEventElement: annbase_setParentEventElement
+		setParentEventElement: annbase_setParentEventElement,
+		eventDispatcher: function() { return this._jElement; }
 	};
 
 
@@ -138,7 +139,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	MMObjectCollectionAnnotation.prototype = {
 		setDescription: annbase_setDescription,
-		setParentEventElement: annbase_setParentEventElement
+		setParentEventElement: annbase_setParentEventElement,
+		eventDispatcher: function() { return this._jElement; }
 	};
 
 	MMObjectCollectionAnnotation.generateCollectionSummary = function(list) {
