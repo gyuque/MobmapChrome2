@@ -166,11 +166,29 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		generateGateOptionBuuttons: function(item) {
+			var container = $H('div');
+			var tbl = $H('table', 'mm-polygon-gate-table');
+			var tbody = $H('tbody');
+			var tr = $H('tr');
+
+			container.appendChild(tbl);
+			tbl.appendChild(tbody);
+			tbody.appendChild(tr);
+
 			function makebtn(label, cmd) {
-				return '<button data-command="' +cmd+ '" data-objid="' +item._id+ '">' +label+ '</button>';
+				return '<td><button class="mm-polygon-gate-type-button" data-command="' +cmd+ '" data-objid="' +item._id+ '">' +label+ '</button></td>';
 			}
 			
-			return makebtn('Points + edges', 'rungate-e') + makebtn('Record points only', 'rungate-p');
+			var tr2 = $H('tr');
+			tbody.appendChild(tr2);
+			var td_exp = $H('td');
+			td_exp.colSpan = 2;
+			tr2.appendChild(td_exp);
+			td_exp.innerHTML = '<label><input type="checkbox" class="mm-polygon-gate-condition-check">Condition:</label> <input type="text" class="mm-polygon-gate-condition-exp" placeholder="age&lt;50">';
+
+			tr.innerHTML = makebtn('Points + edges', 'rungate-e') + makebtn('Record points only', 'rungate-p');
+
+			return container.innerHTML;
 		},
 		
 		generateRowDetailRecordsCount: function(objId) {
