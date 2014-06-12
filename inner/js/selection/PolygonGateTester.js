@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function PolygonGateTester(gatePolygon, pointIncludeTestOnly) {
 		this.pointIncludeTestOnly = pointIncludeTestOnly;
 		this.gatePolygon = gatePolygon;
+		this.usingExpressionQuery = null;
 		this.bounds = {
 			xMin: -999,
 			xMax:  999,
@@ -17,6 +18,18 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	PolygonGateTester.prototype = {
+		useExpressionCondition: function(exp) {
+			var expressionQuery = new mobmap.ExpressionQuery();
+			expressionQuery.parse(exp);
+			
+			this.usingExpressionQuery = expressionQuery;
+			return expressionQuery;
+		},
+		
+		setExpressionQuery: function(eq) {
+			this.usingExpressionQuery = eq; 
+		},
+		
 		testBetweenRecords: function(record1, record2) {
 			// console.log(record1.x, record1._time, '  ', record2.x, record2._time);
 			
@@ -31,21 +44,35 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (this.pointIncludeTestOnly) {
 				// Return true ONLY WHEN record point is inside the polygon. Passed edges are ignored.
-				return this.gatePolygon.checkLatLngContained(record1.y, record1.x) || this.gatePolygon.checkLatLngContained(record2.y, record2.x);
+				return this.testSingleRecord(record1) || this.testSingleRecord(record2);
 			}
 
 			if (this.gatePolygon.checkCrossOrContain(record1.x, record1.y, record2.x, record2.y)) {
 				// console.log("  + HIT");
-				return true;
+				return this.testExpressionIf(record1) || this.testExpressionIf(record2);
 			}
 			
 			return false;
 		},
 
 		testSingleRecord: function(record) {
-			return this.gatePolygon.checkLatLngContained(record.y, record.x);
+			var contained = this.gatePolygon.checkLatLngContained(record.y, record.x);
+			if (contained) {
+				return this.testExpressionIf(record);
+			}
+			
+			return false;
 		},
 		
+		testExpressionIf: function(record) {
+			if (!this.usingExpressionQuery) {
+				// No condition.
+				return true;
+			}
+
+			return this.usingExpressionQuery.rootNode.evaluate(record);
+		},
+
 		calcPolygonBounds: function() {
 			// init
 			var bd = this.bounds;
@@ -71,7 +98,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			bd.yMin -= 0.001;
 			bd.yMax += 0.001;
-			console.log("BOUNDS", bd);
+			// console.log("BOUNDS", bd);
 		}
 	};
 	

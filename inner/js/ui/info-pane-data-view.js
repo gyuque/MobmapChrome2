@@ -542,11 +542,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			var oid = sourceElement.getAttribute('data-objid');
 
 			var enable_cond = false;
-			var cond_exp = '';
+			var expressionObject = null;
 			if (cmdName === 'rungate-e' || cmdName === 'rungate-p') {
 				enable_cond = this.getPolygonGateConditionEnabled(sourceElement);
-				cond_exp = this.getPolygonGateConditionExpressionText(sourceElement);
-				console.log(enable_cond, cond_exp);
+				if (enable_cond) {
+					expressionObject = new mobmap.ExpressionQuery();
+					expressionObject.parse( this.getPolygonGateConditionExpressionText(sourceElement) );
+					
+					if (expressionObject.hasError || !(expressionObject.rootNode)) {
+						this.showPolygonGateExpressionError(sourceElement);
+						return;
+					}
+				}
 			}
 
 			switch(cmdName) {
@@ -577,12 +584,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 				
 				case 'rungate-e': {
-					this.runGateBy(oid, false);
+					this.runGateBy(oid, false, expressionObject);
 					break;
 				}
 				
 				case 'rungate-p': {
-					this.runGateBy(oid, true);
+					this.runGateBy(oid, true, expressionObject);
 					break;
 				}
 			}
@@ -608,14 +615,23 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			return $(tbl).find(selector)[0] || null;
 		},
-		
+
 		onPolygonGateConditionCheckClick: function(sourceElement) {
 			var tx = this.findPolygonGateOptionInputElement(sourceElement, '.mm-polygon-gate-condition-exp');
 			if (tx) {
 				tx.disabled = !(sourceElement.checked);
 			}
 		},
-		
+
+		showPolygonGateExpressionError: function(sourceElement) {
+			var tx = this.findPolygonGateOptionInputElement(sourceElement, '.mm-polygon-gate-condition-exp');
+			if (tx) {
+				tx.style.backgroundColor = '#f00';
+				setTimeout(function(){ tx.style.backgroundColor = ''; }, 300);
+			}
+		},
+
+
 		deselectId: function(objId) {
 			var lyr = this.getCurrentSourceLayer();
 			if (lyr && lyr.localSelectionPool) {
@@ -635,7 +651,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(sourceElement.parentNode).find('.mm-drow-gate-option-box').toggle();
 		},
 		
-		runGateBy: function(objId, pointIncOnly) {
+		runGateBy: function(objId, pointIncOnly, expressionQueryObject) {
 			if (this.hasCurrentSourceLayerPolygonOperation()) {
 
 				var layer = this.getCurrentSourceLayer();
@@ -645,6 +661,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (gatePolygon) {
 					this.ownerApp.showGateBusyDialog();
 					var tester = new mobmap.PolygonGateTester(gatePolygon, pointIncOnly);
+				
+					if (expressionQueryObject) {
+						tester.setExpressionQuery(expressionQueryObject);
+					}
 				
 					this.
 					 ownerApp.
