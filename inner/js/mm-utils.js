@@ -382,4 +382,22 @@ if (!window.mobmap) { window.mobmap={}; }
 	  el.appendChild(document.createTextNode(raw));
 	  return el.innerHTML;
 	};
+	
+	aGlobal.mmFindParentByTagName = function(node, tagName) {
+		tagName = tagName.toLowerCase();
+
+		node = node.parentNode;
+		for (var i = 0;i < 10;++i) {
+			if (!node) { return null; }
+			
+			if (node.tagName && node.tagName.toLowerCase() === tagName) {
+				return node;
+			}
+			
+			node = node.parentNode;
+		}
+		
+		return null;
+	};
+	
 })(window);

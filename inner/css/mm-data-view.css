@@ -108,6 +108,9 @@ div[data-itemname=data_detail] {
 	background: linear-gradient(to bottom, #666, #888) #777;
 }
 
+.mm-polygon-gate-table input[disabled] {
+	opacity: 0.5;
+}
 
 .mm-drow-gate-option-box {
 	position: relative;

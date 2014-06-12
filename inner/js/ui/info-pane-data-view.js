@@ -184,7 +184,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var td_exp = $H('td');
 			td_exp.colSpan = 2;
 			tr2.appendChild(td_exp);
-			td_exp.innerHTML = '<label><input type="checkbox" class="mm-polygon-gate-condition-check">Condition:</label> <input type="text" class="mm-polygon-gate-condition-exp" placeholder="age&lt;50">';
+			td_exp.innerHTML = '<label><input type="checkbox" class="mm-polygon-gate-condition-check">Condition:</label> <input type="text" class="mm-polygon-gate-condition-exp" placeholder="age&lt;50" disabled="disabled">';
 
 			tr.innerHTML = makebtn('Points + edges', 'rungate-e') + makebtn('Record points only', 'rungate-p');
 
@@ -525,16 +525,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onClickInsideGrid: function(e) {
 			if (e.target) {
+				var j = $(e.target);
+				
 				var cmd = e.target.getAttribute('data-command');
 				if (cmd && cmd.length > 0) {
 					this.execDetailBoxCommand(cmd, e.target);
+				} else {
+					if (j.hasClass('mm-polygon-gate-condition-check')) {
+						this.onPolygonGateConditionCheckClick(e.target);
+					}
 				}
 			}
 		},
 		
 		execDetailBoxCommand: function(cmdName, sourceElement) {
 			var oid = sourceElement.getAttribute('data-objid');
-			
+
+			var enable_cond = false;
+			var cond_exp = '';
+			if (cmdName === 'rungate-e' || cmdName === 'rungate-p') {
+				enable_cond = this.getPolygonGateConditionEnabled(sourceElement);
+				cond_exp = this.getPolygonGateConditionExpressionText(sourceElement);
+				console.log(enable_cond, cond_exp);
+			}
+
 			switch(cmdName) {
 				case 'reveal': {
 					if (this.ownerApp) {
@@ -571,6 +585,34 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.runGateBy(oid, true);
 					break;
 				}
+			}
+		},
+		
+		getPolygonGateConditionEnabled: function(originElement) {
+			var chk = this.findPolygonGateOptionInputElement(originElement, '.mm-polygon-gate-condition-check');
+			if (!chk) { return false; }
+
+			return chk.checked;
+		},
+
+		getPolygonGateConditionExpressionText: function(originElement) {
+			var tx = this.findPolygonGateOptionInputElement(originElement, '.mm-polygon-gate-condition-exp');
+			if (!tx) { return ''; }
+			
+			return tx.value;
+		},
+
+		findPolygonGateOptionInputElement: function(originElement, selector) {
+			var tbl = mmFindParentByTagName(originElement, 'table');
+			if (!tbl) { return null; }
+
+			return $(tbl).find(selector)[0] || null;
+		},
+		
+		onPolygonGateConditionCheckClick: function(sourceElement) {
+			var tx = this.findPolygonGateOptionInputElement(sourceElement, '.mm-polygon-gate-condition-exp');
+			if (tx) {
+				tx.disabled = !(sourceElement.checked);
 			}
 		},
 		
