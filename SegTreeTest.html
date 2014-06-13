@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Interval tree query test</title>
+		
+		<style type="text/css">
+.it-seg-dump td {
+	border-left: 1px solid #999;
+	border-right: 1px solid #ccc;
+}
+
+.it-seg-dump-subrow {
+	font-size: 80%;
+	color: #888;
+}
+		</style>
+		
+		<script type="text/javascript" src="js/SegTreeTest.js"></script>
+		<script type="text/javascript">
+'use strict';
+var gDumpArea = null;
+
+function doTest() {
+	gDumpArea = document.getElementById('dump-area');
+	doSanityCheck();
+	doMedianCheck();
+
+	window.dumpFunc = function(d_source,dtitle) {
+		d_source.dumpAsHTML(gDumpArea,dtitle);
+	};
+
+	var sset = generateTestSegmentSet();
+	var it = new MovingDataIntervalTree();
+	it.build(sset);
+	
+	var slowOut = [];
+	sset.queryStabbingSlowly(slowOut, 3);
+	console.log("Slow:", slowOut.length);
+//	sset.queryStabbing(3);
+}
+
+function doSanityCheck() {
+	var it = new MovingDataIntervalTree();
+	console.log("Generated MovingDataIntervalTree object:", it);
+}
+
+function doMedianCheck() {
+	var ss1 = new MovingDataIntervalTree.SegmentSet();
+	
+	ss1.add( new MovingDataIntervalTree.Segment(1, 1, 2) );
+	ss1.add( new MovingDataIntervalTree.Segment(1, 3, 4) );
+	
+	console.log(ss1.calcMedian());
+	
+	console.log("ML:", ss1.makeSortedLeftEndList());
+	console.log("MR:", ss1.makeSortedRightEndList());
+	
+	var subs = ss1.makeHitSetSlowly(1.5);
+	console.log(subs)
+}
+
+function generateTestSegmentSet() {
+	var ss = new MovingDataIntervalTree.SegmentSet();
+	
+	ss.add( new MovingDataIntervalTree.Segment(1, 2, 8) );
+	ss.add( new MovingDataIntervalTree.Segment(1, 8, 13) );
+	ss.add( new MovingDataIntervalTree.Segment(1, 13, 21) );
+	ss.add( new MovingDataIntervalTree.Segment(1, 21, 30) );
+
+	ss.add( new MovingDataIntervalTree.Segment(2, 1, 4) );
+	ss.add( new MovingDataIntervalTree.Segment(2, 4, 11) );
+	ss.add( new MovingDataIntervalTree.Segment(2, 11, 20) );
+	ss.add( new MovingDataIntervalTree.Segment(2, 20, 28) );
+	
+	return ss;
+}
+
+		</script>
+	</head>
+	
+	<body onload="void doTest();">
+		<div id="dump-area"></div>
+	</body>
+</html>
