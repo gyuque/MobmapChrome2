@@ -9,7 +9,17 @@
 		<script src="./js/movie-recorder.js" type="text/javascript"></script>
 	</head>
 	<body style="background-color: #eee">
-		<div id="preview-container"></div>
-		<div id="main-control-box"><button id="record-trigger">● Record</button></div>
+		<div id="boot-message">Launching encoder module...</div>
+		<div id="preview-container" style="display:none"></div>
+		<div id="main-control-box" style="display:none"><button id="record-trigger">● Record</button></div>
+
+		<div id="nacl-container">
+			<embed id="nacl264-embed"
+			       width="0" height="0"
+			       src="nacl/nacl264.nmf"
+			       type="application/x-pnacl" />
+		</div>
+
+		<script src="./js/movie-recorder-nacl-setup.js" type="text/javascript"></script>
 	</body>
 </html>

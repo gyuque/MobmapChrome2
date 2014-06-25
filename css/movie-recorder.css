@@ -1,0 +1,30 @@
+#preview-container {
+	text-align: center;
+	min-height:400px;
+}
+
+#preview-container canvas {
+	border: 1px solid #888;
+}
+
+#main-control-box {
+	text-align: center;
+}
+
+#record-trigger {
+	font-family: sans-serif;
+	font-size: 19px;
+	padding: 9px 13px;
+	color: #fff;
+	background-color: #800;
+	border: 1px solid #800;
+	text-shadow: 0 -1px 0 #800;
+	border-radius: 6px;
+	box-shadow: 0 0 1px #fee inset, 0 1px 9px rgba(0,0,0, 0.3);
+	background: linear-gradient(to bottom, #e20, #910);
+}
+
+#record-trigger:active {
+	box-shadow: 0 1px 4px rgba(0,0,0,0.4) inset, 0 1px 9px rgba(0,0,0, 0.3);
+	background: linear-gradient(to bottom, #510, #810);
+}

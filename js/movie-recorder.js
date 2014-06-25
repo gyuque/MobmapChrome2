@@ -127,6 +127,25 @@
 	
 	// Launch
 	aGlobal.onload = function() {
+		setTimeout(waitNacl264, 500);
+	};
+	
+	function waitNacl264() {
+		if (window.nacl264Ready) {
+			hideInitialMessage();
+			setupCapture();
+		} else {
+			setTimeout(waitNacl264, 500);
+		}
+	}
+	
+	function hideInitialMessage() {
+		$('#boot-message').hide();
+		$('#preview-container').show();
+		$('#main-control-box').show();
+	}
+	
+	function setupCapture() {
 		chrome.desktopCapture.chooseDesktopMedia(["window"], function(streamId){
 			navigator.webkitGetUserMedia({
 				audio:false,

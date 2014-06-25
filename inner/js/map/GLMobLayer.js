@@ -827,6 +827,7 @@ function installMobLayer(pkg) {
 		this.used = false;
 		this.screenX = this.screenY = this.lat = this.lng = 0;
 		this.chipX = 0;
+		this.chipY = 0;
 	}
 	
 	function MarkerTextureConfiguration() {
