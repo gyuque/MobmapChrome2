@@ -475,12 +475,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.prepareOverlayMarkerImage(overlay, sourceLayer); // dirty only
 			
+var benchT1 = new Date();
 			// Get prepared pick pool (create if not ready)
 			var pickPool = this.ensureOverlayPickPool(overlay);
 
 			pickPool.clear();
 			movingData.pickAt(pickPool, targetTimeSec);
 			var count = pickPool.pickedCount;
+var benchT2 = new Date();
+//console.log("Pick time: " + (benchT2 - benchT1));
 			
 			// console.log(count + " points on layer");
 

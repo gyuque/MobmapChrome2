@@ -20,6 +20,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.selectionButtonNameMap = this.addSelectionButtons('sel');
 		this.gateButtonNameMap = this.addGateButtons('gate');
 		this.annButtonNameMap = this.addAnnotationButtons('ann');
+		this.movButtonNameMap = this.addMovieButtons('mov');
 		this.allButtonNameMap = this.makeAllButtonNameMap(this.selectionButtonNameMap, this.gateButtonNameMap);
 	}
 	
@@ -33,7 +34,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Internal name | Label text
 				["sel",       "Selection"],
 				["gate",      "Gate"     ],
-				["ann",       "Location Annotation"]
+				["ann",       "Location Annotation"],
+				["mov",       "Movie"]
 			];
 			
 			for (var i in list) {
@@ -66,7 +68,15 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.observeAnnotationButton.bind(this)
 			);
 		},
-		
+
+		addMovieButtons: function(colName) {
+			return this.addButtons(colName, [
+					['generate_movie', 12]
+				],
+				this.observeMovieButton.bind(this)
+			);
+		},
+			
 		addButtons: function(colName, buttonList, callback) {
 			var generatedButtonMap = {};
 			var targetCol = this.groupColumnMap[colName];
@@ -114,6 +124,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeAnnotationButton: function(btnObj) {
 			btnObj.eventDispatcher().
 			 click(this.onAnnotationButtonClick.bind(this, btnObj));
+		},
+		
+		observeMovieButton: function(btnObj) {
+			btnObj.eventDispatcher().
+			 click(this.onMovieButtonClick.bind(this, btnObj));
 		},
 		
 		addGroupColumn: function(name, initialText) {
@@ -166,6 +181,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (newAnnotation) {
 					this.ownerApp.toggleAnnotatedLocationPin(newAnnotation);
 				}
+			}
+		},
+		
+		onMovieButtonClick: function(btnObj, e) {
+			if (this.ownerApp) {
+				this.ownerApp.openMovieWindow();
 			}
 		},
 		

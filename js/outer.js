@@ -50,6 +50,29 @@
 					win.contentWindow.sendInnerMessage = sendInnerMessage;
 					win.contentWindow.targetURL = params.url;
 				});
+		},
+		
+		openMovieRecorderWindow: function() {
+			chrome.app.window.create('movie-recorder.html', {
+				 minWidth: 800,
+				 minHeight: 580,
+
+				}, function(wnd){
+					wnd.contentWindow.outerWindowGetWidth = windowGetWidth;
+					wnd.contentWindow.outerWindowGetHeight = windowGetHeight;
+					wnd.contentWindow.outerRequestMapRender = requestMapRender;
+				});
+
+		},
+		
+		notifyRenderRequestComplete: function(params) {
+			console.log("Complete render request", params.req_id);
 		}
 	};
+	
+	function windowGetWidth() {return window.outerWidth;}
+	function windowGetHeight() {return window.outerHeight;}
+	function requestMapRender(requestId, dTime) {
+		sendInnerMessage('requestRender', {time_delta: dTime, req_id: requestId});
+	}
 })();

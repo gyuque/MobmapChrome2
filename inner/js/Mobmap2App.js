@@ -71,6 +71,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		openDataDownloadService: function() {
 			Mobmap2App.sendOuterMessage('openDownloadServiceWindow', null);
 		},
+		
+		openMovieWindow: function() {
+			Mobmap2App.sendOuterMessage('openMovieRecorderWindow', null);
+		},
 
 
 		getCurrentProject: function() {
@@ -453,6 +457,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onTimeRangeSelectionChange: function() {
+		},
+		
+		onMessage_requestRender: function(params) {
+			//console.log(params)
+			this.redrawMap();
+			this.sendRenderRequestCompleteMessage(params);
+		},
+		
+		sendRenderRequestCompleteMessage: function(request_params) {
+			Mobmap2App.sendOuterMessage('notifyRenderRequestComplete', {req_id: request_params.req_id});
 		},
 		
 		// Annotation operations
