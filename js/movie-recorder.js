@@ -3,6 +3,7 @@
 	var gApp = null;
 	
 	function MovieRecorder(captureVideoElement, triggerElement) {
+		this.triggerOriginalLabel = '';
 		this.option = new MovieRecorderOption();
 		this.captureVideoElement = captureVideoElement;
 		this.previewContainerElement = document.getElementById('preview-container');
@@ -10,27 +11,85 @@
 		this.regionSelector = new RegionSelector(this.captureVideoElement);
 		this.previewContainerElement.appendChild(this.regionSelector.element);
 		this.jTrigger = $(triggerElement);
+		this.saveTriggerOriginalLabel();
 		
 		this.runStatus = {
 			running: false,
 			frameIndex: 0,
+			startWait: 0,
+			lastRequestId: -1,
+			lastVideoTime: -1,
 			nextRequestId: (Math.random() * 0x3fffffff) | 0
 		};
 		
+		this.checkVideoUpdatedClosure = this.checkVideoUpdated.bind(this);
 		this.jTrigger.click(this.onTriggerClick.bind(this));
 	}
 	
 	MovieRecorder.prototype = {
 		run: function() {
+			this.runStatus.running = true;
+			this.runStatus.frameIndex = 0;
+			this.runStatus.startWait = 10;
+			
 			this.sendRenderRequest(0);
 		},
 		
+		onRenderRequestComplete: function(requestId) {
+			if (this.runStatus.lastRequestId === requestId) {
+				this.renderFrame();
+			}
+		},
+		
+		renderFrame: function() {
+			console.log("Rendering frame ",this.runStatus.frameIndex);
+			this.waitVideoUpdated();
+		},
+		
+		waitVideoUpdated: function() {
+			this.runStatus.lastVideoTime = this.regionSelector.sourceVideo.currentTime;
+			setTimeout(this.checkVideoUpdatedClosure, 10);
+		},
+		
+		checkVideoUpdated: function() {
+			var t = this.regionSelector.sourceVideo.currentTime;
+			if (t > (this.runStatus.lastVideoTime + 0.01)) {
+				this.onVideoUpdated();
+			} else {
+				setTimeout(this.checkVideoUpdatedClosure, 10);
+			}
+		},
+		
+		onVideoUpdated: function() {
+			this.regionSelector.redraw();
+			setTimeout(this.onFrameEncodeEnd.bind(this), 9);
+		},
+		
+		onFrameEncodeEnd: function() {
+			++this.runStatus.frameIndex;
+			if (this.runStatus.startWait > 0) {
+				--this.runStatus.startWait;
+			}
+			
+			var dsec = (this.runStatus.startWait === 0) ? this.option.mmsecPerFrame : 0;
+			if (this.runStatus.frameIndex < 60) {
+				this.sendRenderRequest(dsec);
+			}
+		},
+		
 		sendRenderRequest: function(dtime) {
-			window.outerRequestMapRender(++this.runStatus.nextRequestId, dtime);
+			var rid = ++this.runStatus.nextRequestId;
+			
+			this.runStatus.lastRequestId = rid;
+			window.outerRequestMapRender(rid, dtime);
 		},
 		
 		onTriggerClick: function() {
 			this.run();
+		},
+		
+		saveTriggerOriginalLabel: function() {
+			this.triggerOriginalLabel = this.jTrigger.text();
 		}
 	};
 
@@ -77,6 +136,7 @@
 		},
 		
 		redraw: function() {
+//			console.log(this.sourceVideo.currentTime);
 			var g = this.element.getContext('2d');
 			g.fillStyle = '#000';
 			g.fillRect(0, 0, this.width, this.height);
@@ -183,5 +243,11 @@
 	
 	function onCaptureFail() {
 		
+	}
+	
+	window.notifyRenderRequestComplete = function(requestId) {
+		if (gApp) {
+			gApp.onRenderRequestComplete(requestId);
+		}
 	}
 })(window);

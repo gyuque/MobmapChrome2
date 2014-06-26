@@ -53,20 +53,27 @@
 		},
 		
 		openMovieRecorderWindow: function() {
+			if (MovieRecorderWindowPool.hasAny()) {
+				return;
+			}
+			
 			chrome.app.window.create('movie-recorder.html', {
 				 minWidth: 800,
 				 minHeight: 580,
 
 				}, function(wnd){
+					MovieRecorderWindowPool.add(wnd);
+					
 					wnd.contentWindow.outerWindowGetWidth = windowGetWidth;
 					wnd.contentWindow.outerWindowGetHeight = windowGetHeight;
 					wnd.contentWindow.outerRequestMapRender = requestMapRender;
+					wnd.onClosed.addListener(MovieRecorderWindowPool.closed.bind(MovieRecorderWindowPool, wnd));
 				});
 
 		},
 		
 		notifyRenderRequestComplete: function(params) {
-			console.log("Complete render request", params.req_id);
+			MovieRecorderWindowPool.notifyRenderRequestComplete(params.req_id);
 		}
 	};
 	
@@ -75,4 +82,30 @@
 	function requestMapRender(requestId, dTime) {
 		sendInnerMessage('requestRender', {time_delta: dTime, req_id: requestId});
 	}
+	
+	var MovieRecorderWindowPool = {
+		pool: [],
+		closed: function(wnd) {
+			var i = this.pool.indexOf(wnd);
+			if (i >= 0) {
+				this.pool.splice(i, 1);
+			}
+		},
+		
+		hasAny: function() {
+			return (this.pool.length > 0);
+		},
+		
+		add: function(wnd) {
+			if (this.pool.indexOf(wnd) < 0) {
+				this.pool.push(wnd);
+			}
+		},
+		
+		notifyRenderRequestComplete: function(requestId) {
+			for (var i in this.pool) {
+				this.pool[i].contentWindow.notifyRenderRequestComplete(requestId);
+			}
+		}
+	};
 })();
