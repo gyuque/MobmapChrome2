@@ -17,11 +17,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.jElement;
 		},
 		
-		setCurrentTime: function(t) {
+		setCurrentTime: function(t, suppress_event) {
 			if (this.currentTime !== t) {
 				this.currentTime = t;
-				this.eventDispatcher().trigger(DateTime.CURRENT_TIME_CHANGE_EVENT, this);
+				if (!suppress_event) {
+					this.fire();
+				}
 			}
+		},
+		
+		fire: function() {
+			this.eventDispatcher().trigger(DateTime.CURRENT_TIME_CHANGE_EVENT, this);
+		},
+		
+		shiftTime: function(dSec) {
+			this.setCurrentTime( this.currentTime + dSec );
 		},
 		
 		getCurrentTime: function() {

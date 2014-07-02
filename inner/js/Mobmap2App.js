@@ -460,8 +460,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onMessage_requestRender: function(params) {
+			var dtime = params.time_delta;
+			var pj = this.getCurrentProject();
+			if (!pj) { dtime = 0; }
+
 			//console.log(params)
-			this.redrawMap();
+			
+			if (dtime === 0) {
+				// just redraw
+				this.redrawMap(); 
+			} else {
+				// Shift time (and redraw)
+				pj.currentDateTime.shiftTime(dtime, true);
+				pj.currentDateTime.fire();
+			}
 			this.sendRenderRequestCompleteMessage(params);
 		},
 		
