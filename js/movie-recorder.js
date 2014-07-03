@@ -1,15 +1,16 @@
 (function(aGlobal) {
 	'use strict';
 	var gApp = null;
+	var PADDING_FRAMES = 10;
 	
 	function MovieRecorder(captureVideoElement, triggerElement, nacl_module) {
 		this.jElement = $( document.createElement('span') );
 		this.inputDuration = null;
 		this.inputSecPerFrame = null;
+		this.inputClockCheck = null;
 		
 		this.triggerOriginalLabel = '';
 		this.naclModule = nacl_module;
-		this.option = new MovieRecorderOption();
 		this.captureVideoElement = captureVideoElement;
 		this.previewContainerElement = document.getElementById('preview-container');
 		this.recieveBuffer = null;
@@ -25,8 +26,10 @@
 			frameIndex: 0,
 			startWait: 0,
 			movieDuration: -1,
+			secPerFrame: -1,
 			lastRequestId: -1,
 			lastVideoTime: -1,
+			bodyFrameCount: 0,
 			totalFrameCount: 0,
 			nextRequestId: (Math.random() * 0x3fffffff) | 0
 		};
@@ -38,6 +41,7 @@
 	
 	MovieRecorder.MovieDurationInputEvent = 'mr-event-movie-duration-input';
 	MovieRecorder.MovieSecPerFInputEvent = 'mr-event-movie-spf-input';
+	MovieRecorder.MovieClockCheckInputEvent = 'mr-event-movie-clock-check-input';
 	
 	MovieRecorder.prototype = {
 		eventDispatcher: function() { return this.jElement; },
@@ -46,14 +50,17 @@
 
 		generateOptionButtons: function(containerElement) {
 			this.generateDurationBox(containerElement);
-			this.generateSpacer(containerElement);
+			 this.generateSpacer(containerElement);
 			this.generateSecPerFrame(containerElement);
-			this.generateSpacer(containerElement);
+			 this.generateSpacer(containerElement);
+			this.generateClockCheck(containerElement);
+			 this.generateSpacer(containerElement);
 			
 			var adjustPositionButton = this.generateSimpleButton('images/mvbtn-pos.png', 'Auto adjust position', 
 			                            this.onAdjustPositionButtonClick.bind(this));
 			containerElement.appendChild(adjustPositionButton);
 			this.updateMovieStats();
+			this.observeOptionInputs();
 		},
 		
 		generateSimpleButton: function(iconURL, label, listenerClosure) {
@@ -100,6 +107,19 @@
 			this.inputDuration = numInput;
 		},
 		
+		generateClockCheck: function(containerElement) {
+			var lab = document.createElement('label');
+			var chk = document.createElement('input');
+			chk.type = 'checkbox';
+			lab.appendChild(chk);
+			lab.appendChild( document.createTextNode('Show clock') );
+			
+			containerElement.appendChild(lab);
+			this.observeCheckInput(chk, MovieRecorder.MovieClockCheckInputEvent);
+			this.inputClockCheck = chk;
+			return chk;
+		},
+		
 		generateNumberInput: function(initialValue, minValue) {
 			var tx = document.createElement('input');
 			tx.setAttribute('type', 'number');
@@ -129,6 +149,14 @@
 			
 			$(tx).blur(handler).keyup(handler).change(handler);
 		},
+
+		observeCheckInput: function(chk, fire_event_type) {
+			var handler = (function() {
+				this.eventDispatcher().trigger(fire_event_type);
+			}).bind(this);
+			
+			$(chk).click(handler);
+		},
 		
 		updateMovieStats: function() {
 			var new_dur = this.getMovieDurationInputVaule();
@@ -140,22 +168,50 @@
 				dirty = true;
 			}
 			
+			if (this.runStatus.secPerFrame !== new_spf) {
+				this.runStatus.secPerFrame = new_spf;
+				dirty = true;
+			}
+			
 			if (dirty) {
-				this.runStatus.totalFrameCount = this.runStatus.movieDuration * this.runStatus.fps + 10;
+				this.runStatus.bodyFrameCount = this.runStatus.movieDuration * this.runStatus.fps;
+				this.runStatus.totalFrameCount = this.runStatus.bodyFrameCount + PADDING_FRAMES*2;
 				$('#movie-stats-box').text( this.generateMovieStatsString() );
+
+				this.regionSelector.redraw();
 			}
 		},
 		
 		generateMovieStatsString: function() {
-			return "Movie duration: " +this.runStatus.movieDuration+ "sec.(" +this.runStatus.totalFrameCount+ "frames)";
+			return "Movie duration: " +this.runStatus.movieDuration+ "sec.(" +this.runStatus.totalFrameCount+ "frames) / " +
+			       this.generateSPFString() +" / "+
+			       this.generateDataDurationString();
 		},
 		
+		generateSPFString: function() {
+			return "Advance " + this.runStatus.secPerFrame + "sec. per frame";
+		},
+
+		generateDataDurationString: function() {
+			var n = this.runStatus.movieDuration * this.runStatus.fps * this.runStatus.secPerFrame;
+			return "Data duration: " + n + "sec.";
+		},
+
 		getMovieDurationInputVaule: function() {
 			return this.inputDuration.value | 0;
 		},
 		
 		getSecPerFrameInputValue: function() {
 			return this.inputSecPerFrame.value | 0;
+		},
+		
+		observeOptionInputs: function() {
+			var handler = this.updateMovieStats.bind(this);
+			
+			this.eventDispatcher().
+			 bind(MovieRecorder.MovieClockCheckInputEvent, handler).
+			 bind(MovieRecorder.MovieDurationInputEvent, handler).
+			 bind(MovieRecorder.MovieSecPerFInputEvent, handler);
 		},
 		
 		// --------------------
@@ -166,7 +222,7 @@
 			
 			this.runStatus.running = true;
 			this.runStatus.frameIndex = 0;
-			this.runStatus.startWait = 10;
+			this.runStatus.startWait = PADDING_FRAMES;
 			
 			this.sendRenderRequest(0);
 		},
@@ -223,8 +279,13 @@
 				--this.runStatus.startWait;
 			}
 			
-			var dsec = (this.runStatus.startWait === 0) ? this.option.mmsecPerFrame : 0;
-			if (this.runStatus.frameIndex < 160) {
+			var dsec = (this.runStatus.startWait === 0) ? this.runStatus.secPerFrame : 0;
+			if (this.runStatus.frameIndex >= (this.runStatus.bodyFrameCount + PADDING_FRAMES)) {
+				// Tail padding frames
+				dsec = 0;
+			}
+			
+			if (this.runStatus.frameIndex < this.runStatus.totalFrameCount) {
 				this.sendRenderRequest(dsec);
 			} else {
 				this.afterAllFramesSent();
@@ -255,6 +316,7 @@
 		},
 		
 		showSaveLink: function() {
+			$('#dl-container').show();
 			var blob = this.recieveBuffer.exportBlob();
 
 			var a = document.getElementById('result-dl');
@@ -288,17 +350,11 @@
 		}
 	};
 
-
-	function MovieRecorderOption() {
-		this.mmsecPerFrame = 20;
-		this.movieFPS      = 30;
-		this.totalFrames   = 240;
-	}
-
 	function RegionSelector(sourceVideo) {
 		this.sourceVideo = sourceVideo;
 		this.element = document.createElement('canvas');
 		this.jElement = $(this.element);
+		this.clockRenderer = new mobmap.ClockRenderer(140, 176);
 		
 		this.dragging = false;
 		this.dragPrevPos = {
@@ -352,6 +408,16 @@
 			g.fillRect(0, 0, this.width, this.height);
 			
 			g.drawImage(this.sourceVideo, this.offset.x, this.offset.y);
+			this.renderClock(g);
+		},
+		
+		renderClock: function(g) {
+			var cr = this.clockRenderer;
+			
+			g.save();
+			g.translate(this.width - cr.width - 9, this.height - cr.height - 13);
+			cr.render(g);
+			g.restore();
 		},
 		
 		drawNonEncodedInfo: function(frameIndex) {
