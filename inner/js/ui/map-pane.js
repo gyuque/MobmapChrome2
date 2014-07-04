@@ -3,6 +3,7 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	var DARKMAP_ID = 'dark';
+	var OSMAP_ID = 'osm';
 
 	var PMODE_DEFAULT  = 0;
 	var PMODE_DRAG_SEL = 1;
@@ -15,6 +16,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.gmap = null;
 		this.ownerApp = null;
 		this.darkMapType = null;
+		this.osmMapType  = null;
 		this.pointingMode = PMODE_DEFAULT;
 		this.nowCapturingDrag = false;
 		this.prevRenderTargetTime = -1;
@@ -102,6 +104,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.gmap = new google.maps.Map(this.containerElement, mapOptions);
 			this.setupDarkMap(this.gmap, "Dark");
+			this.setupOpenStreetMap(this.gmap, "OSM");
 			/*
 			this.mobLayer = new mobmap.GLMobLayer();
 			this.mobLayer.canvasReadyCallback = this.onLayerCanvasReady.bind(this);
@@ -126,13 +129,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.darkMapType = darkMap;
 		},
 		
+		setupOpenStreetMap: function(gmap, typeName) {
+			if (this.osmMapType) {return;}
+			
+			var mt = createOSMImageMapType();
+			gmap.mapTypes.set(OSMAP_ID, mt);
+			this.osmMapType = mt;
+		},
+		
 		generateDefaultMapTypeList: function() {
 			return [
 				google.maps.MapTypeId.HYBRID,
 				google.maps.MapTypeId.ROADMAP,
 				google.maps.MapTypeId.SATELLITE,
 				google.maps.MapTypeId.TERRAIN,
-				DARKMAP_ID
+				DARKMAP_ID,
+				OSMAP_ID
 			];
 		},
 
@@ -536,6 +548,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		pa.push(new google.maps.LatLng( location1.lat, location2.lng ));
 	};
 
+	// OSM tile provider
+	function createOSMImageMapType() {
+		var options = {
+			getTileUrl: function(coord, zoom) {
+				return "http://tile.openstreetmap.org/" +zoom+ "/" +coord.x+ "/" +coord.y+ ".png";
+			},
+			tileSize: new google.maps.Size(256, 256),
+			maxZoom: 19,
+			minZoom: 0,
+			name: 'OpenStreetMap'
+		};
+		
+		return new google.maps.ImageMapType(options);
+	}
+	
 	// +++ Export +++
 	aGlobal.mobmap.MapPane = MapPane;
 })(window);
