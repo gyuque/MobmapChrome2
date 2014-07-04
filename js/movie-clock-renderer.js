@@ -28,7 +28,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.drawTopLabel(g);
 			this.drawTimeLabel(g);
 		},
-		
+
+		makeTopLabelFromDate: function(d) {
+			this.labelText = d.getFullYear() + '-' + pad02(d.getMonth()+1) + '-' + pad02(d.getDate());
+		},
+
+
 		drawTopLabel: function(g) {
 			var cx = this.width >> 1;
 			var y = 16;
@@ -89,7 +94,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		drawMinHand: function(g) {
 			var R = Math.floor(this.width * 0.42);
-			var angle = ((this.min % 60) / 30.0) * Math.PI;
+			var angle = ( (this.min + this.sec/60) / 30.0) * Math.PI;
 			
 			this.drawHand(g, angle, drawMinHandProc, R);
 		},

@@ -474,11 +474,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				pj.currentDateTime.shiftTime(dtime, true);
 				pj.currentDateTime.fire();
 			}
+
 			this.sendRenderRequestCompleteMessage(params);
 		},
 		
 		sendRenderRequestCompleteMessage: function(request_params) {
-			Mobmap2App.sendOuterMessage('notifyRenderRequestComplete', {req_id: request_params.req_id});
+			// Add current time to params
+			var pj = this.getCurrentProject();
+			var rendered_time = (!pj) ? 0 : pj.currentDateTime.getCurrentTimeAsInt();
+
+
+			Mobmap2App.sendOuterMessage('notifyRenderRequestComplete', {
+					req_id: request_params.req_id,
+					rendered_time: rendered_time
+				});
 		},
 		
 		// Annotation operations

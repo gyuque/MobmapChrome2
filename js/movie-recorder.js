@@ -1,7 +1,7 @@
 (function(aGlobal) {
 	'use strict';
 	var gApp = null;
-	var PADDING_FRAMES = 10;
+	var PADDING_FRAMES = 20;
 	
 	function MovieRecorder(captureVideoElement, triggerElement, nacl_module) {
 		this.jElement = $( document.createElement('span') );
@@ -173,6 +173,12 @@
 				dirty = true;
 			}
 			
+			var clk = this.getClockCheckValue();
+			if (this.regionSelector.showClock !== clk) {
+				this.regionSelector.showClock = clk;
+				dirty = true;
+			}
+			
 			if (dirty) {
 				this.runStatus.bodyFrameCount = this.runStatus.movieDuration * this.runStatus.fps;
 				this.runStatus.totalFrameCount = this.runStatus.bodyFrameCount + PADDING_FRAMES*2;
@@ -199,6 +205,10 @@
 
 		getMovieDurationInputVaule: function() {
 			return this.inputDuration.value | 0;
+		},
+		
+		getClockCheckValue: function() {
+			return this.inputClockCheck.checked;
 		},
 		
 		getSecPerFrameInputValue: function() {
@@ -241,8 +251,9 @@
 			nacl264.openEncoder(this.naclModule);
 		},
 		
-		onRenderRequestComplete: function(requestId) {
+		onRenderRequestComplete: function(requestId, renderedTime) {
 			if (this.runStatus.lastRequestId === requestId) {
+				this.regionSelector.setRenderedTime(renderedTime);
 				this.renderFrame();
 			}
 		},
@@ -365,6 +376,7 @@
 			x:0, y:0
 		};
 		
+		this.showClock = false;
 		this.width = 720;
 		this.height = 480;
 		this.updateCanvasSize();
@@ -408,7 +420,9 @@
 			g.fillRect(0, 0, this.width, this.height);
 			
 			g.drawImage(this.sourceVideo, this.offset.x, this.offset.y);
-			this.renderClock(g);
+			if (this.showClock) {
+				this.renderClock(g);
+			}
 		},
 		
 		renderClock: function(g) {
@@ -479,6 +493,19 @@
 			this.offset.x = x;
 			this.offset.y = y;
 			this.redraw();
+		},
+		
+		setRenderedTime: function(unixtime) {
+			var d = new Date(unixtime * 1000.0);
+
+			var hr = d.getHours();
+			var mn = d.getMinutes();
+			var sc = d.getSeconds();
+
+			this.clockRenderer.hour = hr;
+			this.clockRenderer.min  = mn;
+			this.clockRenderer.sec  = sc;
+			this.clockRenderer.makeTopLabelFromDate(d);
 		}
 	};
 	
@@ -548,9 +575,9 @@
 		
 	}
 	
-	window.notifyRenderRequestComplete = function(requestId) {
+	window.notifyRenderRequestComplete = function(requestId, renderedTime) {
 		if (gApp) {
-			gApp.onRenderRequestComplete(requestId);
+			gApp.onRenderRequestComplete(requestId, renderedTime);
 		}
 	}
 })(window);

@@ -73,7 +73,7 @@
 		},
 		
 		notifyRenderRequestComplete: function(params) {
-			MovieRecorderWindowPool.notifyRenderRequestComplete(params.req_id);
+			MovieRecorderWindowPool.notifyRenderRequestComplete(params.req_id, params.rendered_time);
 		}
 	};
 	
@@ -102,9 +102,9 @@
 			}
 		},
 		
-		notifyRenderRequestComplete: function(requestId) {
+		notifyRenderRequestComplete: function(requestId, renderedTime) {
 			for (var i in this.pool) {
-				this.pool[i].contentWindow.notifyRenderRequestComplete(requestId);
+				this.pool[i].contentWindow.notifyRenderRequestComplete(requestId, renderedTime);
 			}
 		}
 	};
