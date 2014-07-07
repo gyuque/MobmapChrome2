@@ -828,7 +828,19 @@ function installMobLayer(pkg) {
 		this.screenX = this.screenY = this.lat = this.lng = 0;
 		this.chipX = 0;
 		this.chipY = 0;
+
+		this.tailArray = null;
 	}
+	
+	MarkerDisplayData.prototype.ensureTailArray = function(length) {
+		if (length < 1) { return; }
+		
+		if (!this.tailArray) {
+			
+		} else {
+			
+		}
+	};
 	
 	function MarkerTextureConfiguration() {
 		this.sourceImage    = null;

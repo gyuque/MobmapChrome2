@@ -51,6 +51,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.buildMarkerColumnsSlider(ec);
 			this.buildMarkerVaryOptions(ec);
 			this.buildMarkerAttrBindOptions(ec);
+			this.buildMarkerTailOptions(ec);
 			this.buildOtherOptions(ec);
 		},
 		
@@ -276,6 +277,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			containerElement.appendChild(fs);
 		},
 		
+		buildMarkerTailOptions: function(containerElement) {
+			var fs = makeFieldSetWithLegend('Tail');
+
+			var rl_none = generateRadioInLabel('None',             'TailType', 'tailopt');
+			var rl_both = generateRadioInLabel('Show with marker', 'TailType', 'tailopt');
+			var rl_only = generateRadioInLabel('Show tail only',   'TailType', 'tailopt');
+
+			var L = mobmap.LayerMarkerOptions;
+			rl_none.input.value = L.TAIL_NONE;
+			rl_both.input.value = L.TAIL_WITH_MARKER;
+			rl_only.input.value = L.TAIL_ONLY;
+
+			fs.appendChild(rl_none.label);
+			fs.appendChild(rl_both.label);
+			fs.appendChild(rl_only.label);
+
+			// Observe
+			var handler = this.onTailRadioChange.bind(this);
+			$(rl_none.input).click(handler);
+			$(rl_both.input).click(handler);
+			$(rl_only.input).click(handler);
+
+			containerElement.appendChild(fs);
+		},
+		
 		buildOtherOptions: function(containerElement) {
 			var pair_selonly = generateCheckboxInLabel('Show selected only', 'mm-markeroption-selonly', 'mm-markeroption-others');
 			containerElement.appendChild(pair_selonly.label);
@@ -318,6 +344,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		getSelectedVaryingType: function() {
 			return pickIntRadioboxVal(this.jElement, 'MarkerVaryType');
 		},
+		
+		getSelectedTailType: function() {
+			return pickIntRadioboxVal(this.jElement, 'TailType');
+		},
 
 		onVaryingRadioChange: function(e) {
 			var mo = this.boundLayer._markerOptions || null;
@@ -328,8 +358,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.syncFromModel();
 		},
 		
+		onTailRadioChange: function(e) {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				mo.setTailType( this.getSelectedTailType() );
+			}
+			
+			this.syncFromModel();
+		},
+		
 		checkVaryingTypeRadio: function(newVal) {
 			checkRadioboxByInt(this.jElement, 'MarkerVaryType', newVal);
+		},
+		
+		checlTailTypeRadio: function(newVal) {
+			checkRadioboxByInt(this.jElement, 'TailType', newVal);
 		},
 		
 		onMarkerGeneratorConfigurationChange: function() {
@@ -361,6 +404,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				var selected_vtype = this.getSelectedVaryingType();
 				if (vtype !== selected_vtype) {
 					this.checkVaryingTypeRadio(vtype);
+				}
+				
+				var ttype = mo.tailType;
+				var selected_ttype = this.getSelectedTailType();
+				if (ttype !== selected_ttype) {
+					this.checlTailTypeRadio(ttype);
 				}
 			}
 			

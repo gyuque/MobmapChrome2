@@ -6,6 +6,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	function LayerMarkerOptions() {
 		this.jEventElement = $( createEventDummyElement() );
 		this.varyingType = LayerMarkerOptions.MV_NONE;
+		this.tailType = LayerMarkerOptions.TAIL_NONE;
+		this.tailInterval = 20;
+		this.tailSegments = 9;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 	}
@@ -24,6 +27,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		setVaryingType: function(t) {
 			if (this.varyingType !== t) {
 				this.varyingType = t;
+				this.fire();
+			}
+		},
+		
+		setTailType: function(t) {
+			if (this.tailType !== t) {
+				this.tailType = t;
 				this.fire();
 			}
 		},
@@ -49,6 +59,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	LayerMarkerOptions.MV_NONE = 0;
 	LayerMarkerOptions.MV_ATTR = 1;
 	LayerMarkerOptions.MV_DAY  = 2;
+
+	LayerMarkerOptions.TAIL_NONE        = 0;
+	LayerMarkerOptions.TAIL_WITH_MARKER = 1;
+	LayerMarkerOptions.TAIL_ONLY        = 2;
 	
 	aGlobal.mobmap.LayerMarkerOptions = LayerMarkerOptions;
 })(window);

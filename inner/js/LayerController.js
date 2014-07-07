@@ -462,8 +462,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (sourceLayer._markerOptions && sourceLayer._markerOptions.varyingType === mobmap.LayerMarkerOptions.MV_ATTR) {
 				boundAttrName = sourceLayer._markerOptions.boundAttributeName;
 			}
+			
+			// Tail ------------------------------------------------------------------
+			var tailLength = 0;
+			var tailInterval = 1;
+			if (sourceLayer._markerOptions && sourceLayer._markerOptions.tailType !== mobmap.LayerMarkerOptions.TAIL_NONE) {
+				tailLength = sourceLayer._markerOptions.tailSegments;
+				tailInterval = sourceLayer._markerOptions.tailInterval;
+			}
 			// -----------------------------------------------------------------------
-
+		//console.log(">>>>>", tailLength);
 			// Selection --
 			var selection_pl = sourceLayer.localSelectionPool;
 			var anySelected = selection_pl.isAnySelected();
@@ -475,14 +483,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.prepareOverlayMarkerImage(overlay, sourceLayer); // dirty only
 			
-var benchT1 = new Date();
+//var benchT1 = new Date();
 			// Get prepared pick pool (create if not ready)
 			var pickPool = this.ensureOverlayPickPool(overlay);
 
 			pickPool.clear();
-			movingData.pickAt(pickPool, targetTimeSec);
+			movingData.pickAt(pickPool, targetTimeSec, 0, tailLength);
 			var count = pickPool.pickedCount;
-var benchT2 = new Date();
+//var benchT2 = new Date();
 //console.log("Pick time: " + (benchT2 - benchT1));
 			
 			// console.log(count + " points on layer");
@@ -504,6 +512,13 @@ var benchT2 = new Date();
 				marker_data.lat = sourceRecord.y;
 				marker_data.lng = sourceRecord.x;
 				marker_data.chipY = 0;
+				
+				if (tailLength > 0) {
+					marker_data.ensureTailArray(tailLength);
+					for (var j = 0;j < tailLength;++j) {
+						
+					}
+				}
 				
 				if (boundAttrName !== null) {
 					var boundAttrVal = sourceRecord[boundAttrName];

@@ -81,7 +81,7 @@ if (!window.mobmap) window.mobmap={};
 		},
 
 		// Pick API -------------------------------------
-		pickAt: function(pickPool, timeInSec, pickIndex) {
+		pickAt: function(pickPool, timeInSec, pickIndex, tailLength, tailInterval) {
 			if (!pickIndex) {pickIndex=0;}
 			
 			var i;
@@ -89,7 +89,14 @@ if (!window.mobmap) window.mobmap={};
 			var len = ls.length;
 			for (i = 0;i < len;++i) {
 				var t_l = ls[i];
-				t_l.pickAt(pickPool, null, timeInSec, this.extraProps, pickIndex);
+				var pickedRecord = t_l.pickAt(pickPool, null, timeInSec, this.extraProps, pickIndex);
+				if (pickedRecord && tailLength) {
+					var tail_arr = ensureTailRecordList(pickedRecord, tailLength);
+					for (var j = 0;j < tailLength;++j) {
+						var back = tailLength - j;
+						t_l.pickAt(null, tail_arr[back - 1], timeInSec - back * tailInterval, this.extraProps, pickIndex);
+					}
+				}
 			}
 		},
 		
@@ -233,6 +240,28 @@ if (!window.mobmap) window.mobmap={};
 		}
 	};
 	
+	function ensureTailRecordList(ownerRecord, count) {
+		var i;
+		
+		if (!ownerRecord._tailRecords) {
+			ownerRecord._tailRecords = new Array(count);
+			for (i = 0;i < count;++i) {
+				ownerRecord._tailRecords[i] = createCleanHash();
+			}
+		} else {
+			var arr = ownerRecord._tailRecords;
+			if (arr.length >= count) {
+				return ownerRecord._tailRecords;
+			} else {
+				arr.length = count;
+				for (i = arr.length;i < count;++i) {
+					arr[i] = createCleanHash();
+				}
+			}
+		}
+		
+		return ownerRecord._tailRecords;
+	}
 
 	function TimeList(objId) {
 		this.id = objId;
@@ -316,6 +345,8 @@ if (!window.mobmap) window.mobmap={};
 					this.pickEndRecord(pickedRec, ls, 0, extraProps);
 				}
 			}
+			
+			return pickedRec;
 		},
 		
 		pickIntpRecord: function(outRec, tls, li1, li2, t, extraProps) {

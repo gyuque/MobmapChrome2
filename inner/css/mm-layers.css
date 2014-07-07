@@ -210,7 +210,8 @@
 	border: 1px solid #ccc;
 }
 
-label.varytypeopt {
+label.varytypeopt,
+label.tailopt {
 	display: block;
 }
 
