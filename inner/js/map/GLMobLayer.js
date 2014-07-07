@@ -830,16 +830,30 @@ function installMobLayer(pkg) {
 		this.chipY = 0;
 
 		this.tailArray = null;
+		this.tailLengthToRender = 0;
 	}
 	
 	MarkerDisplayData.prototype.ensureTailArray = function(length) {
 		if (length < 1) { return; }
+		var i;
 		
 		if (!this.tailArray) {
-			
+			this.tailArray = new Array(length);
+			for (i = 0;i < length;++i) {
+				this.tailArray[i] = new MarkerDisplayData();
+			}
 		} else {
-			
+			var arr = this.tailArray;
+			if (arr.length >= length) {
+				return arr;
+			} else {
+				for (i = arr.length;i < length;++i) {
+					arr[i] = new MarkerDisplayData();
+				}
+			}
 		}
+		
+		return this.tailArray;
 	};
 	
 	function MarkerTextureConfiguration() {

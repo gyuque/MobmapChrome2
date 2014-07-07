@@ -512,11 +512,14 @@ if (!window.mobmap) { window.mobmap={}; }
 				marker_data.lat = sourceRecord.y;
 				marker_data.lng = sourceRecord.x;
 				marker_data.chipY = 0;
+				marker_data.tailLengthToRender = tailLength;
 				
 				if (tailLength > 0) {
-					marker_data.ensureTailArray(tailLength);
+					var tailSource = sourceRecord._tailRecords;
+					var tailArray = marker_data.ensureTailArray(tailLength);
 					for (var j = 0;j < tailLength;++j) {
-						
+						tailArray.lat = tailArray[j].y;
+						tailArray.lng = tailArray[j].x;
 					}
 				}
 				
