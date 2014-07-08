@@ -4,6 +4,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	'use strict';
 	var DARKMAP_ID = 'dark';
 	var OSMAP_ID = 'osm';
+	var TONERMAP_ID = 'toner';
 
 	var PMODE_DEFAULT  = 0;
 	var PMODE_DRAG_SEL = 1;
@@ -17,6 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.ownerApp = null;
 		this.darkMapType = null;
 		this.osmMapType  = null;
+		this.tonerMapType  = null;
 		this.pointingMode = PMODE_DEFAULT;
 		this.nowCapturingDrag = false;
 		this.prevRenderTargetTime = -1;
@@ -105,6 +107,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.gmap = new google.maps.Map(this.containerElement, mapOptions);
 			this.setupDarkMap(this.gmap, "Dark");
 			this.setupOpenStreetMap(this.gmap, "OSM");
+			this.setupTonerMap(this.gmap, "Stamen toner");
 			/*
 			this.mobLayer = new mobmap.GLMobLayer();
 			this.mobLayer.canvasReadyCallback = this.onLayerCanvasReady.bind(this);
@@ -132,9 +135,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		setupOpenStreetMap: function(gmap, typeName) {
 			if (this.osmMapType) {return;}
 			
-			var mt = createOSMImageMapType();
+			var mt = createOSMImageMapType(false);
 			gmap.mapTypes.set(OSMAP_ID, mt);
 			this.osmMapType = mt;
+		},
+
+		setupTonerMap: function(gmap, typeName) {
+			if (this.tonerMapType) {return;}
+			
+			var mt = createOSMImageMapType(true);
+			gmap.mapTypes.set(TONERMAP_ID, mt);
+			this.tonerMapType = mt;
 		},
 		
 		generateDefaultMapTypeList: function() {
@@ -144,7 +155,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				google.maps.MapTypeId.SATELLITE,
 				google.maps.MapTypeId.TERRAIN,
 				DARKMAP_ID,
-				OSMAP_ID
+				OSMAP_ID,
+				TONERMAP_ID
 			];
 		},
 
@@ -549,15 +561,18 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	// OSM tile provider
-	function createOSMImageMapType() {
+	function createOSMImageMapType(toner) {
+		var base = toner ? "tile.stamen.com/toner" : "tile.openstreetmap.org";
+		var name = toner ? "Stamen toner"          : "OSM";
+		
 		var options = {
 			getTileUrl: function(coord, zoom) {
-				return "http://tile.openstreetmap.org/" +zoom+ "/" +coord.x+ "/" +coord.y+ ".png";
+				return "http://" +base+ "/" +zoom+ "/" +coord.x+ "/" +coord.y+ ".png";
 			},
 			tileSize: new google.maps.Size(256, 256),
 			maxZoom: 19,
 			minZoom: 0,
-			name: 'OpenStreetMap'
+			name: name
 		};
 		
 		return new google.maps.ImageMapType(options);

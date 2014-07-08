@@ -434,6 +434,18 @@ function installMobLayer(pkg) {
 
 				++triCount;
 			}
+			
+			// Transform tail points
+			if (mk.tailLengthToRender > 0) {
+				var tailArray = mk.tailArray;
+				if (tailArray) {
+					var taillen = mk.tailLengthToRender;
+					for (var ti = 0;ti < taillen;++ti) {
+						var t_mk = tailArray[ti];
+						this.projectionGrid.calc(t_mk);
+					}
+				} 
+			}
 
 			if (
 				triCount >= trisLimit || // buffer is full
