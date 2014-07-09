@@ -540,6 +540,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
+			overlay.setTailDrawEnabled(tailLength > 0);
 			overlay.resetRenderedRegion();
 			overlay.renderGL();
 			
