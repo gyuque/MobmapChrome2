@@ -33,6 +33,7 @@ function installMobLayer(pkg) {
 		this.markerTextureConf = new MarkerTextureConfiguration();
 		this.markerTransformMatrix = mat4.create();
 		this.nTrianglesBuffered = 0;
+		this.nSegmentsBuffered = 0;
 		// WebGL objects ------------------------------
 		
 		// Default values
@@ -219,8 +220,25 @@ function installMobLayer(pkg) {
 	};
 	
 	GLMobLayer.prototype.setupColoeLineShaderProgram = function(outObj, gl, vs, fs) {
+		var prg = gl.createProgram();
+		outObj.shaderProgram = prg;
+		
+		gl.attachShader(prg, vs);
+		gl.attachShader(prg, fs);
+		gl.linkProgram(prg);
 
-//		outObj.shaderParams.vertexPosition = a_pos;
+		if (!gl.getProgramParameter(prg, gl.LINK_STATUS)) {
+			console.log("!!Link failed!!");
+			alert(gl.getProgramInfoLog(prg));
+		}
+
+		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
+		var a_col = gl.getAttribLocation(prg, 'aColor');
+		var u_trans = gl.getUniformLocation(prg, 'transform');
+
+		outObj.shaderParams.vertexPosition = a_pos;
+		outObj.shaderParams.vertexColor    = a_col;
+		outObj.shaderParams.transform      = u_trans;
 	};
 	
 	GLMobLayer.prototype.setupGLBuffers = function(gl) {
@@ -352,6 +370,9 @@ function installMobLayer(pkg) {
 			gl.bindTexture(gl.TEXTURE_2D, this.markerTexture);
 			this.setupPixelToPixelScale(this.markerTransformMatrix);
 		}
+
+		gl.useProgram(this.colorLineShaderObjects.shaderProgram);
+		gl.uniformMatrix4fv(this.colorLineShaderObjects.shaderParams.transform, false, this.markerTransformMatrix);
 		
 		gl.useProgram(this.shaderProgram);
 		gl.uniform1i(this.shaderParams.texture, 0);
@@ -439,6 +460,7 @@ function installMobLayer(pkg) {
 		var segCount = 0;
 		var segFlushThreshold = (segsLimit >> 1);
 		if (this.enableTailDraw) {
+			this.gl.useProgram(this.colorLineShaderObjects.shaderProgram);
 			for (i = 0;i < len;++i) {
 				mk = m_arr[i];
 
@@ -452,6 +474,8 @@ function installMobLayer(pkg) {
 				if (segCount >= segFlushThreshold ||
 					i === lastIndex) {
 					console.log("--- ", i, segCount);
+					this.nSegmentsBuffered = segCount;
+					
 					segCount = 0;
 				}
 			}
@@ -561,7 +585,25 @@ function installMobLayer(pkg) {
 		gl.uniform1f(this.shaderParams.animationT, params.taCurrentAngle / 1000.0);
 		this.timeDirection = 0;
 	};
-	
+
+	GLMobLayer.prototype.drawBufferedLinePrimitives = function(gl) {
+		if (this.nSegmentsBuffered < 1) {
+			return;
+		}
+		
+		// Write to buffer
+		this.updateLineBufferContent();
+
+		// Setup buffer objects -----------------------
+		//  position buffer
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
+		gl.enableVertexAttribArray(this.shaderParams.vertexPosition);
+		gl.vertexAttribPointer(
+			this.shaderParams.vertexPosition,
+			this.vertexDimension, // components per vertex
+			gl.FLOAT, false, 0, 0);
+	};
+
 	GLMobLayer.prototype.drawBufferedPrimitives = function(gl) {
 		if (this.nTrianglesBuffered < 1) {
 			return;
@@ -666,7 +708,16 @@ function installMobLayer(pkg) {
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.glBuffers.arrTexbase);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	};
-	
+
+	GLMobLayer.prototype.updateLineBufferContent = function() {
+		var gl = this.gl;
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.glBuffers.arrPositions);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbColors);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.glBuffers.arrColors);
+	};
+
 	GLMobLayer.prototype.bindBufferArrays = function() {
 		var gl = this.gl;
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
