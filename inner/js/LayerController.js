@@ -488,7 +488,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var pickPool = this.ensureOverlayPickPool(overlay);
 
 			pickPool.clear();
-			movingData.pickAt(pickPool, targetTimeSec, 0, tailLength);
+			movingData.pickAt(pickPool, targetTimeSec, 0, tailLength, tailInterval);
 			var count = pickPool.pickedCount;
 //var benchT2 = new Date();
 //console.log("Pick time: " + (benchT2 - benchT1));
@@ -518,8 +518,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					var tailSource = sourceRecord._tailRecords;
 					var tailArray = marker_data.ensureTailArray(tailLength);
 					for (var j = 0;j < tailLength;++j) {
-						tailArray.lat = tailArray[j].y;
-						tailArray.lng = tailArray[j].x;
+						tailArray[j].lat = tailSource[j].y;
+						tailArray[j].lng = tailSource[j].x;
 					}
 				}
 				

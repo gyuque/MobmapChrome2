@@ -473,10 +473,12 @@ function installMobLayer(pkg) {
 				// Buffer is almost full! (or last)
 				if (segCount >= segFlushThreshold ||
 					i === lastIndex) {
-					console.log("--- ", i, segCount);
+					//console.log("--- ", i, segCount);
 					this.nSegmentsBuffered = segCount;
 					
+					this.drawBufferedLinePrimitives(this.gl);
 					segCount = 0;
+					vi = 0;
 				}
 			}
 		}
@@ -528,25 +530,30 @@ function installMobLayer(pkg) {
 	};
 
 	GLMobLayer.prototype.writeTailVertices = function(vlist, startIndex, cllist, markerData) {
-		var vi = 0;
+		var vi = startIndex;
 		var cIndex = (startIndex << 1);
 		var tailArray = markerData.tailArray;
 		this.projectionGrid.calc(markerData);
 		
-		vlist[vi++] = markerData.screenX;
-		vlist[vi++] = markerData.screenY;
-		cllist[cIndex++] = 255;
-		cllist[cIndex++] = 0;
-		cllist[cIndex++] = 0;
-		cllist[cIndex++] = 255;
+		var prevX = markerData.screenX;
+		var prevY = markerData.screenY;
 		
 		var taillen = markerData.tailLengthToRender;
 		for (var ti = 0;ti < taillen;++ti) {
 			var t_mk = tailArray[ti];
 			this.projectionGrid.calc(t_mk);
 
-			vlist[vi++] = t_mk.screenX;
-			vlist[vi++] = t_mk.screenY;
+			vlist[vi++] = prevX;
+			vlist[vi++] = prevY;
+
+			cllist[cIndex++] = 255;
+			cllist[cIndex++] = 0;
+			cllist[cIndex++] = 0;
+			cllist[cIndex++] = 255;
+
+
+			vlist[vi++] = prevX = t_mk.screenX;
+			vlist[vi++] = prevY = t_mk.screenY;
 
 			cllist[cIndex++] = 255;
 			cllist[cIndex++] = 0;
@@ -554,7 +561,7 @@ function installMobLayer(pkg) {
 			cllist[cIndex++] = 255;
 		}
 		
-		return vi;
+		return vi - startIndex;
 	};
 	
 	GLMobLayer.prototype.advanceTyphoonAnimation = function(gl) {
@@ -594,14 +601,28 @@ function installMobLayer(pkg) {
 		// Write to buffer
 		this.updateLineBufferContent();
 
+		var S = this.colorLineShaderObjects;
 		// Setup buffer objects -----------------------
 		//  position buffer
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
-		gl.enableVertexAttribArray(this.shaderParams.vertexPosition);
+		gl.enableVertexAttribArray(S.shaderParams.vertexPosition);
 		gl.vertexAttribPointer(
-			this.shaderParams.vertexPosition,
+			S.shaderParams.vertexPosition,
 			this.vertexDimension, // components per vertex
 			gl.FLOAT, false, 0, 0);
+
+		//  color buffer
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbColors);
+		gl.enableVertexAttribArray(S.shaderParams.vertexColor);
+		gl.vertexAttribPointer(
+			S.shaderParams.vertexColor,
+			4, // components per vertex
+			gl.UNSIGNED_BYTE, false, 0, 0);
+
+//console.log(S.shaderParams.vertexColor, S.shaderParams.vertexPosition);
+
+		// Run -----------------------
+		gl.drawArrays(gl.LINES, 0, this.nSegmentsBuffered * 2);
 	};
 
 	GLMobLayer.prototype.drawBufferedPrimitives = function(gl) {

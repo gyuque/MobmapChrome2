@@ -447,6 +447,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			gr.hideColumn("_pickTime");
 			gr.hideColumn("_backKeyTime");
 			gr.hideColumn("_fwdKeyTime");
+			gr.hideColumn("_tailRecords");
 
 			gr.showColumn("x");
 			gr.showColumn("y");
