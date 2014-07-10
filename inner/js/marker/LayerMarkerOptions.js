@@ -7,8 +7,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jEventElement = $( createEventDummyElement() );
 		this.varyingType = LayerMarkerOptions.MV_NONE;
 		this.tailType = LayerMarkerOptions.TAIL_NONE;
-		this.tailInterval = 20;
-		this.tailSegments = 9;
+		this.tailInterval = 40;
+		this.tailSegments = 6;
+		this.tailFade = false;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 	}
@@ -34,6 +35,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		setTailType: function(t) {
 			if (this.tailType !== t) {
 				this.tailType = t;
+				this.fire();
+			}
+		},
+
+		setTailFade: function(f) {
+			if (this.tailFade !== f) {
+				this.tailFade = f;
 				this.fire();
 			}
 		},

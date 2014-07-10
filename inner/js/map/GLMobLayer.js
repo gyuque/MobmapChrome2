@@ -537,6 +537,8 @@ function installMobLayer(pkg) {
 		
 		var prevX = markerData.screenX;
 		var prevY = markerData.screenY;
+		var prevC = markerData.baseColor;
+		var prevAlpha = (markerData.tailAlpha * 255) | 0;
 		
 		var taillen = markerData.tailLengthToRender;
 		for (var ti = 0;ti < taillen;++ti) {
@@ -546,19 +548,20 @@ function installMobLayer(pkg) {
 			vlist[vi++] = prevX;
 			vlist[vi++] = prevY;
 
-			cllist[cIndex++] = 255;
-			cllist[cIndex++] = 0;
-			cllist[cIndex++] = 0;
-			cllist[cIndex++] = 255;
+			cllist[cIndex++] = prevC.r;
+			cllist[cIndex++] = prevC.g;
+			cllist[cIndex++] = prevC.b;
+			cllist[cIndex++] = prevAlpha;
 
-
+			prevC = t_mk.baseColor;
+			prevAlpha = (t_mk.tailAlpha * 255) | 0;
 			vlist[vi++] = prevX = t_mk.screenX;
 			vlist[vi++] = prevY = t_mk.screenY;
 
-			cllist[cIndex++] = 255;
-			cllist[cIndex++] = 0;
-			cllist[cIndex++] = 0;
-			cllist[cIndex++] = 255;
+			cllist[cIndex++] = prevC.r;
+			cllist[cIndex++] = prevC.g;
+			cllist[cIndex++] = prevC.b;
+			cllist[cIndex++] = prevAlpha;
 		}
 		
 		return vi - startIndex;
@@ -989,7 +992,9 @@ function installMobLayer(pkg) {
 		this.screenX = this.screenY = this.lat = this.lng = 0;
 		this.chipX = 0;
 		this.chipY = 0;
+		this.baseColor = null;
 
+		this.tailAlpha = 1;
 		this.tailArray = null;
 		this.tailLengthToRender = 0;
 	}
@@ -1094,7 +1099,7 @@ function installMobLayer(pkg) {
 		"varying vec4 vColor;",
 		"uniform mat4 transform;",
 		"void main(void) {",
-		" vColor = aColor;",
+		" vColor = aColor / 255.0;",
 		" gl_Position = transform * vec4(aVertexPosition, 0.0, 1.0);",
 		"}"
 	].join("\n");

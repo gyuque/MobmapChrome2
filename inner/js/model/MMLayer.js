@@ -54,7 +54,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this._markerOptions = new mobmap.LayerMarkerOptions();
 		this._markerOptions.setParentEventElement(this.jElement[0]);
 		this._lctrlObserved = false;
-		
+
 		this.sourceLoader = null;
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.markerGenerator.setParentEventElement(this.jElement[0]);
@@ -63,7 +63,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.tp_count_cache = -1;
 		this.localSelectionPool = new mobmap.SelectionPool();
 		this.dataReady = false;
-		
+
 		this.shouldRenderAsPoints = true;
 		this.typhoonMarkerOptions = {
 			showCloud: true
@@ -265,6 +265,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (i < 0) { i = 0; }
 
 			return i;
+		},
+		
+		getMarkerColorByIndex: function(markerIndex) {
+			var ls = this.markerGenerator.lastBaseColorList;
+			if (!ls) { return null; }
+			
+			return ls[markerIndex] || null;
 		},
 		
 		// Polyline datasource API

@@ -211,10 +211,12 @@
 }
 
 label.varytypeopt,
-label.tailopt {
+label.tailopt,
+label.tailconf-fade {
 	display: block;
 }
 
+label.tailconf-fade {margin-top:0.5em;}
 
 .mm-layer-delete-dialog-buttons {
 	margin: 0.8em 0 0 0;

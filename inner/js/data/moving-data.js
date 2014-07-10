@@ -244,6 +244,12 @@ if (!window.mobmap) window.mobmap={};
 		var i;
 		
 		if (!ownerRecord._tailRecords) {
+			// Add property as 'Non-enumerable'
+			Object.defineProperty(ownerRecord, "_tailRecords", {value: 0,
+			                               writable : true,
+			                               enumerable : false,
+			                               configurable : true});
+
 			ownerRecord._tailRecords = new Array(count);
 			for (i = 0;i < count;++i) {
 				ownerRecord._tailRecords[i] = createCleanHash();

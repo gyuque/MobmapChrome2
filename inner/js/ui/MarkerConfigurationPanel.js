@@ -25,6 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.checkShowTyphoonCloud = null;
 		this.checkShowSelectedOnly = null;
+		this.checkTailFade = null;
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
 		
@@ -280,6 +281,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		buildMarkerTailOptions: function(containerElement) {
 			var fs = makeFieldSetWithLegend('Tail');
 
+			// Type selection ======================================================
 			var rl_none = generateRadioInLabel('None',             'TailType', 'tailopt');
 			var rl_both = generateRadioInLabel('Show with marker', 'TailType', 'tailopt');
 			var rl_only = generateRadioInLabel('Show tail only',   'TailType', 'tailopt');
@@ -299,6 +301,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(rl_both.input).click(handler);
 			$(rl_only.input).click(handler);
 
+			// Configuration ======================================================
+			var c_fade = generateCheckboxInLabel('Faded', 'MarkerTailFade', 'tailconf-fade');
+			fs.appendChild(c_fade.label);
+			$(c_fade.input).click(this.onTailFadeCheckChange.bind(this));
+
+			this.checkTailFade = c_fade.input;
 			containerElement.appendChild(fs);
 		},
 		
@@ -375,6 +383,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			checkRadioboxByInt(this.jElement, 'TailType', newVal);
 		},
 		
+		onTailFadeCheckChange: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				mo.setTailFade( this.getTailFadeChecked() );
+			}
+		},
+		
+		checkFadeCheckbox: function(newVal) {
+			if (this.getTailFadeChecked() !== newVal) {
+				this.checkTailFade.checked = newVal;
+			}
+		},
+		
+		getTailFadeChecked: function() {
+			return !!(this.checkTailFade.checked);
+		},
+		
 		onMarkerGeneratorConfigurationChange: function() {
 			this.syncMarkerVariationCountDisp();
 		},
@@ -411,6 +436,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (ttype !== selected_ttype) {
 					this.checlTailTypeRadio(ttype);
 				}
+				
+				this.checkFadeCheckbox(mo.tailFade);
 			}
 			
 			this.syncShowTyphoonCloudCheckValue();

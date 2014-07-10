@@ -464,11 +464,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			// Tail ------------------------------------------------------------------
+			var tailOnly = false;
+			var tailFade = false;
 			var tailLength = 0;
 			var tailInterval = 1;
 			if (sourceLayer._markerOptions && sourceLayer._markerOptions.tailType !== mobmap.LayerMarkerOptions.TAIL_NONE) {
 				tailLength = sourceLayer._markerOptions.tailSegments;
 				tailInterval = sourceLayer._markerOptions.tailInterval;
+				
+				tailOnly = (sourceLayer._markerOptions.tailType === mobmap.LayerMarkerOptions.TAIL_ONLY);
+				tailFade = sourceLayer._markerOptions.tailFade;
 			}
 			// -----------------------------------------------------------------------
 		//console.log(">>>>>", tailLength);
@@ -505,6 +510,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (selOnly && anySelected) {
 					if (!selection_pl.isIDSelected(sourceRecord._id)) {
 						marker_data.chipY = -1;
+						marker_data.tailLengthToRender = 0;
 						continue;
 					}
 				}
@@ -513,29 +519,53 @@ if (!window.mobmap) { window.mobmap={}; }
 				marker_data.lng = sourceRecord.x;
 				marker_data.chipY = 0;
 				marker_data.tailLengthToRender = tailLength;
-				
-				if (tailLength > 0) {
-					var tailSource = sourceRecord._tailRecords;
-					var tailArray = marker_data.ensureTailArray(tailLength);
-					for (var j = 0;j < tailLength;++j) {
-						tailArray[j].lat = tailSource[j].y;
-						tailArray[j].lng = tailSource[j].x;
+								
+				var mkIndex = 0;
+				if (boundAttrName !== null) {
+					var boundAttrVal = sourceRecord[boundAttrName];
+					mkIndex = sourceLayer.mapAttributeToMarkerIndex(boundAttrVal);
+				}
+
+				if (tailOnly) {
+					// Hide all markers
+					marker_data.chipY = -1;
+				} else {
+					marker_data.chipX = mkIndex * chipW;
+					
+					if (anySelected) {
+						var this_selected = selection_pl.isIDSelected(sourceRecord._id);
+						if (!this_selected) {
+							marker_data.chipY = chipH;
+						}
 					}
 				}
 				
-				if (boundAttrName !== null) {
-					var boundAttrVal = sourceRecord[boundAttrName];
-					var mkIndex = sourceLayer.mapAttributeToMarkerIndex(boundAttrVal);
-					
-					marker_data.chipX = mkIndex * chipW;
-				} else {
-					marker_data.chipX = 0;
-				}
-				
-				if (anySelected) {
-					var this_selected = selection_pl.isIDSelected(sourceRecord._id);
-					if (!this_selected) {
-						marker_data.chipY = chipH;
+				if (tailLength > 0) {
+					var markerBaseColor = sourceLayer.getMarkerColorByIndex(mkIndex);
+					marker_data.baseColor = markerBaseColor;
+					marker_data.tailAlpha = 1;
+
+					var tailSource = sourceRecord._tailRecords;
+					var tailArray = marker_data.ensureTailArray(tailLength);
+					for (var j = 0;j < tailLength;++j) {
+						var t_mk  = tailArray[j];
+						var t_src = tailSource[j];
+						t_mk.lat = t_src.y;
+						t_mk.lng = t_src.x;
+						
+						if (boundAttrName !== null) {
+							var t_boundAttrVal = t_src[boundAttrName];
+							var t_mkIndex = sourceLayer.mapAttributeToMarkerIndex(t_boundAttrVal);
+							t_mk.baseColor = sourceLayer.getMarkerColorByIndex(t_mkIndex);
+						} else {
+							t_mk.baseColor = markerBaseColor;
+						}
+
+						if (tailFade) {
+							t_mk.tailAlpha = 1.0 - (j + 1) / tailLength;
+						} else {
+							t_mk.tailAlpha = 1;
+						}
 					}
 				}
 			}
