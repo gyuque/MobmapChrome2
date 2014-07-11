@@ -151,7 +151,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		return generateInputElementInLabel('checkbox', labelText, radio_name, label_class);
 	};
 
-	aGlobal.generateInputElementInLabel = function(type, labelText, radio_name, label_class) {
+	aGlobal.generateInputElementInLabel = function(type, labelText, radio_name, label_class, label_in_front) {
 		var le = $H('label');
 		var r = $H('input');
 		r.type = type;
@@ -161,9 +161,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			le.setAttribute('class', label_class);
 		}
 		
+		if (label_in_front) { le.appendChild( document.createTextNode(labelText) ); }
 		le.appendChild(r);
-		le.appendChild( document.createTextNode(labelText) );
-		return {label:le, input:r};		
+		if (!label_in_front) { le.appendChild( document.createTextNode(labelText) ); }
+		return {label:le, input:r};
 	};
 	
 	aGlobal.RGBColor = function(r,g,b) {

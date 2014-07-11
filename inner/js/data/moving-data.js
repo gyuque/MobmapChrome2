@@ -256,11 +256,12 @@ if (!window.mobmap) window.mobmap={};
 			}
 		} else {
 			var arr = ownerRecord._tailRecords;
-			if (arr.length >= count) {
+			var oldLen = arr.length;
+			if (oldLen >= count) {
 				return ownerRecord._tailRecords;
 			} else {
 				arr.length = count;
-				for (i = arr.length;i < count;++i) {
+				for (i = oldLen;i < count;++i) {
 					arr[i] = createCleanHash();
 				}
 			}

@@ -7,9 +7,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jEventElement = $( createEventDummyElement() );
 		this.varyingType = LayerMarkerOptions.MV_NONE;
 		this.tailType = LayerMarkerOptions.TAIL_NONE;
-		this.tailInterval = 40;
+		this.tailInterval = 20;
 		this.tailSegments = 6;
 		this.tailFade = false;
+		this.tailWidth = 2;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 	}
@@ -45,7 +46,28 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.fire();
 			}
 		},
-		
+
+		setTailSegments: function(s) {
+			if (this.tailSegments !== s) {
+				this.tailSegments = s;
+				this.fire();
+			}
+		},
+
+		setTailInterval: function(i) {
+			if (this.tailInterval !== i) {
+				this.tailInterval = i;
+				this.fire();
+			}
+		},
+
+		setTailWidth: function(w) {
+			if (this.tailWidth !== w) {
+				this.tailWidth = w;
+				this.fire();
+			}
+		},
+
 		bindAttributeName: function(a_name) {
 			if (this.boundAttributeName !== a_name) {
 				this.boundAttributeName = a_name;

@@ -570,6 +570,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
+			if (tailLength > 0) { overlay.setTailWidth( sourceLayer._markerOptions.tailWidth ); }
 			overlay.setTailDrawEnabled(tailLength > 0);
 			overlay.resetRenderedRegion();
 			overlay.renderGL();

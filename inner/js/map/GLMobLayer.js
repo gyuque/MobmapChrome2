@@ -39,6 +39,7 @@ function installMobLayer(pkg) {
 		// Default values
 		this.visible = true;
 		this.enableTailDraw = false;
+		this.tailWidth = 1;
 		this.timeDirection = 0;
 		this.composition = kMarkerCompositionNormal;
 		this.showTyphoonCloud = true;
@@ -84,7 +85,8 @@ function installMobLayer(pkg) {
 	GLMobLayer.prototype.setShowTyphoonCloud = function(s) { this.showTyphoonCloud = s; };
 	GLMobLayer.prototype.setMarkerComposition = function(c) { this.composition = c; };
 	GLMobLayer.prototype.setTailDrawEnabled = function(e) { this.enableTailDraw = e; };
-	
+	GLMobLayer.prototype.setTailWidth = function(w) { this.tailWidth = w; };
+
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {
 		if (!this.canvas) {
@@ -373,7 +375,8 @@ function installMobLayer(pkg) {
 
 		gl.useProgram(this.colorLineShaderObjects.shaderProgram);
 		gl.uniformMatrix4fv(this.colorLineShaderObjects.shaderParams.transform, false, this.markerTransformMatrix);
-		
+		gl.lineWidth(this.tailWidth);
+
 		gl.useProgram(this.shaderProgram);
 		gl.uniform1i(this.shaderParams.texture, 0);
 		gl.uniformMatrix4fv(this.shaderParams.transform, false, this.markerTransformMatrix);
@@ -1010,10 +1013,12 @@ function installMobLayer(pkg) {
 			}
 		} else {
 			var arr = this.tailArray;
-			if (arr.length >= length) {
+			var oldLen = arr.length;
+			if (oldLen >= length) {
 				return arr;
 			} else {
-				for (i = arr.length;i < length;++i) {
+				arr.length = length;
+				for (i = oldLen;i < length;++i) {
 					arr[i] = new MarkerDisplayData();
 				}
 			}

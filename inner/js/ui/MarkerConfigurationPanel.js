@@ -26,6 +26,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.checkShowTyphoonCloud = null;
 		this.checkShowSelectedOnly = null;
 		this.checkTailFade = null;
+		this.numinTailSegs = null;
+		this.numinTailStep = null;
+		this.numinTailWidth = null;
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
 		
@@ -308,6 +311,33 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.checkTailFade = c_fade.input;
 			containerElement.appendChild(fs);
+
+			// Tail segments and step configuration
+			var n_segs = generateInputElementInLabel('number', 'Segments ', 'tailconf-segs', 'tailconf-segs', true); 
+			var n_step = generateInputElementInLabel('number', 'Interval(sec.) ', 'tailconf-step', 'tailconf-step', true);
+			var n_width= generateInputElementInLabel('number', 'Line width ', 'tailconf-width', 'tailconf-width', true);
+ 
+			n_segs.input.min = 1;
+			n_segs.input.max = 100;
+			n_step.input.min = 1;
+			n_width.input.min = 1;
+
+			fs.appendChild(n_segs.label);
+			fs.appendChild(n_step.label);
+			fs.appendChild(n_width.label);
+
+			this.numinTailSegs = n_segs.input;
+			this.numinTailStep = n_step.input;
+			this.numinTailWidth= n_width.input;
+
+			var handler_segs = this.onTailSegsInputChange.bind(this);
+			$(n_segs.input).change(handler_segs).blur(handler_segs);
+
+			var handler_step = this.onTailStepInputChange.bind(this);
+			$(n_step.input).change(handler_step).blur(handler_step);
+
+			var handler_width = this.onTailWidthInputChange.bind(this);
+			$(n_width.input).change(handler_width).blur(handler_width);
 		},
 		
 		buildOtherOptions: function(containerElement) {
@@ -357,6 +387,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			return pickIntRadioboxVal(this.jElement, 'TailType');
 		},
 
+
+		getCurrentTailSegs: function() {
+			return pickNumberInputValueWithMin(this.numinTailSegs, 1);
+		},
+		
+		getCurrentTailStep: function() {
+			return pickNumberInputValueWithMin(this.numinTailStep, 1);
+		},
+		
+		getCurrentTailWidth: function() {
+			return pickNumberInputValueWithMin(this.numinTailWidth, 1);
+		},
+
+		setTailSegsValue: function(n) {
+			if (n !== this.getCurrentTailSegs()) {
+				this.numinTailSegs.value = n;
+			}
+		},
+
+		setTailStepValue: function(n) {
+			if (n !== this.getCurrentTailStep()) {
+				this.numinTailStep.value = n;
+			}
+		},
+		
+		setTailWidthValue: function(w) {
+			if (w !== this.getCurrentTailWidth()) {
+				this.numinTailWidth.value = w;
+			}
+		},
+
+
 		onVaryingRadioChange: function(e) {
 			var mo = this.boundLayer._markerOptions || null;
 			if (mo) {
@@ -375,6 +437,28 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.syncFromModel();
 		},
 		
+		onTailSegsInputChange: function(e) {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				mo.setTailSegments( this.getCurrentTailSegs() );
+			}
+		},
+
+		onTailStepInputChange: function(e) {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				mo.setTailInterval( this.getCurrentTailStep() );
+			}
+		},
+
+		onTailWidthInputChange: function(e) {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				mo.setTailWidth( this.getCurrentTailWidth() );
+			}
+		},
+
+
 		checkVaryingTypeRadio: function(newVal) {
 			checkRadioboxByInt(this.jElement, 'MarkerVaryType', newVal);
 		},
@@ -438,6 +522,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 				
 				this.checkFadeCheckbox(mo.tailFade);
+				this.setTailSegsValue(mo.tailSegments);
+				this.setTailStepValue(mo.tailInterval);
+				this.setTailWidthValue(mo.tailWidth);
 			}
 			
 			this.syncShowTyphoonCloudCheckValue();
@@ -501,6 +588,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	}
 
+	function pickNumberInputValueWithMin(el, min) {
+		var val = el.value | 0;
+		if (isNaN(val)) { val = 0; }
+		if (val < min) { val = min; }
+		return val;
+	}
 	
 	aGlobal.mobmap.MarkerConfigurationPanel = MarkerConfigurationPanel;
 })(window);
