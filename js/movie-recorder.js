@@ -173,7 +173,7 @@
 		onResolutionRadioClick: function() {
 			var res = this.getSelectedResolution();
 			if (res) {
-				this.regionSelector.setSize(res.width, res.height);
+				this.regionSelector.setSize(res.width, res.height, true);
 			}
 		},
 		
@@ -240,7 +240,15 @@
 
 		generateDataDurationString: function() {
 			var n = this.runStatus.movieDuration * this.runStatus.fps * this.runStatus.secPerFrame;
-			return "Data duration: " + n + "sec.";
+			var time_disp = null;
+			
+			if (n < 60) {
+				time_disp = n + "sec.";
+			} else {
+				time_disp = Math.floor(n/60) + "min. " +(n%60)+ "sec.";
+			}
+			
+			return "Data duration: " + time_disp;
 		},
 
 		getMovieDurationInputVaule: function() {
@@ -275,6 +283,15 @@
 			this.runStatus.startWait = PADDING_FRAMES;
 			
 			this.sendRenderRequest(0);
+		},
+		
+		changeTriggerAppearance: function() {
+			this.jTrigger.addClass('busy').text('0%');
+		},
+		
+		updateProgressLabel: function() {
+			var r = this.runStatus.frameIndex / this.runStatus.totalFrameCount;
+			this.jTrigger.text(Math.floor(r * 100.0) + '%');
 		},
 		
 		prepareNewBuffer: function() {
@@ -337,6 +354,7 @@
 				dsec = 0;
 			}
 			
+			this.updateProgressLabel();
 			if (this.runStatus.frameIndex < this.runStatus.totalFrameCount) {
 				this.sendRenderRequest(dsec);
 			} else {
@@ -352,7 +370,10 @@
 		},
 		
 		onTriggerClick: function() {
-			this.run();
+			if (!this.runStatus.running) {
+				this.changeTriggerAppearance();
+				this.run();
+			}
 		},
 		
 		saveTriggerOriginalLabel: function() {
@@ -364,6 +385,7 @@
 		},
 		
 		afterEncoderClose: function() {
+			this.jTrigger.hide();
 			this.showSaveLink();
 		},
 		
@@ -434,13 +456,17 @@
 			return this.jElement;
 		},
 		
-		setSize: function(w, h) {
+		setSize: function(w, h, autoAdjust) {
 			if (this.width !== w || this.height !== h) {
 				this.width = w;
 				this.height = h;
 				
 				this.element.width = w;
 				this.element.height = h;
+				
+				if (autoAdjust) {
+					this.adjustRightBottom();
+				}
 			}
 		},
 		
