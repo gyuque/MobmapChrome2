@@ -3,11 +3,18 @@
 	var gApp = null;
 	var PADDING_FRAMES = 20;
 	
+	var kResolutionPresets = [
+		{width: 640, height: 480},
+		{width: 854, height: 480},
+		{width: 1280, height: 720}
+	];
+	
 	function MovieRecorder(captureVideoElement, triggerElement, nacl_module) {
 		this.jElement = $( document.createElement('span') );
 		this.inputDuration = null;
 		this.inputSecPerFrame = null;
 		this.inputClockCheck = null;
+		this.jResolutionRadios = null;
 		
 		this.triggerOriginalLabel = '';
 		this.naclModule = nacl_module;
@@ -158,6 +165,39 @@
 			$(chk).click(handler);
 		},
 		
+		observeResolutionRadio: function(radio_name) {
+			this.jResolutionRadios = $('input[name=' +radio_name+ ']');
+			this.jResolutionRadios.click( this.onResolutionRadioClick.bind(this) );
+		},
+		
+		onResolutionRadioClick: function() {
+			var res = this.getSelectedResolution();
+			if (res) {
+				this.regionSelector.setSize(res.width, res.height);
+			}
+		},
+		
+		syncWithCurrentResolution: function() {
+			var current_w = this.regionSelector.width;
+			this.jResolutionRadios.each(function(i, el) {
+				var res = kResolutionPresets[el.value | 0];
+				if (res.width === current_w) {
+					el.checked = true;
+				}
+			});
+		},
+		
+		getSelectedResolution: function() {
+			var res = null;
+			this.jResolutionRadios.each(function(i, el) {
+				if (el.checked) {
+					res = kResolutionPresets[el.value | 0];
+				}
+			});
+			
+			return res;
+		},
+		
 		updateMovieStats: function() {
 			var new_dur = this.getMovieDurationInputVaule();
 			var new_spf = this.getSecPerFrameInputValue();
@@ -242,6 +282,7 @@
 		},
 		
 		openEncoder: function() {
+			nacl264.setOutputType(this.naclModule, 'mp4');
 			nacl264.setEncoderParams(this.naclModule, {
 				fps: this.runStatus.fps,
 				width: this.regionSelector.width,
@@ -259,7 +300,7 @@
 		},
 		
 		renderFrame: function() {
-			console.log("Rendering frame ",this.runStatus.frameIndex);
+			// console.log("Rendering frame ",this.runStatus.frameIndex);
 			this.waitVideoUpdated();
 		},
 		
@@ -333,7 +374,7 @@
 			var a = document.getElementById('result-dl');
 			a.style.display = 'block';
 			a.href = window.URL.createObjectURL(blob);
-			a.setAttribute('download', 'nacl264-generated.mkv');
+			a.setAttribute('download', 'nacl264-generated.mp4');
 		},
 		
 		handleModuleMessage: function(message_event) {
@@ -377,7 +418,7 @@
 		};
 		
 		this.showClock = false;
-		this.width = 720;
+		this.width = 854;
 		this.height = 480;
 		this.updateCanvasSize();
 		this.redraw();
@@ -394,8 +435,13 @@
 		},
 		
 		setSize: function(w, h) {
-			this.width = w;
-			this.height = h;
+			if (this.width !== w || this.height !== h) {
+				this.width = w;
+				this.height = h;
+				
+				this.element.width = w;
+				this.element.height = h;
+			}
 		},
 		
 		adjustRightBottom: function() {
@@ -526,9 +572,7 @@
 	function hideInitialMessage() {
 		$('#boot-message').hide();
 		$('#preview-container').show();
-		$('#main-control-box').show();
-		$('#movie-option-box').show();
-		$('#movie-stats-box').show();
+		$('#configuration-area').show();
 	}
 	
 	function setupCapture() {
@@ -540,7 +584,7 @@
 					mandatory: {
 						chromeMediaSource: "desktop",
 						chromeMediaSourceId: streamId,
-						minWidth          : 720,
+						minWidth          : 640,
 						maxWidth          : 2560,
 						minHeight         : 480,	
 						maxHeight         : 1440
@@ -568,6 +612,8 @@
 		
 		gApp = new MovieRecorder(video, document.getElementById('record-trigger'), nacl_module);
 		gApp.generateOptionButtons(document.getElementById('movie-option-box'));
+		gApp.observeResolutionRadio('m-resolution');
+		gApp.syncWithCurrentResolution();
 		nacl_container.addEventListener('message', gApp.handleModuleMessage.bind(gApp), true);
 	}
 	

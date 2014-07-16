@@ -24,8 +24,8 @@ body {
 
 #record-trigger {
 	font-family: sans-serif;
-	font-size: 10px;
-	padding: 3px 8px 2px 8px;
+	font-size: 14px;
+	padding: 4px 8px 3px 8px;
 	color: #fff;
 	background-color: #800;
 	border: 1px solid #800;
@@ -71,7 +71,7 @@ body {
 .mm-options-spacer {
 	margin-left: 1em;
 	margin-right: 0.5em;
-	border-left: 2px ridge #ccc;
+	border-left: 1px solid #888;
 }
 
 .mm-movie-option-button {
@@ -93,10 +93,45 @@ body {
 	padding: 3px;
 }
 
+#movie-resolution-box, #movie-option-box {
+	padding-bottom: 3px;
+	margin-bottom: 3px;
+	border-bottom: 1px solid #888;
+}
+
 #movie-stats-box {
-	background: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.6), rgba(0,0,0,0.6), rgba(0,0,0,0));
-	color: #fff;
 	padding: 3px 0;
-	font-size: 10px;
+	font-size: 11px;
 	text-align: center;
+}
+
+
+#configuration-area {
+	color: #fff;
+	position: absolute;
+	top: 19px;
+	left: 10%;
+	width: 80%;
+	border: 1px solid rgba(200,200,200,0.5);
+	background: rgba(0,0,0,0.7);
+	box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 2px #000 inset;
+	opacity: 0.4;
+	padding: 0.5em;
+	transition: opacity 0.2s linear 0;
+	border-radius: 4px;
+	display: none;
+}
+
+#configuration-area h2 {
+	font-size: 11px;
+	margin: 2px;
+	padding: 0;
+}
+
+#movie-resolution-box {
+	text-align: center;
+}
+
+#configuration-area:hover {
+	opacity: 1;
 }

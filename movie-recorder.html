@@ -14,9 +14,18 @@
 		<div id="boot-message">Launching encoder module...</div>
 		<div id="preview-container" style="display:none"></div>
 		<div id="dl-container"><a id="result-dl">Save...</a></div>
-		<div id="movie-stats-box" style="display:none"></div>
-		<div id="movie-option-box" style="display:none"></div>
-		<div id="main-control-box" style="display:none"><button id="record-trigger">● Record</button></div>
+
+		<div id="configuration-area">
+			<div id="movie-resolution-box">
+				<h2>Resolution</h2>
+				<label><input type="radio" name="m-resolution" class="resolution-radio" value="0">SD 4:3(640×480)</label>&nbsp;
+				<label><input type="radio" name="m-resolution" class="resolution-radio" value="1">SD wide(854×480)</label>&nbsp;
+				<label><input type="radio" name="m-resolution" class="resolution-radio" value="2">HD(1280×720)</label>
+			</div>
+			<div id="movie-option-box"><h2>Options</h2></div>
+			<div id="movie-stats-box"></div>
+			<div id="main-control-box"><button id="record-trigger">● Record</button></div>
+		</div>
 
 		<div id="nacl-container">
 			<embed id="nacl264-embed"

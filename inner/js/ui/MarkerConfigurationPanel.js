@@ -401,19 +401,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		setTailSegsValue: function(n) {
-			if (n !== this.getCurrentTailSegs()) {
+			if (this.numinTailSegs && n !== this.getCurrentTailSegs()) {
 				this.numinTailSegs.value = n;
 			}
 		},
 
 		setTailStepValue: function(n) {
-			if (n !== this.getCurrentTailStep()) {
+			if (this.numinTailStep && n !== this.getCurrentTailStep()) {
 				this.numinTailStep.value = n;
 			}
 		},
 		
 		setTailWidthValue: function(w) {
-			if (w !== this.getCurrentTailWidth()) {
+			if (this.numinTailWidth && w !== this.getCurrentTailWidth()) {
 				this.numinTailWidth.value = w;
 			}
 		},
@@ -481,6 +481,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		getTailFadeChecked: function() {
+			if (!this.checkTailFade) {return false;}
+			
 			return !!(this.checkTailFade.checked);
 		},
 		

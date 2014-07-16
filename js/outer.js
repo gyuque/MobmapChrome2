@@ -58,8 +58,9 @@
 			}
 			
 			chrome.app.window.create('movie-recorder.html', {
-				 minWidth: 800,
-				 minHeight: 590,
+				 minWidth: 740,
+				 minHeight: 490,
+				 width: 872,
 
 				}, function(wnd){
 					MovieRecorderWindowPool.add(wnd);
