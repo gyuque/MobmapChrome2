@@ -137,3 +137,7 @@ body {
 #configuration-area:hover {
 	opacity: 1;
 }
+
+.mr-movie-title {
+	display: block;
+}

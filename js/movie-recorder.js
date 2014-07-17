@@ -14,6 +14,7 @@
 		this.inputDuration = null;
 		this.inputSecPerFrame = null;
 		this.inputClockCheck = null;
+		this.inputMovieTitle = null;
 		this.jResolutionRadios = null;
 		
 		this.triggerOriginalLabel = '';
@@ -46,6 +47,7 @@
 		this.regionSelector.adjustRightBottom();
 	}
 	
+	MovieRecorder.MovieTitleInputEvent = 'mr-event-movie-title-input';
 	MovieRecorder.MovieDurationInputEvent = 'mr-event-movie-duration-input';
 	MovieRecorder.MovieSecPerFInputEvent = 'mr-event-movie-spf-input';
 	MovieRecorder.MovieClockCheckInputEvent = 'mr-event-movie-clock-check-input';
@@ -56,6 +58,8 @@
 		// Setting inputs --------
 
 		generateOptionButtons: function(containerElement) {
+			this.generateTitleInput(containerElement);
+			
 			this.generateDurationBox(containerElement);
 			 this.generateSpacer(containerElement);
 			this.generateSecPerFrame(containerElement);
@@ -66,6 +70,7 @@
 			var adjustPositionButton = this.generateSimpleButton('images/mvbtn-pos.png', 'Auto adjust position', 
 			                            this.onAdjustPositionButtonClick.bind(this));
 			containerElement.appendChild(adjustPositionButton);
+	
 			this.updateMovieStats();
 			this.observeOptionInputs();
 		},
@@ -143,6 +148,21 @@
 			s.setAttribute('class', 'mm-options-spacer');
 			s.innerHTML = ' ';
 			el.appendChild( s );
+		},
+		
+		generateTitleInput: function(containerElement) {
+			var label = document.createElement('label');
+			label.setAttribute('class', 'mr-movie-title');
+			var tx = document.createElement('input');
+			tx.type = 'text';
+			tx.size = 55;
+			label.appendChild( document.createTextNode('Movie title: ') );
+			label.appendChild(tx);
+			
+			containerElement.appendChild(label);
+			this.inputMovieTitle = tx;
+			this.observeTextInput(tx, MovieRecorder.MovieTitleInputEvent);
+			return tx;
 		},
 		
 		onAdjustPositionButtonClick: function() {
@@ -228,6 +248,11 @@
 			}
 		},
 		
+		onMovieTitleChange: function() {
+			this.regionSelector.titleMaker.setText( this.inputMovieTitle.value );
+			this.regionSelector.redraw();
+		},
+		
 		generateMovieStatsString: function() {
 			return "Movie duration: " +this.runStatus.movieDuration+ "sec.(" +this.runStatus.totalFrameCount+ "frames) / " +
 			       this.generateSPFString() +" / "+
@@ -270,6 +295,10 @@
 			 bind(MovieRecorder.MovieClockCheckInputEvent, handler).
 			 bind(MovieRecorder.MovieDurationInputEvent, handler).
 			 bind(MovieRecorder.MovieSecPerFInputEvent, handler);
+			
+			this.eventDispatcher().
+			 bind(MovieRecorder.MovieTitleInputEvent,
+			  this.onMovieTitleChange.bind(this));
 		},
 		
 		// --------------------
@@ -282,6 +311,8 @@
 			this.runStatus.frameIndex = 0;
 			this.runStatus.startWait = PADDING_FRAMES;
 			
+			this.regionSelector.setBlackoutAlpha(1);
+			this.regionSelector.setTitleAlpha(1);
 			this.sendRenderRequest(0);
 		},
 		
@@ -347,6 +378,14 @@
 			if (this.runStatus.startWait > 0) {
 				--this.runStatus.startWait;
 			}
+			
+			var fadeout = this.runStatus.startWait / PADDING_FRAMES;
+			this.regionSelector.setBlackoutAlpha(fadeout);
+			
+			// Title alpha (1.0 -> 0.0)
+			var title_alpha = (this.runStatus.fps * 6 - this.runStatus.frameIndex * 2) / this.runStatus.fps;
+			if (title_alpha > 1) { title_alpha=1; } else if (title_alpha < 0) { title_alpha=0; }
+			this.regionSelector.setTitleAlpha(title_alpha);
 			
 			var dsec = (this.runStatus.startWait === 0) ? this.runStatus.secPerFrame : 0;
 			if (this.runStatus.frameIndex >= (this.runStatus.bodyFrameCount + PADDING_FRAMES)) {
@@ -429,6 +468,7 @@
 		this.element = document.createElement('canvas');
 		this.jElement = $(this.element);
 		this.clockRenderer = new mobmap.ClockRenderer(140, 176);
+		this.titleMaker = new TitleMaker();
 		
 		this.dragging = false;
 		this.dragPrevPos = {
@@ -439,9 +479,12 @@
 			x:0, y:0
 		};
 		
+		this.blackoutAlpha = 0;
+		this.titleAlpha = 1;
 		this.showClock = false;
 		this.width = 854;
 		this.height = 480;
+		this.titleMaker.setWidth(this.width);
 		this.updateCanvasSize();
 		this.redraw();
 		
@@ -456,6 +499,14 @@
 			return this.jElement;
 		},
 		
+		setBlackoutAlpha: function(a) {
+			this.blackoutAlpha = a;
+		},
+		
+		setTitleAlpha: function(a) {
+			this.titleAlpha = a;
+		},
+		
 		setSize: function(w, h, autoAdjust) {
 			if (this.width !== w || this.height !== h) {
 				this.width = w;
@@ -463,6 +514,8 @@
 				
 				this.element.width = w;
 				this.element.height = h;
+				
+				this.titleMaker.setWidth(w);
 				
 				if (autoAdjust) {
 					this.adjustRightBottom();
@@ -495,6 +548,17 @@
 			if (this.showClock) {
 				this.renderClock(g);
 			}
+			
+			if (this.blackoutAlpha > 0.01) {
+				g.fillStyle = 'rgba(0,0,0,' +this.blackoutAlpha+ ')';
+				g.fillRect(0, 0, this.width, this.height);
+			}
+
+			g.save();
+			g.globalAlpha = this.titleAlpha;
+			this.titleMaker.render(g, this.height);
+			g.restore();
+			
 		},
 		
 		renderClock: function(g) {
@@ -580,7 +644,109 @@
 			this.clockRenderer.makeTopLabelFromDate(d);
 		}
 	};
-	
+
+
+	function TitleMaker() {
+		this.canvas = document.createElement('canvas');
+		this.width = 320;
+		this.height = 96;
+		this.validHeight = 32;
+		this.text = '';
+		this.dirty = true;
+	}
+		
+	TitleMaker.prototype = {
+		setText: function(t) {
+			t = t.replace(/ +$/, '');
+			
+			if (this.text !== t) {
+				this.text = t;
+				this.dirty = true;
+			}
+		},
+
+		setWidth: function(w) {
+			if (this.width !== w) {
+				this.width = w | 0;
+				this.dirty = true;
+				
+				this.canvas.width = this.width;
+				this.canvas.height = this.height;
+			}
+		},
+
+		render: function(targetContext, movieHeight) {
+			if (this.dirty) {
+				this.rebuildOffscreen();
+				this.dirty = false;
+			}
+
+			if (!this.text || this.text.length === 0) {
+				// No title
+				return;
+			}
+			
+			targetContext.drawImage(this.canvas, 0, Math.floor(movieHeight * 0.48) - (this.validHeight >> 1));
+		},
+		
+		rebuildOffscreen: function() {
+			var margin = 9;
+			var ybase = margin + 28;
+			var g = this.canvas.getContext('2d');
+			this.validHeight = margin*3 + 28;
+			
+			g.clearRect(0, 0, this.width, this.height);
+			g.save();
+			g.font = 'bold 28px "ヒラギノ角ゴ Pro", "HGPｺﾞｼｯｸE", sans-serif';
+			
+			var textWidth = (g.measureText(this.text)).width;
+			var tw_ratio = 0.5 - (textWidth / this.width) * 0.5;
+			
+			g.fillStyle = this.generateGradient(g, 0, 0, 0, tw_ratio);
+			g.fillRect(0, 1, this.width, this.validHeight-2);
+			g.fillStyle = this.generateGradient(g, 255, 255, 255, tw_ratio);
+			g.fillRect(0, 0, this.width, 1);
+			g.fillRect(0, this.validHeight-1, this.width, 1);
+			
+			g.textAlign = 'center';
+			g.translate(0, ybase);
+			this.renderBorderedText(g, '#000', '#000', 1);
+			this.renderBorderedText(g, '#000', '#fff', 0);
+			g.restore();
+		},
+		
+		generateGradient: function(context, r, g, b, cut_pos) {
+			var gradient = context.createLinearGradient(0,0, this.width, 0);
+			var c0 = 'rgba('+r+','+g+','+b+',0)';
+			var c1 = 'rgba('+r+','+g+','+b+',0.6)';
+			
+			gradient.addColorStop(cut_pos*0.5, c0);
+			gradient.addColorStop(cut_pos    , c1);
+			gradient.addColorStop(1.0 - cut_pos    , c1);
+			gradient.addColorStop(1.0 - cut_pos*0.5, c0);
+			
+			return gradient;
+		},
+		
+		renderBorderedText: function(g, bstyle, fstyle, yOffset) {
+			for (var y = 0;y < 3;++y) {
+				for (var x = 0;x < 3;++x) {
+					if (x === 1 && y === 1) {
+						continue;
+					} else {
+						g.fillStyle = bstyle;
+					}
+					
+					g.fillText(this.text, (this.width >> 1) + x-1, y-1 + yOffset);
+				}
+			}
+			
+			x = y = 1;
+			g.fillStyle = fstyle;
+			g.fillText(this.text, (this.width >> 1) + x-1, y-1 + yOffset);
+		}
+	};
+
 	// Launch
 	aGlobal.onload = function() {
 		setTimeout(waitNacl264, 500);
