@@ -187,10 +187,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Gate selection
 		
-		runGateSelection: function(lat1, lng1, lat2, lng2, direction) {
+		runGateSelection: function(lat1, lng1, lat2, lng2, direction, conditionExp) {
 			var job = new GateSelectionJob(this,
 				lat1, lng1, lat2, lng2, direction);
-				
+			
+			job.setLineConditionExpressionQuery(conditionExp || null);
 			job.run();
 		},
 		
@@ -259,6 +260,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.end1 = {lat:lat1, lng:lng1};
 		this.end2 = {lat:lat2, lng:lng2};
 		this.direction = direction;
+		this.lineConditionExpressionQuery = null;
 		this.owner = owner;
 		this.chunkSize = 2000;
 		this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
@@ -272,6 +274,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	GateSelectionJob.prototype = {
+		setLineConditionExpressionQuery: function(q) {
+			this.lineConditionExpressionQuery = q;
+		},
+		
 		run: function() {
 			if (this.objectIndex < 0) {
 				var nextLayer = this.setupNextLayer();
@@ -479,6 +485,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		doCrossTestBetweenRecords: function(rec1, rec2) {
 			if (this.testFunctionProvider) {
 				return this.testFunctionProvider.testBetweenRecords(rec1, rec2);
+			}
+			
+			if (this.lineConditionExpressionQuery) {
+				var exp_node = this.lineConditionExpressionQuery.rootNode;
+				
+				if (!exp_node.evaluate(rec1) && !exp_node.evaluate(rec2)) {
+					// NOT passed expression test
+					return false;
+				}
 			}
 			
 			var g1 = this.end1;

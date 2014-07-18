@@ -20,6 +20,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.buttonsOverlay = null;
 		this.pathArray = [null, null];
 		this.listener = listener;
+		this.textInputConditionExpression = null;
 		
 		this.setupOverlays(gmap);
 	}
@@ -59,6 +60,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var btnX   = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_X, ONMAPBTN_SHADOW, 'cancel');
 			var btnAdd = new mobmap.MapButtonsLayer.ImageButton(ONMAPBTN_ADD, ONMAPBTN_SHADOW, 'add');
 
+			this.textInputConditionExpression = this.buttonsOverlay.generateTextInput('Condition', 'onmap-gateui-expression', 'age<50');
 			this.buttonsOverlay.addButton(btnOK);
 			this.buttonsOverlay.addButton(btnDir);
 			this.buttonsOverlay.addButton(btnAdd);
@@ -108,6 +110,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.lineOverlay.setVisible(false);
 			this.directionIconOverlay.setVisible(false);
 			this.buttonsOverlay.hideAll();
+			this.buttonsOverlay.resetInputValues();
 		},
 		
 		updateDirectionIcon: function() {
@@ -121,6 +124,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.directionIconOverlay.setIcon( this.arrowDynamicIcon.generateIcon() );
 			this.directionIconOverlay.setPosition(midPt);
 			this.directionIconOverlay.setVisible(true);
+		},
+		
+		getConditionExpression: function() {
+			var valid_chars = /\w/ ;
+			if (!this.textInputConditionExpression) { return null; }
+			if (!this.textInputConditionExpression.value) { return null; }
+			if (!( valid_chars.test(this.textInputConditionExpression.value) )) { return null; }
+			
+			return this.textInputConditionExpression.value;
 		},
 		
 		getUpperPoint: function() {
@@ -206,6 +218,7 @@ window.mobmap.mm_initMapButtonsLayer = (function(pkg) {
 		this.zoomListener = null;
 		this.centerLL = new google.maps.LatLng(36, 139);
 		this.buttonList = [];
+		this.textList = [];
 		this.targetPane = 'overlayMouseTarget';
 		this.containerElement = null;
 		this.containerElementReady = document.createElement("div");
@@ -242,6 +255,24 @@ window.mobmap.mm_initMapButtonsLayer = (function(pkg) {
 		this.containerElementReady.appendChild(btn.element);
 		this.buttonList.push(btn);
 	};
+
+	MapButtonsLayer.prototype.generateTextInput = function(labelText, labelId, placeholder) {
+		var tx = document.createElement('input');
+		tx.type = 'text';
+		tx.size = 9;
+		
+		var label = document.createElement('label');
+		label.appendChild( document.createTextNode(labelText) );
+		label.appendChild(tx);
+		label.id = labelId;
+		label.style.position = 'absolute';
+
+		if (placeholder) { tx.placeholder = placeholder; }
+		
+		this.containerElementReady.appendChild(label);
+		this.textList.push(label);
+		return tx;
+	};
 	
 	MapButtonsLayer.prototype.findButtonByName = function(name) {
 		var len = this.buttonList.length;
@@ -267,32 +298,35 @@ window.mobmap.mm_initMapButtonsLayer = (function(pkg) {
 			return;
 		}
 
+		var i = 0;
 		var padding = 2;
 		var w = 18;
 		var x = (len - 1) * -((w + padding) >> 1);
+		var y = (centerPt.y-40) | 0;
+
+		if (this.textList.length > 0) {
+			this.textList[0].style.left = ((centerPt.x + x*2) | 0) + 'px';
+			this.textList[0].style.top = (y-13) + 'px';
+		}
 		
-		for (var i = 0;i < len;++i) {
+		for (i = 0;i < len;++i) {
 			var btn = this.buttonList[i];
-			btn.setPosition(centerPt.x + x, centerPt.y - 16);
+			btn.setPosition(centerPt.x + x, y);
 			
 			x += w + padding;
 		}
 	};
 	
+	MapButtonsLayer.prototype.resetInputValues = function() {
+		this.jContainerElementReady.find('input').val('');
+	};
+	
 	MapButtonsLayer.prototype.hideAll = function() {
-		var ls = this.buttonList;
-		var len = ls.length;
-		for (var i = 0;i < len;++i) {
-			ls[i].hide();
-		}
+		this.jContainerElementReady.find('*').hide();
 	};
 
 	MapButtonsLayer.prototype.showAll = function() {
-		var ls = this.buttonList;
-		var len = ls.length;
-		for (var i = 0;i < len;++i) {
-			ls[i].show();
-		}
+		this.jContainerElementReady.find('*').show();
 	};
 	
 	MapButtonsLayer.prototype.observeMapEvents = function(map) {

@@ -426,13 +426,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			var e1  = sourceGateUI.getStartLocation();
 			var e2  = sourceGateUI.getEndLocation();
 			var dir = sourceGateUI.getGateDirection();
+			var expression = sourceGateUI.getConditionExpression();
+			var expressionObject = null;
+			
+			if (!!expression) {
+				expressionObject = new mobmap.ExpressionQuery();
+				expressionObject.parse(expression);
+			}
 			
 			this.ownerApp.showGateBusyDialog();
 			
 			this.
 			 ownerApp.
 			 getSelectionController().
-			 runGateSelection(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir);
+			 runGateSelection(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir, expressionObject);
 		},
 
 		gateuiOnAdd: function(sourceGateUI) {
