@@ -1,0 +1,14 @@
+<head>
+	<script type="text/javascript" src="../inner/js/data/CSVLoader.js"></script>
+	<script type="text/javascript">
+var TestInput = [0xC3, 0xA5, 227, 131, 134, 227, 130, 185, 227, 131, 136, 230, 150, 135, 229, 173, 151, 229, 136, 151];
+
+function doTest() {
+	var s = mobmap.HugeCSVLoader.utf8bytesToString(TestInput);
+	console.log(s);
+	console.log(s === 'åテスト文字列');
+}	
+	</script>
+</head>
+<body onload="void doTest()">
+</body>

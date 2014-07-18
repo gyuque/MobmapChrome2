@@ -275,7 +275,7 @@ if (!window.mobmap) { window.mobmap={}; }
 						}
 					}
 
-					temp_fields.push(this.bytesToString(temp_chars));
+					temp_fields.push(HugeCSVLoader.utf8bytesToString(temp_chars));
 					temp_chars.length = 0;
 				} else {
 					temp_chars.push(k);
@@ -332,15 +332,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		rewind: function() {
 			this.loadJob.currentPos = 0;
 			this.loadJob.lineno = 0;
-		},
-		
-		bytesToString: function(buf) {
-			var len = buf.length;
-			for (var i = 0;i < len;i++) {
-				buf[i] = String.fromCharCode(buf[i]);
-			}
-			
-			return buf.join('');
 		}
 	};
 
@@ -348,6 +339,38 @@ if (!window.mobmap) { window.mobmap={}; }
 	var DELM = 0x2c;
 	var temp_chars = [];
 	var temp_fields = [];
+
+	HugeCSVLoader.utf8bytesToString = (function() {
+		var chars_temp = [];
+		
+		return function(buf) {
+			chars_temp.length = 0; // Clear
+			
+			var len = buf.length;
+			for (var i = 0;i < len;i++) {
+				var c1 = buf[i];
+				if (c1 <= 0x7f) {
+					// latin
+					chars_temp.push( String.fromCharCode(buf[i]) );
+				} else {
+					// 2bytes
+					var c2 = buf[i+1] | 0;
+					if (c1 >= 0xc2 && c1 <= 0xdf) {
+						chars_temp.push(String.fromCharCode(  (c2 & 0x3f) | ((c1 & 0x1f) << 6)  ));
+					} else {
+						// 3bytes
+						var c3 = buf[i+2] | 0;
+						if (c1 >= 0xe0 && c1 <= 0xef) {
+							var w = (c3 & 0x3f) | ((c2 & 0x3f) << 6) | ((c1 & 0x0f) << 12);
+							chars_temp.push( String.fromCharCode(w) );
+						}
+					}
+				}
+			}
+		
+			return chars_temp.join('');
+		};
+	})();
 
 	// +++ Export +++
 	GeoCSVLoader.parseFieldTime = parseFieldTime;
