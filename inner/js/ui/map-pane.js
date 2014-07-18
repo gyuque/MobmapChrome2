@@ -432,6 +432,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!!expression) {
 				expressionObject = new mobmap.ExpressionQuery();
 				expressionObject.parse(expression);
+
+				if (expressionObject.hasError || !(expressionObject.rootNode)) {
+					sourceGateUI.showExpressionError();
+					return;
+					// abort
+				}
 			}
 			
 			this.ownerApp.showGateBusyDialog();

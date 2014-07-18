@@ -113,6 +113,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.buttonsOverlay.resetInputValues();
 		},
 		
+		showExpressionError: function() {
+			var tx = this.textInputConditionExpression;
+			if (tx) {
+				tx.style.backgroundColor = '#f00';
+				setTimeout(function(){ tx.style.backgroundColor = ''; }, 300);
+			}
+		},
+		
 		updateDirectionIcon: function() {
 			this.calcGateAngle();
 			
