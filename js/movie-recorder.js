@@ -485,6 +485,7 @@
 		this.width = 854;
 		this.height = 480;
 		this.titleMaker.setWidth(this.width);
+		this.updateTitleSize();
 		this.updateCanvasSize();
 		this.redraw();
 		
@@ -516,11 +517,16 @@
 				this.element.height = h;
 				
 				this.titleMaker.setWidth(w);
+				this.updateTitleSize();
 				
 				if (autoAdjust) {
 					this.adjustRightBottom();
 				}
 			}
+		},
+		
+		updateTitleSize: function() {
+			this.titleMaker.setFontSize( Math.floor(this.height / 18) );
 		},
 		
 		adjustRightBottom: function() {
@@ -650,6 +656,7 @@
 		this.canvas = document.createElement('canvas');
 		this.width = 320;
 		this.height = 96;
+		this.size = 28;
 		this.validHeight = 32;
 		this.text = '';
 		this.dirty = true;
@@ -674,6 +681,15 @@
 				this.canvas.height = this.height;
 			}
 		},
+		
+		setFontSize: function(s) {
+			s |= 0;
+			
+			if (this.size !== s) {
+				this.size = s;
+				this.dirty = true;
+			}
+		},
 
 		render: function(targetContext, movieHeight) {
 			if (this.dirty) {
@@ -691,13 +707,13 @@
 		
 		rebuildOffscreen: function() {
 			var margin = 9;
-			var ybase = margin + 28;
+			var ybase = margin + this.size;
 			var g = this.canvas.getContext('2d');
-			this.validHeight = margin*3 + 28;
+			this.validHeight = margin*3 + this.size;
 			
 			g.clearRect(0, 0, this.width, this.height);
 			g.save();
-			g.font = 'bold 28px "ヒラギノ角ゴ Pro", "HGPｺﾞｼｯｸE", sans-serif';
+			g.font = 'bold ' +this.size+ 'px "ヒラギノ角ゴ Pro", "HGPｺﾞｼｯｸE", sans-serif';
 			
 			var textWidth = (g.measureText(this.text)).width;
 			var tw_ratio = 0.5 - (textWidth / this.width) * 0.5;
