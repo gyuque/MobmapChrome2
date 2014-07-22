@@ -709,12 +709,21 @@
 			var margin = 9;
 			var ybase = margin + this.size;
 			var g = this.canvas.getContext('2d');
-			this.validHeight = margin*3 + this.size;
 			
 			g.clearRect(0, 0, this.width, this.height);
 			g.save();
 			g.font = 'bold ' +this.size+ 'px "ヒラギノ角ゴ Pro", "HGPｺﾞｼｯｸE", sans-serif';
-			
+
+			// Measure and clear
+			g.save();
+			g.translate(0, ybase);
+			this.renderBorderedText(g, '#000', '#fff', 0);
+			g.restore();
+			var actualMargin = this.measureActualMargin(g);
+			this.validHeight = ybase + actualMargin;
+			g.clearRect(0, 0, this.width, this.height);
+
+
 			var textWidth = (g.measureText(this.text)).width;
 			var tw_ratio = 0.5 - (textWidth / this.width) * 0.5;
 			
@@ -729,6 +738,27 @@
 			this.renderBorderedText(g, '#000', '#000', 1);
 			this.renderBorderedText(g, '#000', '#fff', 0);
 			g.restore();
+		},
+		
+		measureActualMargin: function(g) {
+			var imagedata = g.getImageData(0, 0, this.width, this.height);
+			var pixels = imagedata.data;
+			
+			var w = imagedata.width;
+			var h = imagedata.height;
+			
+			var pos = 3;
+			for (var y = 0;y < h;++y) {
+				for (var x = 0;x < w;++x) {
+					if (pixels[pos] > 200) {
+						return y;
+					}
+					
+					pos += 3;
+				}
+			}
+			
+			return 0;
 		},
 		
 		generateGradient: function(context, r, g, b, cut_pos) {
