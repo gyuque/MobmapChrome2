@@ -11,6 +11,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.tailSegments = 6;
 		this.tailFade = false;
 		this.tailWidth = 2;
+		this.tailColoring = LayerMarkerOptions.TC_MARKER_COLOR;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 	}
@@ -67,6 +68,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.fire();
 			}
 		},
+		
+		setTailColoring: function(c) {
+			if (this.tailColoring !== c) {
+				this.tailColoring = c;
+				this.fire();
+			}
+		},
 
 		bindAttributeName: function(a_name) {
 			if (this.boundAttributeName !== a_name) {
@@ -93,6 +101,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	LayerMarkerOptions.TAIL_NONE        = 0;
 	LayerMarkerOptions.TAIL_WITH_MARKER = 1;
 	LayerMarkerOptions.TAIL_ONLY        = 2;
+
+	LayerMarkerOptions.TC_MARKER_COLOR = 0;
+	LayerMarkerOptions.TC_DIRECTION    = 1;
 	
 	aGlobal.mobmap.LayerMarkerOptions = LayerMarkerOptions;
 })(window);

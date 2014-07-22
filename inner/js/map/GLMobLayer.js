@@ -40,6 +40,7 @@ function installMobLayer(pkg) {
 		this.visible = true;
 		this.enableTailDraw = false;
 		this.tailWidth = 1;
+		this.tailDirectionColorEnabled = false;
 		this.timeDirection = 0;
 		this.composition = kMarkerCompositionNormal;
 		this.showTyphoonCloud = true;
@@ -86,6 +87,7 @@ function installMobLayer(pkg) {
 	GLMobLayer.prototype.setMarkerComposition = function(c) { this.composition = c; };
 	GLMobLayer.prototype.setTailDrawEnabled = function(e) { this.enableTailDraw = e; };
 	GLMobLayer.prototype.setTailWidth = function(w) { this.tailWidth = w; };
+	GLMobLayer.prototype.setTailDirectionColorEnabled = function(e) { this.tailDirectionColorEnabled = e; };
 
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {
@@ -462,6 +464,7 @@ function installMobLayer(pkg) {
 		// [Draw] Tail
 		var segCount = 0;
 		var segFlushThreshold = (segsLimit >> 1);
+		var use_dircolor = this.tailDirectionColorEnabled;
 		if (this.enableTailDraw) {
 			this.gl.useProgram(this.colorLineShaderObjects.shaderProgram);
 			for (i = 0;i < len;++i) {
@@ -469,7 +472,7 @@ function installMobLayer(pkg) {
 
 				// Transform tail points
 				if (mk.tailLengthToRender > 0 && mk.tailArray) {
-					vi += this.writeTailVertices(vlist, vi, cllist, mk);
+					vi += this.writeTailVertices(vlist, vi, cllist, mk, use_dircolor);
 					segCount += mk.tailLengthToRender;
 				}
 				
@@ -532,7 +535,9 @@ function installMobLayer(pkg) {
 		}
 	};
 
-	GLMobLayer.prototype.writeTailVertices = function(vlist, startIndex, cllist, markerData) {
+	GLMobLayer.prototype.writeTailVertices = function(vlist, startIndex, cllist, markerData, dirColor) {
+		var color_func = GLMobLayer.calcDirectionColor;
+		
 		var vi = startIndex;
 		var cIndex = (startIndex << 1);
 		var tailArray = markerData.tailArray;
@@ -542,7 +547,9 @@ function installMobLayer(pkg) {
 		var prevY = markerData.screenY;
 		var prevC = markerData.baseColor;
 		var prevAlpha = (markerData.tailAlpha * 255) | 0;
-		
+
+		var pcR, pcG, pcB;
+
 		var taillen = markerData.tailLengthToRender;
 		for (var ti = 0;ti < taillen;++ti) {
 			var t_mk = tailArray[ti];
@@ -550,26 +557,60 @@ function installMobLayer(pkg) {
 
 			vlist[vi++] = prevX;
 			vlist[vi++] = prevY;
+			
+			if (dirColor) {
+				var dx = prevX - t_mk.screenX;
+				var dy = prevY - t_mk.screenY;
+				var generated_color = color_func(dx, dy);
+				pcR = generated_color[0];
+				pcG = generated_color[1];
+				pcB = generated_color[2];
+			} else {
+				pcR = prevC.r;
+				pcG = prevC.g;
+				pcB = prevC.b;
+			}
 
-			cllist[cIndex++] = prevC.r;
-			cllist[cIndex++] = prevC.g;
-			cllist[cIndex++] = prevC.b;
+			cllist[cIndex++] = pcR;
+			cllist[cIndex++] = pcG;
+			cllist[cIndex++] = pcB;
 			cllist[cIndex++] = prevAlpha;
 
 			prevC = t_mk.baseColor;
 			prevAlpha = (t_mk.tailAlpha * 255) | 0;
 			vlist[vi++] = prevX = t_mk.screenX;
 			vlist[vi++] = prevY = t_mk.screenY;
+			
+			if (!dirColor) {
+				pcR = prevC.r;
+				pcG = prevC.g;
+				pcB = prevC.b;
+			}
 
-			cllist[cIndex++] = prevC.r;
-			cllist[cIndex++] = prevC.g;
-			cllist[cIndex++] = prevC.b;
+			cllist[cIndex++] = pcR;
+			cllist[cIndex++] = pcG;
+			cllist[cIndex++] = pcB;
 			cllist[cIndex++] = prevAlpha;
 		}
 		
 		return vi - startIndex;
 	};
-	
+
+	GLMobLayer.calcDirectionColor = (function(){
+		var temp_components = [0,0,0];
+		
+		return function(dx, dy) {
+			var h = 1.25 + Math.atan2(dy, dx) / (Math.PI*2.0);
+			
+			temp_components[0] = 360 - (Math.floor(h * 360) % 360);
+			temp_components[1] = 0.9;
+			temp_components[2] = 0.8;
+
+			hsvToRGB(temp_components);
+			return temp_components;
+		} ;
+	})();
+
 	GLMobLayer.prototype.advanceTyphoonAnimation = function(gl) {
 		if (!this.showTyphoonCloud) {
 			gl.uniform1f(this.shaderParams.animationT, -99.0);
@@ -992,7 +1033,7 @@ function installMobLayer(pkg) {
 	// -----------
 	function MarkerDisplayData() {
 		this.used = false;
-		this.screenX = this.screenY = this.lat = this.lng = 0;
+		this.screenX = this.screenY  = this.lat = this.lng = 0;
 		this.chipX = 0;
 		this.chipY = 0;
 		this.baseColor = null;

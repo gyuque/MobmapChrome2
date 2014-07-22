@@ -464,6 +464,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			// Tail ------------------------------------------------------------------
+			var dircolor_enabled = false;
 			var tailOnly = false;
 			var tailFade = false;
 			var tailLength = 0;
@@ -473,6 +474,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				tailInterval = sourceLayer._markerOptions.tailInterval;
 				
 				tailOnly = (sourceLayer._markerOptions.tailType === mobmap.LayerMarkerOptions.TAIL_ONLY);
+				dircolor_enabled = (sourceLayer._markerOptions.tailColoring === mobmap.LayerMarkerOptions.TC_DIRECTION);
 				tailFade = sourceLayer._markerOptions.tailFade;
 			}
 			// -----------------------------------------------------------------------
@@ -542,6 +544,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				if (tailLength > 0) {
 					var markerBaseColor = sourceLayer.getMarkerColorByIndex(mkIndex);
+
 					marker_data.baseColor = markerBaseColor;
 					marker_data.tailAlpha = 1;
 
@@ -572,6 +575,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (tailLength > 0) { overlay.setTailWidth( sourceLayer._markerOptions.tailWidth ); }
 			overlay.setTailDrawEnabled(tailLength > 0);
+			overlay.setTailDirectionColorEnabled(dircolor_enabled);
 			overlay.resetRenderedRegion();
 			overlay.renderGL();
 			

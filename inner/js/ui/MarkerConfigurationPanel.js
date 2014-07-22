@@ -294,6 +294,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			rl_both.input.value = L.TAIL_WITH_MARKER;
 			rl_only.input.value = L.TAIL_ONLY;
 
+			fs.appendChild(this.generateOptionHeading('Type'));
 			fs.appendChild(rl_none.label);
 			fs.appendChild(rl_both.label);
 			fs.appendChild(rl_only.label);
@@ -305,6 +306,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(rl_only.input).click(handler);
 
 			// Configuration ======================================================
+			//  coloring
+			fs.appendChild(this.generateOptionHeading('Coloring'));
+			this.buildMarkerTailColoringOptions(fs);
+			
+			//  fade
+			fs.appendChild(this.generateOptionHeading('Other options'));
 			var c_fade = generateCheckboxInLabel('Faded', 'MarkerTailFade', 'tailconf-fade');
 			fs.appendChild(c_fade.label);
 			$(c_fade.input).click(this.onTailFadeCheckChange.bind(this));
@@ -338,6 +345,27 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			var handler_width = this.onTailWidthInputChange.bind(this);
 			$(n_width.input).change(handler_width).blur(handler_width);
+		},
+		
+		generateOptionHeading: function(text) {
+			var h = document.createElement('h5');
+			h.setAttribute('class', 'mm-option-heading');
+			h.appendChild( document.createTextNode(text) );
+			return h;
+		},
+		
+		buildMarkerTailColoringOptions: function(containerElement) {
+			var rl_mk  = generateRadioInLabel('Marker color'    , 'TailColoring', 'tailclr');
+			var rl_dir = generateRadioInLabel('Hue by direction', 'TailColoring', 'tailclr');
+
+			containerElement.appendChild(rl_mk.label);
+			containerElement.appendChild(rl_dir.label);
+			
+			rl_mk.input.value = mobmap.LayerMarkerOptions.TC_MARKER_COLOR;
+			rl_dir.input.value = mobmap.LayerMarkerOptions.TC_DIRECTION;
+			
+			$(rl_mk.input ).click( this.onTailColoringRadioChange.bind(this) );
+			$(rl_dir.input).click( this.onTailColoringRadioChange.bind(this) );
 		},
 		
 		buildOtherOptions: function(containerElement) {
@@ -385,6 +413,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getSelectedTailType: function() {
 			return pickIntRadioboxVal(this.jElement, 'TailType');
+		},
+
+		getSelectedTailColoringType: function() {
+			return pickIntRadioboxVal(this.jElement, 'TailColoring');
 		},
 
 
@@ -435,6 +467,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			this.syncFromModel();
+		},
+		
+		onTailColoringRadioChange: function(e) {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				mo.setTailColoring( this.getSelectedTailColoringType() );
+			}
+			
 		},
 		
 		onTailSegsInputChange: function(e) {
