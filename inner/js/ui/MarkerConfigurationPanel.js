@@ -283,28 +283,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		buildMarkerTailOptions: function(containerElement) {
+			var MO = mobmap.LayerMarkerOptions;
 			var fs = makeFieldSetWithLegend('Tail');
 
 			// Type selection ======================================================
-			var rl_none = generateRadioInLabel('None',             'TailType', 'tailopt');
-			var rl_both = generateRadioInLabel('Show with marker', 'TailType', 'tailopt');
-			var rl_only = generateRadioInLabel('Show tail only',   'TailType', 'tailopt');
-
-			var L = mobmap.LayerMarkerOptions;
-			rl_none.input.value = L.TAIL_NONE;
-			rl_both.input.value = L.TAIL_WITH_MARKER;
-			rl_only.input.value = L.TAIL_ONLY;
-
 			fs.appendChild(this.generateOptionHeading('Type'));
-			fs.appendChild(rl_none.label);
-			fs.appendChild(rl_both.label);
-			fs.appendChild(rl_only.label);
-
-			// Observe
-			var handler = this.onTailRadioChange.bind(this);
-			$(rl_none.input).click(handler);
-			$(rl_both.input).click(handler);
-			$(rl_only.input).click(handler);
+			this.addConfigurationRadioSet(fs, 'TailType', 'tailopt', [
+				['None'             , MO.TAIL_NONE       ],
+				['Show with marker' , MO.TAIL_WITH_MARKER],
+				['Show tail only'   , MO.TAIL_ONLY       ]
+			], this.onTailRadioChange.bind(this));
 
 			// Configuration ======================================================
 			var tailConfContainer = $H('div', 'mm-tail-conf-container');
@@ -353,6 +341,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jTailConfContainer = $(tailConfContainer);
 		},
 		
+		addConfigurationRadioSet: function(containerElement, name, labelClass, setData, handler) {
+			for (var i in setData) {
+				var radio_conf = setData[i];
+				
+				var labelText  = radio_conf[0];
+				var val        = radio_conf[1];
+				
+				var input_pair = generateRadioInLabel(labelText, name, labelClass);
+				input_pair.input.value = val;
+				
+				containerElement.appendChild(input_pair.label);
+				$(input_pair.input).click(handler);
+			}
+		},
+		
 		generateOptionHeading: function(text) {
 			var h = document.createElement('h5');
 			h.setAttribute('class', 'mm-option-heading');
@@ -361,17 +364,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		buildMarkerTailColoringOptions: function(containerElement) {
-			var rl_mk  = generateRadioInLabel('Marker color'    , 'TailColoring', 'tailclr');
-			var rl_dir = generateRadioInLabel('Hue by direction', 'TailColoring', 'tailclr');
-
-			containerElement.appendChild(rl_mk.label);
-			containerElement.appendChild(rl_dir.label);
-			
-			rl_mk.input.value = mobmap.LayerMarkerOptions.TC_MARKER_COLOR;
-			rl_dir.input.value = mobmap.LayerMarkerOptions.TC_DIRECTION;
-			
-			$(rl_mk.input ).click( this.onTailColoringRadioChange.bind(this) );
-			$(rl_dir.input).click( this.onTailColoringRadioChange.bind(this) );
+			var MO = mobmap.LayerMarkerOptions;
+			this.addConfigurationRadioSet(containerElement, 'TailColoring', 'tailclr', [
+				['Marker color'     , MO.TC_MARKER_COLOR ],
+				['Hue by direction' , MO.TC_DIRECTION    ]
+			], this.onTailColoringRadioChange.bind(this));
 		},
 		
 		buildOtherOptions: function(containerElement) {
