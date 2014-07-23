@@ -229,6 +229,9 @@ label.tailconf-width {
 
 .tailconf-segs input, .tailconf-step input, .tailconf-width input { width: 3em; }
 
+.mm-tail-conf-container { display: none; }
+.mm-tail-conf-container.enabled { display: block; }
+
 .mm-layer-delete-dialog-buttons {
 	margin: 0.8em 0 0 0;
 	text-align: center;

@@ -16,6 +16,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
 		this.jElement = $(this.element);
+		this.jTailConfContainer = null;
 		this.expandablePanel.setTitle("Marker");
 		
 		this.markerSliderElements = {
@@ -306,18 +307,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(rl_only.input).click(handler);
 
 			// Configuration ======================================================
+			var tailConfContainer = $H('div', 'mm-tail-conf-container');
+			
 			//  coloring
-			fs.appendChild(this.generateOptionHeading('Coloring'));
-			this.buildMarkerTailColoringOptions(fs);
+			tailConfContainer.appendChild(this.generateOptionHeading('Coloring'));
+			this.buildMarkerTailColoringOptions(tailConfContainer);
 			
 			//  fade
-			fs.appendChild(this.generateOptionHeading('Other options'));
+			tailConfContainer.appendChild(this.generateOptionHeading('Other options'));
 			var c_fade = generateCheckboxInLabel('Faded', 'MarkerTailFade', 'tailconf-fade');
-			fs.appendChild(c_fade.label);
+			tailConfContainer.appendChild(c_fade.label);
 			$(c_fade.input).click(this.onTailFadeCheckChange.bind(this));
 
 			this.checkTailFade = c_fade.input;
-			containerElement.appendChild(fs);
 
 			// Tail segments and step configuration
 			var n_segs = generateInputElementInLabel('number', 'Segments ', 'tailconf-segs', 'tailconf-segs', true); 
@@ -329,9 +331,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			n_step.input.min = 1;
 			n_width.input.min = 1;
 
-			fs.appendChild(n_segs.label);
-			fs.appendChild(n_step.label);
-			fs.appendChild(n_width.label);
+			tailConfContainer.appendChild(n_segs.label);
+			tailConfContainer.appendChild(n_step.label);
+			tailConfContainer.appendChild(n_width.label);
 
 			this.numinTailSegs = n_segs.input;
 			this.numinTailStep = n_step.input;
@@ -345,6 +347,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			var handler_width = this.onTailWidthInputChange.bind(this);
 			$(n_width.input).change(handler_width).blur(handler_width);
+
+			containerElement.appendChild(fs);
+			fs.appendChild(tailConfContainer);
+			this.jTailConfContainer = $(tailConfContainer);
 		},
 		
 		generateOptionHeading: function(text) {
@@ -449,6 +455,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.numinTailWidth.value = w;
 			}
 		},
+		
+		setTailColoringValue: function(c) {
+			var selected = this.getSelectedTailColoringType();
+			if (c !== selected) {
+				this.checkTailColoringRadio(c);
+			}
+		},
 
 
 		onVaryingRadioChange: function(e) {
@@ -507,6 +520,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			checkRadioboxByInt(this.jElement, 'TailType', newVal);
 		},
 		
+		checkTailColoringRadio: function(newVal) {
+			checkRadioboxByInt(this.jElement, 'TailColoring', newVal);
+		},
+		
 		onTailFadeCheckChange: function() {
 			var mo = this.boundLayer._markerOptions || null;
 			if (mo) {
@@ -562,14 +579,24 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (ttype !== selected_ttype) {
 					this.checlTailTypeRadio(ttype);
 				}
+				this.changeTailConfVisibility(ttype);
 				
 				this.checkFadeCheckbox(mo.tailFade);
 				this.setTailSegsValue(mo.tailSegments);
 				this.setTailStepValue(mo.tailInterval);
 				this.setTailWidthValue(mo.tailWidth);
+				this.setTailColoringValue(mo.tailColoring);
 			}
 			
 			this.syncShowTyphoonCloudCheckValue();
+		},
+		
+		changeTailConfVisibility: function(tailType) {
+			if (tailType === mobmap.LayerMarkerOptions.TAIL_NONE) {
+				this.jTailConfContainer.removeClass('enabled');
+			} else {
+				this.jTailConfContainer.addClass('enabled');
+			}
 		},
 		
 		generatePresetMarkerSets: function() {

@@ -1,0 +1,57 @@
+<html>
+	<body onload="void doTest();">
+		<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+		<script type="text/javascript" src="../inner/js/mm-utils.js"></script>
+		<script type="text/javascript" src="../inner/js/math/gl-matrix.js"></script>
+		<script type="text/javascript" src="../inner/js/map/GLMobLayer.js"></script>
+
+
+		<script type="text/javascript">
+function doTest() {
+	var TestSet = [
+		{x: 0, y: -1},
+		{x: 1, y:  0.4},
+		{x: 1, y:  0},
+		{x: 1, y:  1},
+		{x: -1, y:  0},
+		{x: -0.7, y:  0.7},
+		{x: -0.7, y:  -0.7}
+	];
+	
+	var cv = document.getElementById('cv');
+	var g = cv.getContext('2d');
+	
+	for (var i in TestSet) {
+		var testV = TestSet[i];
+		doDirectionColoringTest(g, testV);
+	}
+	
+	console.log('OK');
+}
+
+function doDirectionColoringTest(g, testVector) {
+	var tempOut = mobmap.GLMobLayer.calcDirectionColor(testVector.x, testVector.y);
+	
+	var style = 'rgb(' + tempOut.join(',') + ')';
+	var outArea = document.getElementById('outarea');
+	var el = document.createElement('div');
+	el.innerHTML = '■';
+	el.style.color = style;
+	outArea.appendChild(el);
+	
+	g.strokeStyle = style;
+	g.beginPath();
+	g.moveTo(50, 50);
+	g.lineTo(50 + testVector.x * 100, 50 + testVector.y * 100);
+	g.stroke();
+	
+	console.log(testVector.x, testVector.y, ' -> ', tempOut.join(','));
+}
+
+		</script>
+		<div id="outarea">
+		</div>
+		
+		<canvas id="cv"></canvas>
+	</body>
+</html>
