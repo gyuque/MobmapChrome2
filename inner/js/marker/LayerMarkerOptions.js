@@ -14,6 +14,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.tailColoring = LayerMarkerOptions.TC_MARKER_COLOR;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
+		
+		this.indexMap = new LayerMarkerOptions.CustomIndexMapping();
 	}
 	
 	LayerMarkerOptions.CHANGE_EVENT = "layer-marker-options-event-change";
@@ -30,7 +32,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setVaryingType: function(t) {
 			if (this.varyingType !== t) {
 				this.varyingType = t;
-				this.fire();
+				this.fire(true);
 			}
 		},
 		
@@ -75,11 +77,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.fire();
 			}
 		},
+		
+		setIndexMapEnabled: function(enabled, suppress_event) {
+			if (this.indexMap.enabled !== enabled) {
+				this.indexMap.enabled = enabled;
+				if (!suppress_event) {
+					this.fire(true);
+				}
+			}
+		},
 
 		bindAttributeName: function(a_name) {
 			if (this.boundAttributeName !== a_name) {
 				this.boundAttributeName = a_name;
-				this.fire();
+				this.fire(true);
 			}
 		},
 		
@@ -89,18 +100,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.fire();
 		},
 		
-		fire: function() {
-			this.eventDispatcher().trigger(LayerMarkerOptions.CHANGE_EVENT, this);
+		fire: function(affect_traj) {
+			this.eventDispatcher().trigger(LayerMarkerOptions.CHANGE_EVENT, [this, !!affect_traj]);
 		}
 	};
 	
 	LayerMarkerOptions.CustomIndexMapping = function() {
 		this.rawToIndexMap = {};
+		this.lastError = 0;
+		this.enabled = false;
 	};
 	
 	LayerMarkerOptions.CustomIndexMapping.prototype = {
 		parse: function(sourceText) {
 			var pair_list = LayerMarkerOptions.CustomIndexMapping.splitTokens(sourceText);
+			if (!pair_list) {
+				this.lastError = -1;
+			}
+			
 			for (var i in pair_list) {
 				var pair = pair_list[i];
 				this.rawToIndexMap[ pair.lefthand.content ] = pair.righthand.content;
@@ -114,6 +131,15 @@ if (!window.mobmap) { window.mobmap={}; }
 				console.log(i + ' => ', m[i])
 			}
 			console.log('------------------------------------');
+		},
+		
+		mapValue: function(rawVal) {
+			var m = this.rawToIndexMap;
+			if (m.hasOwnProperty(rawVal)) {
+				return m[rawVal];
+			} else {
+				return m['*'] || 0;
+			}
 		}
 	};
 	
@@ -122,10 +148,12 @@ if (!window.mobmap) { window.mobmap={}; }
 	var RE_WS   = /^\s+/ ;
 	var RE_DIGIT= /^([0-9]+)/ ;
 	var RE_DELIM= /^(\:)/ ;
+	var RE_WILDC= /^\*/ ;
 	
 	var kTokTypeDigit  = 0;
 	var kTokTypeStrLit = 1;
 	var kTokTypeDelim  = 2;
+	var kTokTypeWildcard = 3;
 	
 	var kExpectRawValue = 0;
 	var kExpectDelim    = 1;
@@ -141,7 +169,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		var tempRawValToken = null;
 		
-		for (var i = 0;i < 999;++i) {
+		for (var i = 0;i < 9999;++i) {
 			sourceText = sourceText.replace(RE_WS, '');
 
 			var foundToken = null;
@@ -163,13 +191,25 @@ if (!window.mobmap) { window.mobmap={}; }
 				foundToken = {
 					type: kTokTypeDelim
 				};
+			} else if (RE_WILDC.test(sourceText)) {
+				sourceText = sourceText.replace(RE_WILDC, '');
+				foundToken = {
+					type: kTokTypeWildcard,
+					content: '*'
+				};
+			} else {
+				if (sourceText.length > 0) {
+					// BAD token
+					return null;
+				}
 			}
-			
 			
 			switch(exp) {
 				case kExpectRawValue:
 					if (!foundToken) { return results; }
-					if (foundToken.type === kTokTypeDigit || foundToken.type === kTokTypeStrLit) {
+					if (foundToken.type === kTokTypeDigit || 
+						foundToken.type === kTokTypeStrLit ||
+						foundToken.type === kTokTypeWildcard) {
 						tempRawValToken = foundToken;
 						++exp;
 					} else {
@@ -198,6 +238,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					break;
 			}
 		}
+		
+		return null;
 	};
 	
 	

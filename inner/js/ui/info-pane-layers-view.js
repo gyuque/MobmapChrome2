@@ -70,8 +70,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.updateExploreLayerSubCaption();
 		},
 		
-		onAnyLayerMarkerOptionChange: function(e, sourceMarkerOption) {
-			this.redrawExploreLayerIfUsingMarker(sourceMarkerOption);
+		onAnyLayerMarkerOptionChange: function(e, sourceMarkerOption, affectTrj) {
+			if (affectTrj) {
+				this.redrawExploreLayerIfUsingMarker(sourceMarkerOption);
+			}
 		},
 		
 		onAnyLayerMarkerGeneratorChange: function(e, sourceMarkerGenerator) {

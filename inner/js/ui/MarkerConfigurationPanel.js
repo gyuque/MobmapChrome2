@@ -32,6 +32,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.numinTailWidth = null;
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
+		this.checkEnableIndexMapping = null;
+		this.jIndexMappingText = null;
 		
 		this.configurePanelContent();
 		this.syncFromModel();
@@ -279,7 +281,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.attrBindComboElement = makeComboWithLabel(fs, 'Attribute', 'mm-bind-attr-combo');
 			$(this.attrBindComboElement).change( this.onAttrBindSelChange.bind(this) );
 
+			this.buildCustomMarkerMappingForm(fs);
 			containerElement.appendChild(fs);
+		},
+		
+		buildCustomMarkerMappingForm: function(containerElement) {
+			var tx = $H('textarea', 'mm-marker-mapping-text');
+			var pair = generateCheckboxInLabel("Custom mapping", 'MarkerIndexMapping', "marker-index-mapping-check");
+			
+			containerElement.appendChild(pair.label);
+			containerElement.appendChild(tx);
+
+			this.checkEnableIndexMapping = pair.input;
+			this.jIndexMappingText = $(tx).val('*:0');
+			
+			$(pair.input).click(this.onIndexMappingCheckClick.bind(this));
 		},
 		
 		buildMarkerTailOptions: function(containerElement) {
@@ -509,6 +525,31 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 
+		// Index mapping UI
+		onIndexMappingCheckClick: function() {
+			//var newVal = this.getIndexMappingCheckValue();
+			this.updateMappingTextBoxVisibility();
+		},
+		
+		getIndexMappingCheckValue: function() {
+			var c = this.checkEnableIndexMapping;
+			if (!c) { return false; }
+			
+			return c.checked;
+		},
+		
+		updateMappingTextBoxVisibility: function() {
+			this.toggleMappingTextBox( this.getIndexMappingCheckValue() );
+		},
+		
+		toggleMappingTextBox: function(bShow) {
+			var j = this.jIndexMappingText;
+			if (j) {
+				bShow ? j.show() : j.hide();
+			}
+		},
+
+
 		checkVaryingTypeRadio: function(newVal) {
 			checkRadioboxByInt(this.jElement, 'MarkerVaryType', newVal);
 		},
@@ -583,12 +624,16 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.setTailStepValue(mo.tailInterval);
 				this.setTailWidthValue(mo.tailWidth);
 				this.setTailColoringValue(mo.tailColoring);
+
+				this.updateMappingTextBoxVisibility();
 			}
 			
 			this.syncShowTyphoonCloudCheckValue();
 		},
 		
 		changeTailConfVisibility: function(tailType) {
+			if (!this.jTailConfContainer) { return; }
+
 			if (tailType === mobmap.LayerMarkerOptions.TAIL_NONE) {
 				this.jTailConfContainer.removeClass('enabled');
 			} else {
