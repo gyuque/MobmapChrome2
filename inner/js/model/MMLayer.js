@@ -258,8 +258,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		mapAttributeToMarkerIndex: function(attrRawValue) {
-			var i = parseInt(attrRawValue, 10);
+			var i;
 			var n = this.getNumOfMarkerVariations();
+			
+			var mo = this._markerOptions;
+			if (mo.indexMap.enabled) {
+				i = mo.indexMap.mapValue(attrRawValue);
+			} else {
+				i = parseInt(attrRawValue, 10);
+			}
 			
 			if (i >= n) { i = n - 1; }
 			if (i < 0) { i = 0; }
@@ -349,7 +356,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			var markerIndex = 0;
 			if (this._markerOptions.varyingType === mobmap.LayerMarkerOptions.MV_ATTR) {
-				markerIndex = rec[this._markerOptions.boundAttributeName] || 0;
+				markerIndex = this.mapAttributeToMarkerIndex(rec[this._markerOptions.boundAttributeName]);
+				//markerIndex = rec[this._markerOptions.boundAttributeName] || 0;
 			}
 			
 			return markerIndex;

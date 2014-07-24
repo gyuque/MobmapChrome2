@@ -84,7 +84,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (!suppress_event) {
 					this.fire(true);
 				}
+				
+				return true;
 			}
+			
+			return false;
+		},
+		
+		updateIndexMap: function(sourceText, suppress_event) {
+			var changed = this.indexMap.updateFromText(sourceText);
+			if (changed && !suppress_event) {
+				this.fire();
+			}
+			
+			return changed;
 		},
 
 		bindAttributeName: function(a_name) {
@@ -108,10 +121,30 @@ if (!window.mobmap) { window.mobmap={}; }
 	LayerMarkerOptions.CustomIndexMapping = function() {
 		this.rawToIndexMap = {};
 		this.lastError = 0;
+		this.lastSource = null;
 		this.enabled = false;
 	};
 	
 	LayerMarkerOptions.CustomIndexMapping.prototype = {
+		updateFromText: function(source) {
+			if (this.lastSource === source) {
+				return false;
+			}
+			
+			this.clear();
+			this.parse(source);
+			return true;
+		},
+		
+		clear: function() {
+			this.lastError = 0;
+
+			var m = this.rawToIndexMap;
+			for (var i in m) if (m.hasOwnProperty(i)) {
+				delete m[i];
+			}
+		},
+		
 		parse: function(sourceText) {
 			var pair_list = LayerMarkerOptions.CustomIndexMapping.splitTokens(sourceText);
 			if (!pair_list) {

@@ -293,7 +293,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			containerElement.appendChild(tx);
 
 			this.checkEnableIndexMapping = pair.input;
-			this.jIndexMappingText = $(tx).val('*:0');
+			this.jIndexMappingText = $(tx).val('*:0').change(this.onIndexMappingTextChange.bind(this));
 			
 			$(pair.input).click(this.onIndexMappingCheckClick.bind(this));
 		},
@@ -527,8 +527,27 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		// Index mapping UI
 		onIndexMappingCheckClick: function() {
-			//var newVal = this.getIndexMappingCheckValue();
 			this.updateMappingTextBoxVisibility();
+			this.sendIndexMappingConf();
+		},
+		
+		onIndexMappingTextChange: function() {
+			this.sendIndexMappingConf();
+		},
+		
+		sendIndexMappingConf: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			if (!mo) { return; }
+
+			var enabled = this.getIndexMappingCheckValue();
+			var text = this.jIndexMappingText.val();
+			
+			var changed1 = mo.setIndexMapEnabled(enabled, true);
+			var changed2 = mo.updateIndexMap(text, true);
+			
+			if (changed1 || changed2) {
+				mo.fire(true);
+			}
 		},
 		
 		getIndexMappingCheckValue: function() {
