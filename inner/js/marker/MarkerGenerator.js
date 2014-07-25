@@ -25,7 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.adjustPreviewMargin();
 		this.configureCanvas();
 		
-		this.testDummyMarkerGenerator();
+		this.generate();
 	}
 	
 	// Events
@@ -75,7 +75,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				this.adjustPreviewMargin();
 				this.configureCanvas();
-				this.testDummyMarkerGenerator();
+				this.generate();
 				
 				this.fire();
 			}
@@ -83,7 +83,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		forceRebuild: function() {
 			this.dirty = true;
-			this.testDummyMarkerGenerator();
+			this.generate();
 			this.fire();
 		},
 		
@@ -123,7 +123,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.resultG.clearRect(0, 0, w, h);
 		},
 		
-		testDummyMarkerGenerator: function() {
+		generate: function() {
 			this.clearCanvas();
 			
 			var op = this.options;
@@ -145,11 +145,25 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	MarkerGenerator.generateMarkerBaseColors = function(markerOptions, nVariations) {
 		var n = markerOptions.nVariations || nVariations;
+		var ret = null;
+		var require_add_bw = false;
+		
+		if (markerOptions.includeBW && n >= 2) {
+			require_add_bw = true;
+			n -= 2;
+		}
 		
 		if (markerOptions.gradientType === MarkerGenerator.HueGradient)
-			return MarkerGenerator.generateRainbowColors(n, 220, markerOptions.reverseOrder);
+			ret= MarkerGenerator.generateRainbowColors(n, 220, markerOptions.reverseOrder);
 		else
-			return MarkerGenerator.generateBlendGradient(n, markerOptions.color1, markerOptions.color2);
+			ret= MarkerGenerator.generateBlendGradient(n, markerOptions.color1, markerOptions.color2);
+			
+		if (require_add_bw) {
+			ret.unshift( new RGBColor(0, 0, 0) );
+			ret.unshift( new RGBColor(255, 255, 255) );
+		}
+			
+		return ret;
 	};
 
 	var kRGBWhiteColor = new RGBColor(255, 255, 255);
@@ -358,6 +372,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.color1 = null;
 		this.color2 = null;
 		this.compositionType = kMarkerCompositionNormal;
+		this.includeBW = false;
 	}
 	
 	aGlobal.mobmap.MarkerGenerator = MarkerGenerator;

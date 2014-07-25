@@ -17,6 +17,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jLayoutCell_Timeline = null;
 		this.elementDateDisp = null;
 		this.elementTimeDisp = null;
+		this.elementTimeInput = null;
 		
 		this.timelineBar = new mobmap.TimelineBar();
 		this.editToolBar = new mobmap.MobmapEditToolBar();
@@ -72,6 +73,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		setupDisplayArea: function() {
 			this.timelineBar.setDateDisplayElement(this.elementDateDisp);
 			this.timelineBar.setTimeDisplayElement(this.elementTimeDisp);
+			this.timelineBar.setTimeInputElement(this.elementTimeInput);
 		},
 		
 		buildLayoutTable: function() {
@@ -95,18 +97,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			displayAreaContainer.setAttribute('class', 'mm-timeline-disp-container');
 			td1.appendChild(displayAreaContainer);
 			
-			var spanDate = document.createElement('span');
-			spanDate.setAttribute('class', 'mm-timeline-date-disp');
-			spanDate.innerHTML = "1970-01-01";
-			displayAreaContainer.appendChild(spanDate);
-			
-			var spanTime = document.createElement('span');
-			spanTime.setAttribute('class', 'mm-timeline-time-disp');
-			spanTime.innerHTML = "00:00:00";
-			displayAreaContainer.appendChild(spanTime);
-			
-			this.elementDateDisp = spanDate;
-			this.elementTimeDisp = spanTime;
+			this.elementDateDisp = this.generateDateDispElement(displayAreaContainer);
+			this.elementTimeDisp = this.generateTimeDispElement(displayAreaContainer);
+			this.elementTimeInput = this.generateTimeInputElement(displayAreaContainer);
 			// - - - - - - - - - - - - - - - - - - - - - - - -
 
 			this.layoutCell_Toolbar = tdEditToolBar;
@@ -124,6 +117,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			tbl.appendChild(trToolBar);
 			tbl.appendChild(tr);
 			return tbl;
+		},
+
+		generateDateDispElement: function(containerElement) {
+			return this.generateDispAreaElement(containerElement,
+				                                'mm-timeline-date-disp',
+				                                '1970-01-01');
+		},
+		
+		generateTimeDispElement: function(containerElement) {
+			return this.generateDispAreaElement(containerElement,
+				                                'mm-timeline-time-disp',
+				                                '00:00:00');
+		},
+		
+		generateDispAreaElement: function(containerElement, el_class, initial_str) {
+			var el = document.createElement('span');
+			el.setAttribute('class', el_class);
+			el.innerHTML = initial_str;
+			containerElement.appendChild(el);
+			
+			return el;
+		},
+		
+		generateTimeInputElement: function(containerElement) {
+			var el = document.createElement('input');
+			el.setAttribute('class', 'mm-timeline-time-input');
+			el.value = '00:00:00';
+			el.type = 'text';
+			el.size = 9;
+			containerElement.appendChild(el);
+			
+			return el;
 		},
 		
 		onContainerResize: function(e) {

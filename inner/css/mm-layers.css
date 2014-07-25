@@ -323,9 +323,10 @@ label.marker-index-mapping-check {
 }
 
 
+
 .mm-marker-preset-menu-item h4 {
 	border: none;
-	margin: 0 0 -1px 0;
+	margin: -2px 0 -1px 0;
 	padding: 1px;
 	font-weight: normal;
 	font-size: 10px;

@@ -5,7 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	var TL_DEFAULT_HEIGHT = 40;
 	var RE_HTML_TAG = /html/i ;
 	var ZOOM_ANIMATION_DIVS = 11;
-	
+
 	function TimelineBar() {
 		BarButton.appendButtonStyleSheet();
 		
@@ -27,6 +27,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.jDateDisplayElement = null;
 		this.jTimeDisplayElement = null;
+		this.timeInputElement = null;
+		this.timeBoundInput = null;
 		this.boundData = null;
 		this.boundRangeData = null;
 		
@@ -81,11 +83,50 @@ if (!window.mobmap) { window.mobmap={}; }
 		setDateDisplayElement: function(el) {
 			this.jDateDisplayElement = $(el);
 			this.syncFromData();
+			this.setupTimeBoundInput();
 		},
 		
 		setTimeDisplayElement: function(el) {
 			this.jTimeDisplayElement = $(el);
 			this.syncFromData();
+			this.setupTimeBoundInput();
+		},
+		
+		setTimeInputElement: function(el) {
+			this.timeInputElement = el;
+			this.setupTimeBoundInput();
+		},
+
+		setupTimeBoundInput: function(el) {
+			if (!this.timeBoundInput && this.jTimeDisplayElement && this.timeInputElement) {
+				this.timeBoundInput = new ElementBoundTextInput(this.jTimeDisplayElement[0], this.timeInputElement);
+				this.timeBoundInput.pickFunc = this.pickCurrentTimeString.bind(this);
+				this.timeBoundInput.commitFunc = this.commitTimeInputValue.bind(this);
+			}
+		},
+
+		pickCurrentTimeString: function() {
+			return this.jTimeDisplayElement.text();
+		},
+		
+		commitTimeInputValue: function(newVal) {
+			var t = this.parseTimeString(newVal);
+			if (t !== null && this.boundData) {
+				var oldT = this.parseTimeString( this.pickCurrentTimeString() );
+				this.boundData.shiftTime(t - oldT);
+			}
+		},
+		
+		parseTimeString: function(s) {
+			var fields = s.split(/ *: */);
+			if (fields.length !== 3) { return null; }
+			var hh = parseInt(fields[0], 10);
+			var mm = parseInt(fields[1], 10);
+			var ss = parseInt(fields[2], 10);
+			
+			if (isNaN(hh) || isNaN(mm) || isNaN(ss)) { return null; }
+			
+			return hh*3600 + mm*60 + ss;
 		},
 		
 		// -----------------------------------
@@ -724,6 +765,58 @@ if (!window.mobmap) { window.mobmap={}; }
 			grad.addColorStop(0.7,'#bbb');
 			grad.addColorStop(1  ,'#aaa');
 			return grad;
+		}
+	};
+	
+	// Bound Text Input
+	function ElementBoundTextInput(primaryElement, boundTextInput) {
+		this.jPrimary = $(primaryElement);
+		this.jBoundText = $(boundTextInput);
+		
+		this.jPrimary.click(this.onPrimaryElementClick.bind(this));
+		this.jBoundText.blur(this.onTextInputBlur.bind(this)).keydown(this.onTextInputKeydown.bind(this));
+		
+		this.pickFunc = null;
+		this.commitFunc = null;
+	}
+	
+	ElementBoundTextInput.prototype = {
+		onPrimaryElementClick: function() {
+			if (this.pickFunc) {
+				this.jBoundText.val( this.pickFunc() );
+			}
+			
+			this.jPrimary.css({visibility: 'hidden'});
+			this.jBoundText.css({display: 'block'}).focus();
+		},
+		
+		onTextInputBlur: function() {
+			this.ok();
+		},
+
+		onTextInputKeydown: function(e) {
+			if (e.keyCode === 27) {
+				this.cancel();
+			} else if (e.keyCode === 13) {
+				this.ok();
+			}
+		},
+		
+		hideInput: function() {
+			this.jPrimary.css({visibility: ''});
+			this.jBoundText.css({display: ''});
+		},
+		
+		ok: function() {
+			if (this.commitFunc) {
+				this.commitFunc( this.jBoundText.val() );
+			}
+
+			this.hideInput();
+		},
+		
+		cancel: function() {
+			this.hideInput();
 		}
 	};
 	

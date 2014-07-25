@@ -38,3 +38,4 @@ var GateDirection = {
 
 var kMarkerCompositionNormal = 0;
 var kMarkerCompositionAdd    = 1;
+var kMarkerPresetIncludeBW   = 0x80;
