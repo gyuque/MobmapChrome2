@@ -8,10 +8,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.varyingType = LayerMarkerOptions.MV_NONE;
 		this.tailType = LayerMarkerOptions.TAIL_NONE;
 		this.tailInterval = 20;
-		this.tailSegments = 6;
+		this.tailSegments = 2;
 		this.tailFade = false;
 		this.tailWidth = 2;
 		this.tailColoring = LayerMarkerOptions.TC_MARKER_COLOR;
+		this.tailSpeedLimit = 0;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 		

@@ -469,9 +469,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tailFade = false;
 			var tailLength = 0;
 			var tailInterval = 1;
+			var tailSpeedLimit = 0;
 			if (sourceLayer._markerOptions && sourceLayer._markerOptions.tailType !== mobmap.LayerMarkerOptions.TAIL_NONE) {
 				tailLength = sourceLayer._markerOptions.tailSegments;
 				tailInterval = sourceLayer._markerOptions.tailInterval;
+				tailSpeedLimit = sourceLayer._markerOptions.tailSpeedLimit;
 				
 				tailOnly = (sourceLayer._markerOptions.tailType === mobmap.LayerMarkerOptions.TAIL_ONLY);
 				dircolor_enabled = (sourceLayer._markerOptions.tailColoring === mobmap.LayerMarkerOptions.TC_DIRECTION);
@@ -547,9 +549,19 @@ if (!window.mobmap) { window.mobmap={}; }
 
 					marker_data.baseColor = markerBaseColor;
 					marker_data.tailAlpha = 1;
-
+					
 					var tailSource = sourceRecord._tailRecords;
 					var tailArray = marker_data.ensureTailArray(tailLength);
+					
+					// Check speed
+					/*
+					if (tailSpeedLimit > 0) {
+						if (this.calcSpeedBetweenTails(sourceRecord, tailSource[0], tailInterval) > tailSpeedLimit) {
+							marker_data.tailLengthToRender = 0;
+							continue;
+						}
+					}*/
+
 					for (var j = 0;j < tailLength;++j) {
 						var t_mk  = tailArray[j];
 						var t_src = tailSource[j];
@@ -582,6 +594,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.ownerApp) {
 				this.ownerApp.notifyMovingDataPicked(sourceLayer, src_array, count);
 			}
+		},
+		
+		calcSpeedBetweenTails: function(originRecord, firstTailRecord, tailInterval) {
+			var meters = calcDistanceFromLatLng(
+				originRecord.x, originRecord.y,
+				firstTailRecord.x, firstTailRecord.y);
+				
+			return (meters / tailInterval);
 		},
 		
 		prepareOverlayMarkerImage: function(overlay, sourceLayer) {
