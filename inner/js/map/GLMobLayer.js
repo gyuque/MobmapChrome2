@@ -966,7 +966,7 @@ function installMobLayer(pkg) {
 	function generateDynamicVBO(gl, sourceArray) {
 		var vbo = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-		gl.bufferData(gl.ARRAY_BUFFER, sourceArray, gl.DYNAMIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, sourceArray, gl.STREAM_DRAW);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
 		return vbo;

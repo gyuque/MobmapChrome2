@@ -401,4 +401,32 @@ if (!window.mobmap) { window.mobmap={}; }
 		return null;
 	};
 	
+	aGlobal.typedcolumnParseFieldName = function(raw) {
+		var namePart;
+		var atype = AttributeType.STRING;
+
+		if (raw.indexOf(':') >= 0) {
+			var sp_str = raw.split(':');
+			namePart = sp_str[0];
+			atype = typedcolumnGetTypeFromTypeNameString( sp_str[1] );
+		} else {
+			namePart = raw;
+		}
+
+		return {
+			name: namePart,
+			type: atype
+		};
+	};
+	
+	aGlobal.typedcolumnGetTypeFromTypeNameString = function(name) {
+		switch( name.toLowerCase() ) {
+		case 'int':    return AttributeType.INTEGER; break;
+		case 'float':  return AttributeType.FLOAT;   break;
+		case 'cfloat': return AttributeType.CFLOAT;  break;
+		}
+		
+		return AttributeType.STRING;
+	};
+	
 })(window);

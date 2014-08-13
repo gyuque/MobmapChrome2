@@ -8,6 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.fileName = inFile.name;
 		this.previewSink = new PreviewSink(this);
 		this.baseLoader = new HugeCSVLoader(inFile);
+		this.baseLoader.owner = this;
 		
 		this.lineCountCache = -1;
 	}
@@ -35,50 +36,49 @@ if (!window.mobmap) { window.mobmap={}; }
 			attrMap.generateColIndexMap();
 		},
 		
-		applyAttributeMapToFieldList: function(fieldList, outRecord) {
-			var attrMap = this.attrMap;
-			var int_id, f_lng, f_lat, absTime;
-			
-			var nCols = fieldList.length;
-			for (var i = 0;i < nCols;++i) {
-				var val = fieldList[i];
-				
-				// Parse field value
-				//    Standard attributes
-				if (attrMap.isIDColumn(i)) {
-					// : : :  Read ID  : : :
-					int_id = parseInt(val, 10);
-				} else if (attrMap.isXColumn(i)) {
-					// : : :  Read X(Lng)  : : :
-					f_lng = parseFloat(val);
-				} else if (attrMap.isYColumn(i)) {
-					// : : :  Read Y(Lat)  : : :
-					f_lat = parseFloat(val);
-				} else if (attrMap.isTimeColumn(i)) {
-					// : : :  Read Time  : : :
-					absTime = parseFieldTime(val);
-				} else {
-					// Extra attributes
-					if (attrMap.isColumnRegistered(i)) {
-						var convertedValue = attrMap.convertToColumnType(i, val);
-						var attrName = attrMap.getColumnName(i);
-						
-						outRecord[attrName] = convertedValue;
-					}
-				}
-			}
-			
-			outRecord._id   = int_id;
-			outRecord._time = absTime;
-			outRecord.x     = f_lng;
-			outRecord.y     = f_lat;
-		},
-		
 		setIgnoreFirstLine: function(ig) {
 			this.baseLoader.ignoreFirstLineEnabled = ig;
 		}
 	};
-	
+
+	GeoCSVLoader.applyAttributeMapToFieldList = function(attrMap, fieldList, outRecord) {
+		var int_id, f_lng, f_lat, absTime;
+		
+		var nCols = fieldList.length;
+		for (var i = 0;i < nCols;++i) {
+			var val = fieldList[i];
+			
+			// Parse field value
+			//    Standard attributes
+			if (attrMap.isIDColumn(i)) {
+				// : : :  Read ID  : : :
+				int_id = parseInt(val, 10);
+			} else if (attrMap.isXColumn(i)) {
+				// : : :  Read X(Lng)  : : :
+				f_lng = parseFloat(val);
+			} else if (attrMap.isYColumn(i)) {
+				// : : :  Read Y(Lat)  : : :
+				f_lat = parseFloat(val);
+			} else if (attrMap.isTimeColumn(i)) {
+				// : : :  Read Time  : : :
+				absTime = parseFieldTime(val);
+			} else {
+				// Extra attributes
+				if (attrMap.isColumnRegistered(i)) {
+					var convertedValue = attrMap.convertToColumnType(i, val);
+					var attrName = attrMap.getColumnName(i);
+					
+					outRecord[attrName] = convertedValue;
+				}
+			}
+		}
+		
+		outRecord._id   = int_id;
+		outRecord._time = absTime;
+		outRecord.x     = f_lng;
+		outRecord.y     = f_lat;
+	};
+
 	function parseFieldTime(rawVal) {
 		var absTime = 0;
 		
@@ -180,6 +180,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	// Base ---------------------------------------------------
 	function HugeCSVLoader(inFile) {
+		this.owner = null;
 		this.ignoreFirstLineEnabled = false;
 		this.inputFile = inFile;
 		this.inputBytes = null;
@@ -295,7 +296,10 @@ if (!window.mobmap) { window.mobmap={}; }
 //			console.log(pos);
 			try {
 				if (this.ignoreFirstLineEnabled && this.loadJob.lineno === 1) {
-					// SKIP
+					// Ignored line
+					if (this.loadJob.listenerObject.csvloaderReadIgnoredLine) {
+						this.loadJob.listenerObject.csvloaderReadIgnoredLine(temp_fields, this.loadJob.lineno-1)
+					}
 				} else {
 					this.loadJob.listenerObject.csvloaderReadLine(temp_fields, this.loadJob.lineno-1);
 				}

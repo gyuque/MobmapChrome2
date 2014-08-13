@@ -212,7 +212,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var record = mobmap.MovingData.createEmptyRecord();
 			
 			// Copy data from CSV fields to record object
-			this.sourceLoader.applyAttributeMapToFieldList(fields, record);
+			mobmap.GeoCSVLoader.applyAttributeMapToFieldList(this.sourceLoader.attrMap, fields, record);
 			this.registerNewMovingObjectRecord(record);
 		},
 		

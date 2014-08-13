@@ -702,7 +702,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		updateFieldStatusOfColumn: function(colObj) {
 			var currentVal = colObj.jInput.val();
-			var parseRes = AdditionalInputManager.parseFieldName(currentVal);
+			var parseRes = typedcolumnParseFieldName(currentVal);
 
 			var n_changed = (colObj.valName !== parseRes.name);
 			var t_changed = (colObj.valType !== parseRes.type);
@@ -746,34 +746,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	AdditionalInputManager.TypeClassNames[AttributeType.FLOAT  ] = 'a-specified-float';
 	AdditionalInputManager.TypeClassNames[AttributeType.CFLOAT ] = 'a-specified-cfloat';
 	
-	AdditionalInputManager.parseFieldName = function(raw) {
-		var namePart;
-		var atype = AttributeType.STRING;
-
-		if (raw.indexOf(':') >= 0) {
-			var sp_str = raw.split(':');
-			namePart = sp_str[0];
-			atype = AdditionalInputManager.typeFromTypeNameString( sp_str[1] );
-		} else {
-			namePart = raw;
-		}
-
-		return {
-			name: namePart,
-			type: atype
-		};
-	};
-
-	AdditionalInputManager.typeFromTypeNameString = function(name) {
-		switch( name.toLowerCase() ) {
-		case 'int':    return AttributeType.INTEGER; break;
-		case 'float':  return AttributeType.FLOAT;   break;
-		case 'cfloat': return AttributeType.CFLOAT;  break;
-		}
-		
-		return AttributeType.STRING;
-	};
-
 	AdditionalInputManager.isValidName = function(s) {
 		if (!s) {return false;}
 		return AttributeNamePattern.test(s);
