@@ -8,6 +8,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(document.createElement('span'));
 		this.ownerList = null;
 		this.visible = true;
+		this.remote = false;
 		this.primaryView = null;
 		this.capabilities = mobmap.LayerCapability.MeshRenderable;
 		this.dataTimeRange = {

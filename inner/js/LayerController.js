@@ -219,6 +219,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.RequestDelete, this.onLayerRequestDelete.bind(this)).
 			 bind(LE.RequestGoDown, this.onLayerRequestGoDown.bind(this)).
 			 bind(LE.RequestGoUp, this.onLayerRequestGoUp.bind(this)).
+			 bind(LE.RequestRemoteRefresh, this.onLayerRequestRemoteRefresh.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 			 bind(LE.ExploreTargetSet, this.onLayerExploreTargetSet.bind(this)).
 			 bind(LE.ExploreViewTypeChange, this.onLayerExploreViewTypeChange.bind(this)).
@@ -323,6 +324,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerRequestGoUp: function(e, sourceLayer) {
 			if (this.ownerApp) {
 				this.ownerApp.getCurrentProject().moveUpLayer(sourceLayer);
+			}
+		},
+		
+		onLayerRequestRemoteRefresh: function(e, sourceLayer) {
+			if (this.ownerApp) {
+				this.ownerApp.refreshRemoteSourceLayer(sourceLayer);
 			}
 		},
 		

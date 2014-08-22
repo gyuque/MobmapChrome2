@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.overlayViewType = mobmap.ExploreMapType.ViewType.Trajectory;
 		this.ownerList = null;
 		this.visible = true;
+		this.remote = false;
 		this.primaryView = null;
 		this.capabilities = mobmap.LayerCapability.FixOnBottom | mobmap.LayerCapability.ExploreOtherLayer;
 		this.dataTimeRange = {

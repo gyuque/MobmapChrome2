@@ -78,8 +78,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			return d.getCurrentTime();
 		},
 
-		addMovingObjectLayer: function(additionalCapFlag) {
+		addMovingObjectLayer: function(additionalCapFlag, bRemote) {
 			var lyr = new mobmap.MovingObjectLayer();
+			lyr.remote = !!bRemote;
 			if (additionalCapFlag) {
 				lyr.capabilities |= additionalCapFlag;
 			}

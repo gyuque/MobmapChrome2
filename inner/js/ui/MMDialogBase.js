@@ -55,6 +55,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.jElement.kendoWindow(opt);
 			
+			if (this.beforeOpen) {
+				this.beforeOpen();
+			}
+			
 			var dialog = this.getDialog();
 			dialog.open();
 			dialog.center();

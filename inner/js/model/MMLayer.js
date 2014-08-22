@@ -18,6 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		RequestDelete: 'mm-layer-model-event-request-delete',
 		RequestGoDown: 'mm-layer-model-event-request-go-down',
 		RequestGoUp: 'mm-layer-model-event-request-go-up',
+		RequestRemoteRefresh: 'mm-layer-model-event-request-remote-refresh',
 		Destroy: 'mm-layer-model-event-destroy',
 		ExploreTargetSet: 'mm-layer-model-event-explore-target-set',
 		ExploreViewTypeChange: 'mm-layer-model-event-explore-viewtype-change',
@@ -43,6 +44,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $( createEventDummyElement() );
 		this.ownerList = null;
 		this.visible = true;
+		this.remote = false;
 		this.primaryView = null;
 		this.capabilities = LayerCapability.MarkerRenderable | LayerCapability.SpatialSelectable;
 		this.dataTimeRange = {
@@ -195,6 +197,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		fireMarkerOptionsChange: function() {
 			this._markerOptions.fire();
+		},
+		
+		requestRemoteRefresh: function() {
+			this.eventDispatcher().trigger(LayerEvent.RequestRemoteRefresh, this);
 		},
 		
 		// CSV Loader Listener functions <<<<<<<<<<<<<<<<<

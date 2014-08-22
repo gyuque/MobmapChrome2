@@ -33,6 +33,7 @@ var theApp = null;
 						);
 						
 		theApp = new mobmap.Mobmap2App(appScreen);
+		mobmap.Mobmap2App.sendOuterMessage('notifyAppReady', null);
 	}
 
 	function observeMessage() {
@@ -50,7 +51,10 @@ var theApp = null;
 			if (theApp[method_name]) {
 				theApp[method_name](dat.params);
 			} else {
-				console.log("Message handler not found: " + method_name);
+				// ignore remote downloader message
+				if (dat.command.indexOf('rdl') !== 0) {
+					console.log("Message handler not found: " + method_name);
+				}
 			}
 		}
 	}
