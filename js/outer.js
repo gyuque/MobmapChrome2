@@ -1,7 +1,22 @@
 (function() {
+	var gRemoteDownloadHost = null;
+	var gAutoLoadURL = null;
+	var gAutoLoadForceRefresh = false;;
+	
 	window.onload = function() {
+		setupRemoteDownloadHost();
 		window.addEventListener("message", onReceiveMessage, false);
 	};
+	
+	function setupRemoteDownloadHost() {
+		gRemoteDownloadHost = new mobmap.RemoteDownloadOuterHost();
+
+		var inner = document.getElementById('sandbox-frame');
+		var innerWindow = inner.contentWindow;
+		var outerWindow = window;
+
+		gRemoteDownloadHost.bindMessageWindow(outerWindow, innerWindow); 
+	}
 
 	function onReceiveMessage(e) {
 		if (!e.data) {return;}
@@ -28,6 +43,17 @@
 	}
 	
 	var CommandProcs = {
+		setAutoLoadURL: function(params) {
+			gAutoLoadURL = params.url;
+			gAutoLoadForceRefresh = !!(params.force_refresh);
+		},
+		
+		notifyAppReady: function() {
+			if (gAutoLoadURL) {
+				sendInnerMessage('notifyAutoLoadEnabled', {url: gAutoLoadURL, force_refresh: gAutoLoadForceRefresh}); 
+			}
+		},
+
 		openDownloadServiceWindow: function() {
 
 			chrome.app.window.create('japan-data-downloader.html', {

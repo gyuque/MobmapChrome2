@@ -3,6 +3,7 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	var ENABLE_POLYGON = true;
+	var ENABLE_REMOTE_MOV = true;
 	
 	var kMenuNameAttr = "data-menuitem-name";
 	var kMenuItemNameMOCSV = "add-movobjs-csv";
@@ -179,11 +180,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			var btnOpenService = this.setupDownloaderServiceButton();
 
 			var abLocalMovCSV = this.generateWelcomeActionButton("images/mov-data-icon.png", "Moving Objects", "from Local CSV File");
+			var abRemoteMovCSV = null;
 			var abLocalMeshCSV = this.generateWelcomeActionButton("images/mesh-data-icon.png", "Mesh", "from Local CSV File");
 			var abTyphoonJson = this.generateWelcomeActionButton("images/typhoon-data-icon.png", "Digital Typhoon", "from Web Page");
+			
+			if (ENABLE_REMOTE_MOV) {
+				abRemoteMovCSV = this.generateWelcomeActionButton("images/rmov-data-icon.png", "Moving Objects", "from Remote Server");
+			}
+			
 			$(abLocalMovCSV).click( this.onWelcomeLocalCSVClick.bind(this) );
 			$(abLocalMeshCSV).click( this.onLoadMeshButtonClick.bind(this) );
 			$(abTyphoonJson).click( this.onTyphoonButtonClick.bind(this) );
+			if (abRemoteMovCSV) {
+				$(abRemoteMovCSV).click( this.onWelcomeRemoteCSVClick.bind(this) );
+			}
 						
 			var src_h = $H('header', 'mm-welcome-heading');
 			src_h.appendChild($T('Select initial data.'));
@@ -194,6 +204,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			sources.appendChild(btnOpenService);
 			*/
 			sources.appendChild(abLocalMovCSV);
+			if (abRemoteMovCSV) { sources.appendChild(abRemoteMovCSV); }
 			sources.appendChild(abLocalMeshCSV);
 			sources.appendChild(abTyphoonJson);
 			box.appendChild(sources);
@@ -247,8 +258,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.requestAddLocalCSVLayer();
 		},
 		
+		onWelcomeRemoteCSVClick: function() {
+			this.requestAddRemoteCSVLayer();
+		},
+		
 		requestAddLocalCSVLayer: function() {
 			this.ownerApp.loadLocalCSVMovingData();
+		},
+		
+		requestAddRemoteCSVLayer: function() {
+			this.ownerApp.loadRemoteCSVMovingData();
 		},
 
 		startSwapAnimation: function(i1, i2) {
@@ -542,6 +561,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.buildExploreConfigurationPanel();
 				this.setSubCaption("Select target layer");
 			}
+			
+			if (this.boundLayer.remote) {
+				this.addReloadButton(this.element);
+			}
 		},
 		
 		removeSelf: function() {
@@ -598,6 +621,19 @@ if (!window.mobmap) { window.mobmap={}; }
 
 				$(img_down).click(this.onLayerDownButtonClick.bind(this));
 				$(img_up).click(this.onLayerUpButtonClick.bind(this));
+			}
+		},
+		
+		addReloadButton: function(containerElement) {
+			var btn = document.createElement('button');
+			containerElement.appendChild(btn);
+			btn.setAttribute("class", "remote-refresh-button");
+			$(btn).text("Refresh").click( this.requestRemoteSourceRefresh.bind(this) );
+		},
+		
+		requestRemoteSourceRefresh: function() {
+			if (this.boundLayer.requestRemoteRefresh) {
+				this.boundLayer.requestRemoteRefresh();
 			}
 		},
 

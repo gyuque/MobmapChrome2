@@ -8,7 +8,7 @@
 }
 
 #mm-layers-welcome {
-	top: 5%;
+	top: 3%;
 	position: relative;
 	text-align: center;
 	background: linear-gradient(to bottom, #ddd, #bbb, #ccc, #aaa);
@@ -341,4 +341,17 @@ label.marker-index-mapping-check {
 .mm-trajectory-composition-label,
 .mm-trajectory-markercolor-label {
 	display: block;
+}
+
+.remote-refresh-button {
+	border: 1px solid #444;
+	box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 -1px 1px rgba(0,0,0,0.25) inset;
+	background: #eee url(../images/remote-refresh.png) no-repeat left center;
+	color: #000;
+	padding-left: 24px;
+	min-height: 20px;
+}
+
+.remote-refresh-button:hover:active {
+	box-shadow: 0 1px 4px rgba(0,0,0,0.5) inset;
 }

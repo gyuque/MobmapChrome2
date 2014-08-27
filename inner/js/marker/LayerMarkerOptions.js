@@ -12,7 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.tailFade = false;
 		this.tailWidth = 2;
 		this.tailColoring = LayerMarkerOptions.TC_MARKER_COLOR;
-		this.tailSpeedLimit = 0;
+this.tailSpeedLimit = 0;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 		

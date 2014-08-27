@@ -22,6 +22,6 @@
     "pages": [
       "inner/index.html"
     ],
-    "content_security_policy": "sandbox allow-scripts; script-src 'self' 'unsafe-eval' https://*.google.com https://*.gstatic.com https://*.googleapis.com; object-src"
+    "content_security_policy": "sandbox allow-forms allow-scripts; script-src 'self' 'unsafe-eval' https://*.google.com https://*.gstatic.com https://*.googleapis.com; object-src"
   }
 }

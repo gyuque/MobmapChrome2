@@ -429,4 +429,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		return AttributeType.STRING;
 	};
 	
+	aGlobal.removeForceRefreshParam = function(originalURL) {
+		var re = "[\\?\\&]" + kForceRefreshParamName + "=[0-9]+";
+		return originalURL.replace( new RegExp(re) , '');
+	};
+	
+	aGlobal.addParameterAfterURL = function(originalURL, param) {
+		var delim = '?';
+		if ( (/\?/).test(originalURL) ) {
+			var delim = '&';
+		}
+		
+		return originalURL + delim + param;
+	};
+	
 })(window);

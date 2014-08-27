@@ -146,6 +146,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.lineCountCache = 0;
 		this.url = url;
+		this.enableForceRefresh = false;
 		this.boundWindow = null;
 		this.clientId = gClientID++;
 		this.loaderListener = null;

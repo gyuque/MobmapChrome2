@@ -567,8 +567,8 @@ if (!window.mobmap) { window.mobmap={}; }
 							marker_data.tailLengthToRender = 0;
 							continue;
 						}
-					}*/
-
+					}
+*/
 					for (var j = 0;j < tailLength;++j) {
 						var t_mk  = tailArray[j];
 						var t_src = tailSource[j];

@@ -21,6 +21,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.valueFillDialog = new mobmap.FillValueDialog();
 		this.exportSelectionDialog = new mobmap.ExportSelectionDialog();
 
+		this.remoteCSVDialog = new mobmap.RemoteSourceDialog();
+		this.remoteCSVDialog.okCallback = this.onRemoteCSVDialogOK.bind(this);
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);
 		
@@ -32,6 +34,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.getToolPane().sendChosenPlaySpeed( this.playController );
 		this.newProject();
+		
 	}
 	
 	Mobmap2App.PROJECT_SET_EVENT = 'mm-app-project-set';
@@ -185,6 +188,55 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.localfilePicker.open();
 		},
 		
+		loadRemoteCSVMovingData: function() {
+			this.remoteCSVDialog.showDialogOnCenter("Remote resource", false, 94);
+		},
+
+		onRemoteCSVDialogOK: function() {
+			var url = this.remoteCSVDialog.getURL();
+			var f = this.remoteCSVDialog.getRefreshTokenEnabled();
+			this.addRemoteSourceMovingObjectsLayer(url, f);
+		},
+		
+		addRemoteSourceMovingObjectsLayer: function(url, enableForceRefresh) {
+			var dl_client = new mobmap.RemoteDownloadInnerClient(url);
+			dl_client.bindMessageWindow(window);
+			dl_client.enableForceRefresh = !!enableForceRefresh;
+			
+			this.layersView.hideWelcomeBox();
+			var newLayer = this.currentProject.addMovingObjectLayer(0, true);
+			newLayer.loadFromLoader(dl_client);
+		},
+		
+		refreshRemoteSourceLayer: function(layer) {
+			if (layer.sourceLoader && layer.sourceLoader.url) {
+				var url = removeForceRefreshParam(layer.sourceLoader.url);
+				if (layer.sourceLoader.enableForceRefresh) {
+					url = this.addForceRefreshToken(url);
+				}
+
+				Mobmap2App.sendOuterMessage('setAutoLoadURL', {
+					url: url,
+					force_refresh: !!(layer.sourceLoader.enableForceRefresh)
+				});
+				
+				var form = document.createElement('form');
+				var param1 = document.createElement('input');
+				param1.name = 'autoload';
+				param1.value = layer.sourceLoader.url;
+				document.body.appendChild(form);
+				form.submit();
+			}
+		},
+		
+		addForceRefreshToken: function(originalURL) {
+			return addParameterAfterURL(originalURL, kForceRefreshParamName + '=' + this.generateForceRefreshToken() );
+		},
+		
+		generateForceRefreshToken: function() {
+			return (new Date() | 0) ^ (Math.random() * 0x7fffffff);
+		},
+
 		loadLocalCSVMeshData: function() {
 			this.localMeshFilePicker.open();
 		},
@@ -476,6 +528,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			this.sendRenderRequestCompleteMessage(params);
+		},
+		
+		onMessage_notifyAutoLoadEnabled: function(params) {
+			if (params.url) {
+				this.addRemoteSourceMovingObjectsLayer(params.url, params.force_refresh);
+			}
 		},
 		
 		sendRenderRequestCompleteMessage: function(request_params) {
