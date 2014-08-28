@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.remoteCSVDialog = new mobmap.RemoteSourceDialog();
 		this.remoteCSVDialog.okCallback = this.onRemoteCSVDialogOK.bind(this);
+		this.remoteRefreshConfirmDialog = null;
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);
 		
@@ -209,23 +210,34 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		refreshRemoteSourceLayer: function(layer) {
-			if (layer.sourceLoader && layer.sourceLoader.url) {
-				var url = removeForceRefreshParam(layer.sourceLoader.url);
-				if (layer.sourceLoader.enableForceRefresh) {
-					url = this.addForceRefreshToken(url);
-				}
+			if (!this.remoteRefreshConfirmDialog) {
+				this.remoteRefreshConfirmDialog = new mobmap.RefreshConfirmDialog();
+			}
 
-				Mobmap2App.sendOuterMessage('setAutoLoadURL', {
-					url: url,
-					force_refresh: !!(layer.sourceLoader.enableForceRefresh)
-				});
+			function onok(){
+				if (layer.sourceLoader && layer.sourceLoader.url) {
+					var url = removeForceRefreshParam(layer.sourceLoader.url);
+					if (layer.sourceLoader.enableForceRefresh) {
+						url = this.addForceRefreshToken(url);
+					}
+
+					Mobmap2App.sendOuterMessage('setAutoLoadURL', {
+						url: url,
+						force_refresh: !!(layer.sourceLoader.enableForceRefresh)
+					});
 				
-				var form = document.createElement('form');
-				var param1 = document.createElement('input');
-				param1.name = 'autoload';
-				param1.value = layer.sourceLoader.url;
-				document.body.appendChild(form);
-				form.submit();
+					var form = document.createElement('form');
+					var param1 = document.createElement('input');
+					param1.name = 'autoload';
+					param1.value = layer.sourceLoader.url;
+					document.body.appendChild(form);
+					form.submit();
+				}
+			}
+			
+			if (layer.sourceLoader) {
+				this.remoteRefreshConfirmDialog.open(onok.bind(this), 
+				  removeForceRefreshParam(layer.sourceLoader.url));
 			}
 		},
 		

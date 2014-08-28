@@ -625,8 +625,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addReloadButton: function(containerElement) {
+			var buttonContainer = document.createElement('div');
+			buttonContainer.setAttribute("class", "remote-refresh-button-container");
+			
 			var btn = document.createElement('button');
-			containerElement.appendChild(btn);
+			buttonContainer.appendChild(btn);
+			containerElement.appendChild(buttonContainer);
 			btn.setAttribute("class", "remote-refresh-button");
 			$(btn).text("Refresh").click( this.requestRemoteSourceRefresh.bind(this) );
 		},
