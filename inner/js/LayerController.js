@@ -629,7 +629,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var textureSourceImage = mg.updateTextureCanvas();
 			targetLayer.setMarkerComposition(mg.options.compositionType);
-			if (targetLayer.setMarkerImage(textureSourceImage)) { // Success?
+			var crop = mg.options.enableCrop;
+			if (targetLayer.setMarkerImage(textureSourceImage, crop)) { // Success?
 				mg.dirty = false;
 			}
 		},

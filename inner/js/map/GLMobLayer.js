@@ -391,10 +391,13 @@ function installMobLayer(pkg) {
 	};
 	
 	GLMobLayer.prototype.calcMarkerUVRange = function(gl, loc) {
-		var mgn = 4 / this.markerTextureConf.originalWidth;
 		var u_width = this.markerTextureConf.chipWidth / this.markerTextureConf.originalWidth;
-
-		gl.uniform4f(loc, mgn, 0, u_width - mgn, 0);
+		if (this.markerTextureConf.enableCrop) {
+			var mgn = 4 / this.markerTextureConf.originalWidth;
+			gl.uniform4f(loc, mgn, 0.12, u_width - mgn, 0.38);
+		} else {
+			gl.uniform4f(loc, 0.0001, 0.0001, u_width, 0.4999);
+		}
 	};
 	
 	GLMobLayer.prototype.renderLayerStack = function() {
@@ -805,7 +808,7 @@ function installMobLayer(pkg) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	};
 	
-	GLMobLayer.prototype.setMarkerImage = function(img) {
+	GLMobLayer.prototype.setMarkerImage = function(img, crop) {
 		var texconf = this.markerTextureConf;
 		
 		if (!this.gl) { return false; }
@@ -815,7 +818,9 @@ function installMobLayer(pkg) {
 		texconf.sourceImage    = img;
 		texconf.originalWidth  = img.width - 0;
 		texconf.originalHeight = img.height - 0;
-		
+
+		texconf.enableCrop = (crop === false) ? false : true;
+
 		var tex = GLMobLayer.createTextureObject(this.gl, img);
 		this.markerTexture = tex;
 		this.renderGL();
@@ -1074,6 +1079,7 @@ function installMobLayer(pkg) {
 		this.originalHeight = 1;
 		this.chipWidth      = 16;
 		this.chipHeight     = 16;
+		this.enableCrop     = true;
 	}
 
 	// Shaders ---------------------------------------------
@@ -1104,8 +1110,9 @@ function installMobLayer(pkg) {
 //		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.06 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.19) {discard;}",
 //		" if(vTextureCoord.x < 0.06 || vTextureCoord.y < 0.12 || vTextureCoord.x > 0.19 || vTextureCoord.y > 0.38) {discard;}",
 
-		// rgba -> u1,v2,u2,v2
-		" if(vTextureCoord.x < validUV.r || vTextureCoord.y < 0.12 || vTextureCoord.x > validUV.b || vTextureCoord.y > 0.38) {discard;}",
+		// rgba -> u1,v1,u2,v2
+		" if(vTextureCoord.x < validUV.r || vTextureCoord.y < validUV.g || vTextureCoord.x > validUV.b || vTextureCoord.y > validUV.a) { discard; }",
+//		" if(vTextureCoord.x < validUV.r || vTextureCoord.y < 0.12 || vTextureCoord.x > validUV.b || vTextureCoord.y > 0.38) { discard; }",
 
 		" gl_FragColor = texture2D(texture, vTextureMovedCoord);",
 //		" if (texel.z < 0.001) {discard;} ",

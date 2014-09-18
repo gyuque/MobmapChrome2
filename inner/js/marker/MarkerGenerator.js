@@ -128,7 +128,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var op = this.options;
 			var baseColors = MarkerGenerator.generateMarkerBaseColors(op);
-			MarkerGenerator.renderMarkerSequenceWithCompositeType(op.compositionType, this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors);
+			MarkerGenerator.renderMarkerSequenceWithCompositeType(op.compositionType, this.resultG, op.nVariations, op.chipWidth, op.chipHeight, baseColors, op.useScaling);
 			
 			MarkerGenerator.renderPreviewImage(
 				this.previewG,
@@ -202,7 +202,33 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return RGBlist;
 	};
-	
+
+	MarkerGenerator.renderScalingMarker = function(g, baseColor, blendColor, ratioPosition) {
+		var r = (6 * ratioPosition) + 1;
+		
+		g.save();
+		g.fillStyle = '#000';
+		g.beginPath();
+		g.arc(3, 3, r, 0, Math.PI*2, false);
+		g.fill();
+
+		g.fillStyle = MarkerGenerator.createBallGradient(g, baseColor.r, baseColor.g, baseColor.b, 1, ratioPosition);
+		g.beginPath();
+		g.arc(3, 3, r-1, 0, Math.PI*2, false);
+		g.clip();
+		g.fillRect(-4, -4, 16, 16);
+
+		if (blendColor) {
+			g.save();
+			g.fillStyle = blendColor;
+			g.globalAlpha = 0.9;
+			g.fillRect(-4, -4, 16, 16);
+			g.restore();
+		}
+
+		g.restore();
+	};
+
 	MarkerGenerator.renderDotMarker = function(g, baseColor, blendColor) {
 		g.beginPath();
 		g.moveTo(0, 0);
@@ -280,10 +306,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		MarkerGenerator.renderMarkerSequence(g, n, xStep, yStep, baseColorList,
 			MarkerGenerator.renderSpotMarker);
 	};
+	
+	MarkerGenerator.renderScalingMarkerSequence = function(g, n, xStep, yStep, baseColorList) {
+		MarkerGenerator.renderMarkerSequence(g, n, xStep, yStep, baseColorList,
+			MarkerGenerator.renderScalingMarker);
+	};
 
 
-	MarkerGenerator.renderMarkerSequenceWithCompositeType = function(compositionType, g, n, xStep, yStep, baseColorList) {
-		if (compositionType === kMarkerCompositionNormal)
+	MarkerGenerator.renderMarkerSequenceWithCompositeType = function(compositionType, g, n, xStep, yStep, baseColorList, useScaling) {
+		if (useScaling)
+			MarkerGenerator.renderScalingMarkerSequence(g, n, xStep, yStep, baseColorList);
+		else if (compositionType === kMarkerCompositionNormal)
 			MarkerGenerator.renderDotMarkerSequence(g, n, xStep, yStep, baseColorList);
 		else
 			MarkerGenerator.renderSpotMarkerSequence(g, n, xStep, yStep, baseColorList);
@@ -295,14 +328,16 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		var x = 0;
 		for (var i = 0;i < n;++i) {
+			var rpos = i/(n-1);
+
 			g.save();
 			g.translate(ox + x, oy);
-			generatorFunc(g, baseColorList[i]);
+			generatorFunc(g, baseColorList[i], null, rpos);
 			g.restore();
 
 			g.save();
 			g.translate(ox + x, oy + yStep);
-			generatorFunc(g, baseColorList[i], '#666');
+			generatorFunc(g, baseColorList[i], '#666', rpos);
 			g.restore();
 
 			x += xStep;
@@ -310,9 +345,12 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	MarkerGenerator.createBallGradient = function(g, cR, cG, cB, hdiv) {
+	MarkerGenerator.createBallGradient = function(g, cR, cG, cB, hdiv, radd) {
+		radd = (radd ? radd : 0);
+		
 		hdiv = (hdiv < 2) ? 1 : hdiv;
-		var gr = g.createRadialGradient(3.3, 2.5, 1, 3.5, 3, 4);
+		var gr = g.createRadialGradient(3.3-radd, 2.5-radd, 1,
+			                            3.5-radd, 3-radd, 4 + radd);
 		gr.addColorStop(0  , this.toRGB(cR, cG, cB, 130 / hdiv));
 		gr.addColorStop(0.3, this.toRGB(cR, cG, cB, 50 / hdiv));
 		gr.addColorStop(1  , this.toRGB(cR, cG, cB));
@@ -373,6 +411,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.color2 = null;
 		this.compositionType = kMarkerCompositionNormal;
 		this.includeBW = false;
+		this.useScaling = false;
+		this.enableCrop = true;
 	}
 	
 	aGlobal.mobmap.MarkerGenerator = MarkerGenerator;

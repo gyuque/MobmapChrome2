@@ -112,7 +112,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				g.fillRect(0, 0, 640, 480);
 			}
 			
-			mobmap.MarkerGenerator.renderMarkerSequenceWithCompositeType(presetData.compositionType, g, n, 16, 16, baseColors);
+			mobmap.MarkerGenerator.renderMarkerSequenceWithCompositeType(presetData.compositionType, g, n, 16, 16, baseColors, presetData.useScaling);
 		},
 		
 		onPresetMenuSelect: function(e) {
@@ -132,6 +132,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			mo.color2 = presetData.color2;
 			mo.compositionType = presetData.compositionType;
 			mo.includeBW = presetData.includeBW;
+
+			mo.useScaling = presetData.useScaling;
+			mo.enableCrop = !presetData.useScaling;
 			
 			this.markerGenerator.forceRebuild();
 		},
@@ -667,14 +670,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			var cWhite = new RGBColor(245,245,245);
 			var cBlue  = new RGBColor(0,0,255);
 			var cRed   = new RGBColor(255,0,0);
+			var cLBlue = new RGBColor(12,54,255);
 			
 			var BW = kMarkerPresetIncludeBW;
+			var SC = kMarkerPresetUseScaling;
 			
 			outList.push( new MarkerSetPreset('Dot marker - hue gradient'         , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Dot marker - BW + hue gradient'    , BW, kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Dot marker - reversed hue gradient', 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, true) );
 			outList.push( new MarkerSetPreset('Dot marker - white to blue'        , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
 			outList.push( new MarkerSetPreset('Dot marker - blue to red'          , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+
+			outList.push( new MarkerSetPreset('Dot marker - scaling'              , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cLBlue, cLBlue) );
 
 			outList.push( new MarkerSetPreset('Spot marker - hue gradient'         , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Spot marker - BW + hue gradient'    , BW, kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
@@ -693,11 +700,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.color1 = c1 || null;
 		this.color2 = c2 || null;
 		this.compositionType = cm;
+		this.includeBW = false;
+		this.useScaling = false;
 		
 		if (flags === 0) {
-			this.includeBW = false;
+			// No flags
 		} else if (flags === kMarkerPresetIncludeBW) {
 			this.includeBW = true;
+		} else if (flags === kMarkerPresetUseScaling) {
+			this.useScaling = true;
 		} else {
 			throw "Bad flags";
 		}

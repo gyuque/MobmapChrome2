@@ -133,10 +133,15 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.autoDetector.detect(previewRecords);
 				this.autoDetector.applyToAttrMap(this.attrMap);
 
+				var auto_ignore_1st = this.detectHeaderRow(previewRecords);
 				this.previewTable = new CSVPreviewTable(previewRecords, this);
 				var table = this.previewTable.generateTable();
 				this.previewContainer.appendChild(table);
 				this.jIgnoreFirstLineCheck.show();
+
+				if (auto_ignore_1st) {
+					this.checkIgnoreFirstLine();
+				}
 
 				// Show initial status
 				this.previewTable.showSetting(this.attrMap);
@@ -165,6 +170,28 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.attrMap.setColumnIndex(attrName, colIndex);
 				this.previewTable.showSetting(this.attrMap);
 			}
+		},
+		
+		detectHeaderRow: function(recordList) {
+			if (recordList.length < 1) {
+				return false;
+			}
+			
+			var re = /^[\-\.0-9\:\/ ]+$/;
+			var firstRow = recordList[0];
+			var ok_cols = 0;
+			for (var i in firstRow) {
+				if (re.test(firstRow[i])) {
+					++ok_cols;
+				}
+			}
+			
+			return (ok_cols < 3);
+		},
+		
+		checkIgnoreFirstLine: function() {
+			this.jIgnoreFirstLineCheck.attr('checked', 'checked');
+			this.onIgnoreFirstCheckClick();
 		}
 	};
 
