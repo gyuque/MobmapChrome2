@@ -7,6 +7,7 @@ function installMobLayer(pkg) {
 	var SharedCloudImage = null;
 	var tempPt1 = {x:0,y:0};
 	var tempPt2 = {x:0,y:0};
+	var gNextRenderingID = 1;
 
 	function GLMobLayer() {
 		// Initiazlize
@@ -34,11 +35,13 @@ function installMobLayer(pkg) {
 		this.markerTransformMatrix = mat4.create();
 		this.nTrianglesBuffered = 0;
 		this.nSegmentsBuffered = 0;
+		this.labelRenderer = null;
 		// WebGL objects ------------------------------
 		
 		// Default values
 		this.visible = true;
 		this.enableTailDraw = false;
+		this.enableLabel = true;
 		this.tailWidth = 1;
 		this.tailDirectionColorEnabled = false;
 		this.timeDirection = 0;
@@ -417,6 +420,7 @@ function installMobLayer(pkg) {
 			throw "MarkerPool must be specified: " + pl;
 		}
 		
+		gNextRenderingID = (gNextRenderingID + 1) & 0xffffff;
 		var m_arr = pl.getArray();
 		var len = pl.requestedCount;
 		var triCount = 0;
@@ -493,6 +497,12 @@ function installMobLayer(pkg) {
 		}
 
 		// [Draw] Marker
+		var minSX = -16;
+		var minSY = -16;
+		var maxSX = this.canvasSize.w + 16;
+		var maxSY = this.canvasSize.h + 16;
+		
+		var nMarkerDrawn = 0;
 		this.gl.useProgram(this.shaderProgram);
 		vi = 0;
 		for (i = 0;i < len;++i) {
@@ -502,27 +512,31 @@ function installMobLayer(pkg) {
 
 				var sx = mk.screenX;
 				var sy = mk.screenY;
-				var cx = 7;
-				var cy = 7;
+				if (sx >= minSX && sy >= minSY && sx <= maxSX && sy <= maxSY) {
+					mk.renderingID = gNextRenderingID;
+					var cx = 7;
+					var cy = 7;
 
-				// Append positions
-				var sx0 = sx - spriteCX;
-				var sy0 = sy - spriteCY;
-				vlist[vi  ] = sx0           ;  vlist[vi+1] = sy0           ;
-				vlist[vi+2] = sx0 + spriteW2;  vlist[vi+3] = sy0           ;
-				vlist[vi+4] = sx0           ;  vlist[vi+5] = sy0 + spriteH2;
-				vi += 6;
+					// Append positions
+					var sx0 = sx - spriteCX;
+					var sy0 = sy - spriteCY;
+					vlist[vi  ] = sx0           ;  vlist[vi+1] = sy0           ;
+					vlist[vi+2] = sx0 + spriteW2;  vlist[vi+3] = sy0           ;
+					vlist[vi+4] = sx0           ;  vlist[vi+5] = sy0 + spriteH2;
+					vi += 6;
 			
-				// Append texture coordinates (fixed + variable = final UV)
-	//			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
+					// Append texture coordinates (fixed + variable = final UV)
+		//			txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, 0.5, 0.5);
 
-				//   Fixed UV
-				txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, u_width * 2.0, 1.0);
+					//   Fixed UV
+					txi += this.setMarkerTextureCoords(txlist, txi, 0.0, 0.0, u_width * 2.0, 1.0);
 
-				//   Variable UV
-				bi += this.setMarkerTextureCoords(tblist, bi, mk.chipX / texWidth, mk.chipY / texHeight, 0.0, 0.0);
+					//   Variable UV
+					bi += this.setMarkerTextureCoords(tblist, bi, mk.chipX / texWidth, mk.chipY / texHeight, 0.0, 0.0);
 
-				++triCount;
+					++triCount;
+					++nMarkerDrawn;
+				}
 			}
 
 			if (
@@ -536,6 +550,24 @@ function installMobLayer(pkg) {
 				vi = txi = bi = triCount = 0;
 			}
 		}
+
+		//console.log("drawn markers", nMarkerDrawn);
+		// [Draw] Labels
+		
+//		var labelRenderer = this.ensureLabelRenderer();
+//		var labCapacity = labelRenderer.calcLabelCapacity();
+		/*
+		if (this.enableLabel && nMarkerDrawn < 100) {
+			for (i = 0;i < len;++i) {
+				mk = m_arr[i];
+				if (mk.renderingID === gNextRenderingID) {
+					// Render label on texture
+					
+					
+				}
+			}
+		}
+		*/
 	};
 
 	GLMobLayer.prototype.writeTailVertices = function(vlist, startIndex, cllist, markerData, dirColor) {
@@ -854,6 +886,14 @@ function installMobLayer(pkg) {
 			this.markerTexture = null;
 		}
 	};
+	
+	GLMobLayer.prototype.ensureLabelRenderer = function() {
+		if (!this.labelRenderer) {
+			this.labelRenderer = new mobmap.LabelTextureRenderer(this.gl);
+		}
+		
+		return this.labelRenderer;
+	};
 
 	// Map event handlers --------------------------------------
 	GLMobLayer.prototype.onMapZoomChanged = function() {
@@ -1046,6 +1086,8 @@ function installMobLayer(pkg) {
 		this.tailAlpha = 1;
 		this.tailArray = null;
 		this.tailLengthToRender = 0;
+		
+		this.renderingID = 0;
 	}
 	
 	MarkerDisplayData.prototype.ensureTailArray = function(length) {
