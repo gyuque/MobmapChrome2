@@ -322,7 +322,10 @@ label.marker-index-mapping-check {
 	display: block;
 }
 
-
+#body-pane li.mm-marker-preset-menu-item .k-link {
+	margin: 0;
+	padding: 0 0 0 2px;
+}
 
 .mm-marker-preset-menu-item h4 {
 	border: none;

@@ -8,6 +8,8 @@ function installMobLayer(pkg) {
 	var tempPt1 = {x:0,y:0};
 	var tempPt2 = {x:0,y:0};
 	var gNextRenderingID = 1;
+	var labelsTempBuffer = [];
+	var labelsOwnerTempBuffer = [];
 
 	function GLMobLayer() {
 		// Initiazlize
@@ -29,6 +31,7 @@ function installMobLayer(pkg) {
 		this.shaderProgram  = null;
 		this.shaderParams = {};
 		this.colorLineShaderObjects = { shaderParams:{} };
+		this.labelShaderObjects = { shaderParams:{} };
 		this.glBuffers = {};
 		this.markerTexture = 0;
 		this.markerTextureConf = new MarkerTextureConfiguration();
@@ -175,6 +178,10 @@ function installMobLayer(pkg) {
 			ColorLineVertexShader, ColorLineFragmentShader);
 	};
 
+	GLMobLayer.prototype.compileLabelShader = function(gl) {
+		// IMPLEMENT HERE
+	};
+
 	GLMobLayer.prototype.compileShaderPair = function(outObj, gl, vs_source, fs_source) {
 		// Vertex shader
 		var vs = gl.createShader(gl.VERTEX_SHADER);
@@ -247,7 +254,22 @@ function installMobLayer(pkg) {
 		outObj.shaderParams.vertexColor    = a_col;
 		outObj.shaderParams.transform      = u_trans;
 	};
-	
+
+	GLMobLayer.prototype.setupLabelShaderProgram = function(outObj, gl, vs, fs) {
+		var prg = gl.createProgram();
+
+		outObj.shaderProgram = prg;
+		gl.attachShader(prg, vs);
+		gl.attachShader(prg, fs);
+		gl.linkProgram(prg);
+
+		if (!gl.getProgramParameter(prg, gl.LINK_STATUS)) {
+			console.log("!!Link failed!!");
+			alert(gl.getProgramInfoLog(prg));
+		}
+
+	};
+
 	GLMobLayer.prototype.setupGLBuffers = function(gl) {
 		var posBufferSize = this.bufferCapacityInVertices * this.vertexDimension;
 		var uvBufferSize  = this.bufferCapacityInVertices * 2;
@@ -554,20 +576,103 @@ function installMobLayer(pkg) {
 		//console.log("drawn markers", nMarkerDrawn);
 		// [Draw] Labels
 		
-//		var labelRenderer = this.ensureLabelRenderer();
-//		var labCapacity = labelRenderer.calcLabelCapacity();
-		/*
-		if (this.enableLabel && nMarkerDrawn < 100) {
+		var nLabelLimit = 100;
+		var labelRenderer = this.ensureLabelRenderer();
+		var labCapacity = labelRenderer.calcLabelCapacity();
+		
+		if (this.enableLabel && nMarkerDrawn < nLabelLimit) {
+			// Clear label buffer
+			labelsTempBuffer.length = 0;
+			labelsOwnerTempBuffer.length = 0;
+			
+			var labelSpriteWidth  = labelRenderer.getLabelSpriteWidth();
+			var labelSpriteHeight = labelRenderer.getLabelSpriteHeight();
+			
 			for (i = 0;i < len;++i) {
 				mk = m_arr[i];
 				if (mk.renderingID === gNextRenderingID) {
-					// Render label on texture
+					// Fill label texts
+					labelsTempBuffer.push(mk.labelText);
+					labelsOwnerTempBuffer.push(mk);
+				}
+				
+				if (labelsTempBuffer.length >= labCapacity || i === (len-1)) {
+					//console.log("Will Render:\n", labelsTempBuffer.join('\n'));
+					var nRenderableLabels = labelRenderer.renewWithTextList(labelsTempBuffer);
 					
-					
+					this.renderBufferedLabels(labelsTempBuffer, labelsOwnerTempBuffer, labelSpriteWidth, labelSpriteHeight);
+					labelsTempBuffer.length = 0;
+					labelsOwnerTempBuffer.length = 0;
 				}
 			}
 		}
-		*/
+
+	};
+	
+	GLMobLayer.prototype.renderBufferedLabels = function(labelTextArray, labelOwnerArray, labelSpriteWidth, labelSpriteHeight) {
+		var vlist = this.glBuffers.arrPositions;
+		var txlist = this.glBuffers.arrTexcoords;
+		var vpos = 0;
+
+		var len = labelOwnerArray.length;
+		for (var i = 0;i < len;++i) {
+			var markerData = labelOwnerArray[i];
+			
+			vpos += this.writeLabelVertexPositions(markerData, vlist, vpos, labelSpriteWidth, labelSpriteHeight);
+		}
+		
+		console.log("Triangles: ",vpos, vlist[0], vlist[1], vlist[2], vlist[3]);
+		this.drawLabelPolygons();
+	};
+
+	GLMobLayer.prototype.writeLabelVertexPositions = function(markerData, vlist, startPos, labelSpriteWidth, labelSpriteHeight) {
+		var i = 0;
+
+		var sx = markerData.screenX + 7;
+		var sy = markerData.screenY - 5;
+		
+		// T1, p0
+		vlist[startPos + (i++) ] = sx;
+		vlist[startPos + (i++) ] = sy;
+		
+		// T1, p1
+		vlist[startPos + (i++) ] = sx + labelSpriteWidth;
+		vlist[startPos + (i++) ] = sy;
+
+		// T1, p2
+		vlist[startPos + (i++) ] = sx + labelSpriteWidth;
+		vlist[startPos + (i++) ] = sy + labelSpriteHeight;
+		
+		
+		// T2, p0
+		vlist[startPos + (i++) ] = sx;
+		vlist[startPos + (i++) ] = sy + labelSpriteHeight;
+
+		// T2, p1
+		vlist[startPos + (i++) ] = sx;
+		vlist[startPos + (i++) ] = sy;
+
+		// T2, p2
+		vlist[startPos + (i++) ] = sx + labelSpriteWidth;
+		vlist[startPos + (i++) ] = sy + labelSpriteHeight;
+
+		return i;
+	};
+
+	GLMobLayer.prototype.drawLabelPolygons = function() {
+		// Write to buffer
+		this.updateBufferContent();
+
+//		var S = this.colorLineShaderObjects;
+
+		/*
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffers.vbPositions);
+		gl.enableVertexAttribArray(S.shaderParams.vertexPosition);
+		gl.vertexAttribPointer(
+			S.shaderParams.vertexPosition,
+			this.vertexDimension, // components per vertex
+			gl.FLOAT, false, 0, 0);
+*/
 	};
 
 	GLMobLayer.prototype.writeTailVertices = function(vlist, startIndex, cllist, markerData, dirColor) {
@@ -1088,6 +1193,7 @@ function installMobLayer(pkg) {
 		this.tailLengthToRender = 0;
 		
 		this.renderingID = 0;
+		this.labelText = null;
 	}
 	
 	MarkerDisplayData.prototype.ensureTailArray = function(length) {

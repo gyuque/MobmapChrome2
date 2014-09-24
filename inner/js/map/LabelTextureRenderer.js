@@ -34,8 +34,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			return i;
 		},
 		
-		calcUCoordStride: function() {
+		calcVCoordStride: function() {
 			return this.labelBoxHeight / this.textureSize;
+		},
+		
+		getLabelSpriteWidth: function() {
+			return this.textureSize;
+		},
+
+		getLabelSpriteHeight: function() {
+			return this.labelBoxHeight;
 		},
 
 

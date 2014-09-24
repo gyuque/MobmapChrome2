@@ -530,6 +530,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				marker_data.lng = sourceRecord.x;
 				marker_data.chipY = 0;
 				marker_data.tailLengthToRender = tailLength;
+				marker_data.labelText = sourceRecord._id;
 								
 				var mkIndex = 0;
 				if (boundAttrName !== null) {
