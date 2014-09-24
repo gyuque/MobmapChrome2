@@ -145,7 +145,8 @@ function installMobLayer(pkg) {
 
 	GLMobLayer.prototype.initializeGLObjects = function(gl) {
 		this.compileColorLineShader(gl);
-		
+		this.compileLabelShader(gl);
+
 		if (this.shaderType === GLMobLayer.ShaderType.Normal) {
 			this.compileNormalMarkerShader(gl);
 		} else {
@@ -161,6 +162,13 @@ function installMobLayer(pkg) {
 			gl,
 			this.colorLineShaderObjects.vertexShader,
 			this.colorLineShaderObjects.fragmentShader)
+		
+		this.setupLabelShaderProgram(
+			this.labelShaderObjects,
+			gl,
+			this.labelShaderObjects.vertexShader,
+			this.labelShaderObjects.fragmentShader
+			);
 		
 		this.setupGLBuffers(gl);
 	};
@@ -179,7 +187,8 @@ function installMobLayer(pkg) {
 	};
 
 	GLMobLayer.prototype.compileLabelShader = function(gl) {
-		// IMPLEMENT HERE
+		this.compileShaderPair(this.labelShaderObjects, gl,
+			LabelVertexShader, LabelFragmentShader);
 	};
 
 	GLMobLayer.prototype.compileShaderPair = function(outObj, gl, vs_source, fs_source) {
@@ -265,9 +274,10 @@ function installMobLayer(pkg) {
 
 		if (!gl.getProgramParameter(prg, gl.LINK_STATUS)) {
 			console.log("!!Link failed!!");
-			alert(gl.getProgramInfoLog(prg));
+			console.log(gl.getProgramInfoLog(prg));
 		}
 
+		console.log("IMPLEMENT HERE");
 	};
 
 	GLMobLayer.prototype.setupGLBuffers = function(gl) {
@@ -1311,6 +1321,26 @@ function installMobLayer(pkg) {
 		"varying vec4 vColor;",
 		"void main(void) {",
 		" gl_FragColor = vColor;",
+		"}"
+	].join("\n");
+
+
+	var LabelVertexShader = [
+		"attribute vec2 aVertexPosition;",
+		"attribute vec2 aTextureCoord;",
+		"varying vec2 vTextureCoord;",
+		"uniform mat4 transform;",
+		"void main(void) {",
+		" vTextureCoord = aTextureCoord;",
+		" gl_Position = transform * vec4(aVertexPosition, 0.0, 1.0);",
+		"}"
+	].join("\n");
+
+	var LabelFragmentShader = [
+		"precision mediump float;",
+		"uniform sampler2D texture;",
+		"void main(void) {",
+		" gl_FragColor = vec4(1,0,0,1);",
 		"}"
 	].join("\n");
 
