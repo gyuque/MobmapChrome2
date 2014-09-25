@@ -87,7 +87,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.fillText(text, 1, yBase+ 12);
 			g.fillText(text, 3, yBase+ 12);
 			
-			g.fillStyle = '#5f9';
+			g.fillStyle = '#fff';
 			g.fillText(text, 2, yBase+ 12);
 			g.restore();
 			
