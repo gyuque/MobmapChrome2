@@ -224,7 +224,8 @@ label.tailconf-fade,
 label.tailconf-segs,
 label.tailconf-step,
 label.tailconf-width,
-label.marker-index-mapping-check {
+label.marker-index-mapping-check,
+label.marker-label-check {
 	display: block;
 }
 

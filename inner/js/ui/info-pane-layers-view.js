@@ -712,6 +712,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!mp) {return;}
 
 			mp.clearAdditionalPropertyList();
+			mp.addPresetProperties();
 
 			var lyr = this.boundLayer;
 			if (!lyr) {return;}

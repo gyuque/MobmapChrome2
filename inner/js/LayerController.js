@@ -470,6 +470,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				boundAttrName = sourceLayer._markerOptions.boundAttributeName;
 			}
 			
+			// label
+			var labelAttrName = sourceLayer._markerOptions.labelAttributeName || null;
+			overlay.setLabelEnabled(!!labelAttrName);
+
 			// Tail ------------------------------------------------------------------
 			var dircolor_enabled = false;
 			var tailOnly = false;
@@ -530,7 +534,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				marker_data.lng = sourceRecord.x;
 				marker_data.chipY = 0;
 				marker_data.tailLengthToRender = tailLength;
-				marker_data.labelText = sourceRecord._id;
+
+				marker_data.labelText = (!!labelAttrName) ? sourceRecord[labelAttrName] : null;
 								
 				var mkIndex = 0;
 				if (boundAttrName !== null) {

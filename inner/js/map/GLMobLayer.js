@@ -44,7 +44,8 @@ function installMobLayer(pkg) {
 		// Default values
 		this.visible = true;
 		this.enableTailDraw = false;
-		this.enableLabel = true;
+		this.enableLabel = false;
+		this.nLabelLimit = 500;
 		this.tailWidth = 1;
 		this.tailDirectionColorEnabled = false;
 		this.timeDirection = 0;
@@ -94,6 +95,8 @@ function installMobLayer(pkg) {
 	GLMobLayer.prototype.setTailDrawEnabled = function(e) { this.enableTailDraw = e; };
 	GLMobLayer.prototype.setTailWidth = function(w) { this.tailWidth = w; };
 	GLMobLayer.prototype.setTailDirectionColorEnabled = function(e) { this.tailDirectionColorEnabled = e; };
+	GLMobLayer.prototype.setLabelEnabled = function(enabled) { this.enableLabel = enabled; };
+	GLMobLayer.prototype.setLabelDisplayLimit = function(n) { this.nLabelLimit = n; };
 
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {
@@ -277,7 +280,6 @@ function installMobLayer(pkg) {
 			console.log(gl.getProgramInfoLog(prg));
 		}
 
-		console.log("IMPLEMENT HERE");
 		var a_pos = gl.getAttribLocation(prg, 'aVertexPosition');
 		var a_tc  = gl.getAttribLocation(prg, 'aTextureCoord');
 		var u_trans = gl.getUniformLocation(prg, 'transform');
@@ -595,11 +597,10 @@ function installMobLayer(pkg) {
 		//console.log("drawn markers", nMarkerDrawn);
 		// [Draw] Labels
 		
-		var nLabelLimit = 500;
 		var labelRenderer = this.ensureLabelRenderer();
 		var labCapacity = labelRenderer.calcLabelCapacity();
 		
-		if (this.enableLabel && nMarkerDrawn < nLabelLimit) {
+		if (this.enableLabel && nMarkerDrawn <= this.nLabelLimit) {
 			// Clear label buffer
 			labelsTempBuffer.length = 0;
 			labelsOwnerTempBuffer.length = 0;

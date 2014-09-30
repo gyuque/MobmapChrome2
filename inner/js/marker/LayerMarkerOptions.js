@@ -15,6 +15,8 @@ if (!window.mobmap) { window.mobmap={}; }
 this.tailSpeedLimit = 0;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
+		this.labelAttributeName = null;
+		this.labelDisplayLimit = 500;
 		
 		this.indexMap = new LayerMarkerOptions.CustomIndexMapping();
 	}
@@ -108,6 +110,20 @@ this.tailSpeedLimit = 0;
 			}
 		},
 		
+		bindLabelAttribute: function(a_name) {
+			if (this.labelAttributeName !== a_name) {
+				this.labelAttributeName = a_name;
+				this.fire(false);
+			}
+		},
+		
+		setLabelDisplayLimit: function(n) {
+			if (this.labelDisplayLimit !== n) {
+				this.labelDisplayLimit = n;
+				this.fire(false);
+			}
+		},
+
 		setShowSelectedOnly: function(newVal) {
 			if (this.showSelectedOnly === newVal) { return; }
 			this.showSelectedOnly = newVal;

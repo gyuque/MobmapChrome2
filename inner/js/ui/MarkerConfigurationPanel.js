@@ -26,12 +26,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.checkShowTyphoonCloud = null;
 		this.checkShowSelectedOnly = null;
+		this.checkShowLabel = null;
 		this.checkTailFade = null;
 		this.numinTailSegs = null;
 		this.numinTailStep = null;
 		this.numinTailWidth = null;
+		this.numinLabelLimit = null;
 		this.varyingRadios = {};
 		this.attrBindComboElement = null;
+		this.attrLabelComboElement = null;
 		this.checkEnableIndexMapping = null;
 		this.jIndexMappingText = null;
 		
@@ -59,6 +62,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.buildMarkerVaryOptions(ec);
 			this.buildMarkerAttrBindOptions(ec);
 			this.buildMarkerTailOptions(ec);
+			this.buildMarkerLabelOptions(ec);
 			this.buildOtherOptions(ec);
 		},
 		
@@ -361,6 +365,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jTailConfContainer = $(tailConfContainer);
 		},
 		
+		buildMarkerLabelOptions: function(containerElement) {
+			var MO = mobmap.LayerMarkerOptions;
+			var fs = makeFieldSetWithLegend('Label');
+// - - - - - - - - - - - - - - - - - - - -
+			var pair = generateCheckboxInLabel("Show label", 'MarkerLabelCheck', "marker-label-check");
+			$(pair.input).click( this.onLabelCheckChange.bind(this) );
+			fs.appendChild(pair.label);
+			this.checkShowLabel = pair.input;
+
+			this.attrLabelComboElement = makeComboWithLabel(fs, 'Attribute', 'mm-label-attr-combo');
+			$(this.attrLabelComboElement).change( this.onAttrLabelSelChange.bind(this) );
+			
+			var handler = this.onAttrLabelLimitInputChange.bind(this);
+			var lim_pair = generateInputElementInLabel('number', 'Limit', 'label-limit-num-input', 'label-limit-num-input', true);
+			this.numinLabelLimit = lim_pair.input;
+			fs.appendChild(lim_pair.label);
+			$(lim_pair.input).
+			 attr('min', 1).
+			 attr('max', 9999).
+			 attr('value', 500).
+			 keyup(handler).blur(handler);
+
+			containerElement.appendChild(fs);
+		},
+		
 		addConfigurationRadioSet: function(containerElement, name, labelClass, setData, handler) {
 			for (var i in setData) {
 				var radio_conf = setData[i];
@@ -414,6 +443,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		onAttrBindSelChange: function() {
 			this.sendAttrNameToBind();
 		},
+
+		onAttrLabelSelChange: function() {
+			this.sendAttrToShowLabel();
+		},
+		
+		onAttrLabelLimitInputChange: function() {
+			console.log("IMPL HERE");
+		},
 		
 		sendAttrNameToBind: function() {
 			var mo = this.boundLayer._markerOptions || null;
@@ -423,12 +460,42 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		sendAttrToShowLabel: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				var n = null;
+				if (this.getShowLabelCheckValue()) {
+					n = this.getAttrNameToShowLabel();
+				}
+
+				mo.bindLabelAttribute(n);
+			}
+		},
+		
+		sendLabelLimit: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				
+			}
+		},
+		
 		getAttrNameToBind: function() {
-			if (!this.attrBindComboElement) { return null; }
-			return this.attrBindComboElement.value;
+			return this.getComboboxValue(this.attrBindComboElement);
 		},
 
+		getAttrNameToShowLabel: function() {
+			return this.getComboboxValue(this.attrLabelComboElement);
+		},
 		
+		getComboboxValue: function(target) {
+			if (!target) { return null; }
+			return target.value;
+		},
+
+
+		getShowLabelCheckValue: function() {
+			return this.checkShowLabel ? this.checkShowLabel.checked : false;
+		},
 
 		getSelectedVaryingType: function() {
 			return pickIntRadioboxVal(this.jElement, 'MarkerVaryType');
@@ -489,7 +556,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.syncFromModel();
 		},
-		
+
+		onLabelCheckChange: function(e) {
+			this.sendAttrToShowLabel();
+		},
+
 		onTailRadioChange: function(e) {
 			var mo = this.boundLayer._markerOptions || null;
 			if (mo) {
@@ -616,14 +687,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.attrBindComboElement) {
 				this.attrBindComboElement.innerHTML = '';
 			}
+			
+			if (this.attrLabelComboElement) {
+				this.attrLabelComboElement.innerHTML = '';
+			}
+		},
+		
+		addPresetProperties: function() {
+			this.addAttributeComboboxOption(this.attrLabelComboElement, '_id');
 		},
 		
 		addAdditionalPropertyName: function(attrName) {
+			this.addAttributeComboboxOption(this.attrBindComboElement, attrName);
+			this.addAttributeComboboxOption(this.attrLabelComboElement, attrName);
+		},
+		
+		addAttributeComboboxOption: function(target, attrName) {
+			if (!target) {
+				return false;
+			}
+			
 			var opt = $H('option');
 			opt.appendChild( $T(attrName) );
 			opt.value = attrName;
 			
-			this.attrBindComboElement.appendChild(opt);
+			target.appendChild(opt);
+			return true;
 		},
 		
 		syncFromModel: function() {
@@ -649,9 +738,28 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.setTailColoringValue(mo.tailColoring);
 
 				this.updateMappingTextBoxVisibility();
+				this.syncShowLabelLimit(mo);
+				this.syncShowLabelCheck(mo);
 			}
 			
 			this.syncShowTyphoonCloudCheckValue();
+		},
+		
+		syncShowLabelCheck: function(markerOptions) {
+			var b = false;
+			if (markerOptions) {
+				b = !!(markerOptions.labelAttributeName);
+			}
+			
+			if (this.checkShowLabel) {
+				this.checkShowLabel.checked = b;
+			}
+		},
+		
+		syncShowLabelLimit: function(markerOptions) {
+			if (markerOptions && this.numinLabelLimit) {
+				this.numinLabelLimit.value = markerOptions.labelDisplayLimit;
+			}
 		},
 		
 		changeTailConfVisibility: function(tailType) {
