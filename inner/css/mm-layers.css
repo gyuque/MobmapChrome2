@@ -225,7 +225,8 @@ label.tailconf-segs,
 label.tailconf-step,
 label.tailconf-width,
 label.marker-index-mapping-check,
-label.marker-label-check {
+label.marker-label-check,
+label.label-limit-num-input {
 	display: block;
 }
 

@@ -118,6 +118,9 @@ this.tailSpeedLimit = 0;
 		},
 		
 		setLabelDisplayLimit: function(n) {
+			if (n < 1) {n=1;}
+			else if (n > 10000) {n=10000;}
+			
 			if (this.labelDisplayLimit !== n) {
 				this.labelDisplayLimit = n;
 				this.fire(false);

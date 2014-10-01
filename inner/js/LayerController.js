@@ -473,6 +473,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			// label
 			var labelAttrName = sourceLayer._markerOptions.labelAttributeName || null;
 			overlay.setLabelEnabled(!!labelAttrName);
+			overlay.setLabelDisplayLimit(sourceLayer._markerOptions.labelDisplayLimit);
 
 			// Tail ------------------------------------------------------------------
 			var dircolor_enabled = false;

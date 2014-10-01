@@ -540,10 +540,10 @@ function installMobLayer(pkg) {
 		}
 
 		// [Draw] Marker
-		var minSX = -16;
-		var minSY = -16;
-		var maxSX = this.canvasSize.w + 16;
-		var maxSY = this.canvasSize.h + 16;
+		var minSX = -12;
+		var minSY = -12;
+		var maxSX = this.canvasSize.w + 12;
+		var maxSY = this.canvasSize.h + 12;
 		
 		var nMarkerDrawn = 0;
 		this.gl.useProgram(this.shaderProgram);
@@ -654,7 +654,7 @@ function installMobLayer(pkg) {
 	GLMobLayer.prototype.writeLabelVertexPositions = function(markerData, vlist, startPos, labelSpriteWidth, labelSpriteHeight) {
 		var i = 0;
 
-		var sx = markerData.screenX + 7;
+		var sx = markerData.screenX + 5;
 		var sy = markerData.screenY - 7;
 		
 		// T1, p0

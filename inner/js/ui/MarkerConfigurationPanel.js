@@ -449,7 +449,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onAttrLabelLimitInputChange: function() {
-			console.log("IMPL HERE");
+			this.sendLabelLimit();
+			this.syncFromModel();
 		},
 		
 		sendAttrNameToBind: function() {
@@ -475,7 +476,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		sendLabelLimit: function() {
 			var mo = this.boundLayer._markerOptions || null;
 			if (mo) {
-				
+				mo.setLabelDisplayLimit( this.getLabelLimitValue() );
 			}
 		},
 		
@@ -495,6 +496,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		getShowLabelCheckValue: function() {
 			return this.checkShowLabel ? this.checkShowLabel.checked : false;
+		},
+
+		getLabelLimitValue: function() {
+			return this.numinLabelLimit ? (this.numinLabelLimit.value | 0) : 500;
 		},
 
 		getSelectedVaryingType: function() {
@@ -758,7 +763,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		syncShowLabelLimit: function(markerOptions) {
 			if (markerOptions && this.numinLabelLimit) {
-				this.numinLabelLimit.value = markerOptions.labelDisplayLimit;
+				var n = markerOptions.labelDisplayLimit;
+				var current = this.getLabelLimitValue();
+				if (current !== n) {
+					this.numinLabelLimit.value = markerOptions.labelDisplayLimit;
+				}
 			}
 		},
 		
@@ -789,7 +798,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			outList.push( new MarkerSetPreset('Dot marker - white to blue'        , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
 			outList.push( new MarkerSetPreset('Dot marker - blue to red'          , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 
-			outList.push( new MarkerSetPreset('Dot marker - scaling'              , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cLBlue, cRed) );
+			outList.push( new MarkerSetPreset('Dot marker - scaling'              , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cLBlue, cLBlue) );
+			outList.push( new MarkerSetPreset('Dot marker - gradient&scaling'     , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 
 			outList.push( new MarkerSetPreset('Spot marker - hue gradient'         , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Spot marker - BW + hue gradient'    , BW, kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
