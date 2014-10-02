@@ -3,9 +3,9 @@
 	var gAutoLoadURL = null;
 	var gAutoLoadForceRefresh = false;;
 	
+	window.addEventListener("message", onReceiveMessage, false);
 	window.onload = function() {
 		setupRemoteDownloadHost();
-		window.addEventListener("message", onReceiveMessage, false);
 	};
 	
 	function setupRemoteDownloadHost() {
@@ -52,6 +52,8 @@
 			if (gAutoLoadURL) {
 				sendInnerMessage('notifyAutoLoadEnabled', {url: gAutoLoadURL, force_refresh: gAutoLoadForceRefresh}); 
 			}
+
+			sendSavedRemoteDownloaderURL();
 		},
 
 		openDownloadServiceWindow: function() {
@@ -101,8 +103,20 @@
 		
 		notifyRenderRequestComplete: function(params) {
 			MovieRecorderWindowPool.notifyRenderRequestComplete(params.req_id, params.rendered_time);
+		},
+		
+		saveRemoteDownloaderURL: function(params) {
+			chrome.storage.local.set({'remoteDownloaderURL': params.url}, function() {
+				console.log('saved',  params.url);
+			});
 		}
 	};
+	
+	function sendSavedRemoteDownloaderURL() {
+		chrome.storage.local.get('remoteDownloaderURL', function(o) {
+			sendInnerMessage('restoreRemoteDownloaderURL', {url: o['remoteDownloaderURL']});
+		});
+	}
 	
 	function windowGetWidth() {return window.outerWidth;}
 	function windowGetHeight() {return window.outerHeight;}

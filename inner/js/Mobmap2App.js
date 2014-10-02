@@ -21,7 +21,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.valueFillDialog = new mobmap.FillValueDialog();
 		this.exportSelectionDialog = new mobmap.ExportSelectionDialog();
 
-		this.remoteCSVDialog = new mobmap.RemoteSourceDialog();
+		this.remoteCSVDialog = new mobmap.RemoteSourceDialog(this);
 		this.remoteCSVDialog.okCallback = this.onRemoteCSVDialogOK.bind(this);
 		this.remoteRefreshConfirmDialog = null;
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
@@ -190,7 +190,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		loadRemoteCSVMovingData: function() {
-			this.remoteCSVDialog.showDialogOnCenter("Remote resource", false, 94);
+			this.remoteCSVDialog.showDialogOnCenter("Remote resource", false, 384);
 		},
 
 		onRemoteCSVDialogOK: function() {
@@ -547,7 +547,19 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.addRemoteSourceMovingObjectsLayer(params.url, params.force_refresh);
 			}
 		},
+
+		onMessage_setRemoveCSVFileURL: function(params) {
+			if (params.url) {
+				this.remoteCSVDialog.setURL(params.url);
+			} else {
+				console.log("URL must be specified.");
+			}
+		},
 		
+		saveRemoteDownloaderURL: function(url) {
+			Mobmap2App.sendOuterMessage('saveRemoteDownloaderURL', {url: url});
+		},
+
 		sendRenderRequestCompleteMessage: function(request_params) {
 			// Add current time to params
 			var pj = this.getCurrentProject();
