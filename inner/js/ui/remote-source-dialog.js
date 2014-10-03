@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 //		this.UIProviderURL = 'http://ushiroad.com/private/sv/remote-service-dmy.html';
 		this.UIProviderURL = DEFAULT_PAGE;
 		this.jProviderInput = null;
+		this.loadingIndicatorElement = null;
 		
 		this.initProperties();
 		this.serviceAreaContainer = null;
@@ -60,6 +61,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			premove.id = 'query-service-provider-remove-button';
 			caption.appendChild(premove);
 			$(premove).click(this.removeProviderURL.bind(this));
+			
+			var loading_indicator = document.createElement('span');
+			loading_indicator.innerHTML = 'Loading...';
+			loading_indicator.setAttribute('class', 'query-service-loading-indicator');
+			caption.appendChild(loading_indicator);
+			this.loadingIndicatorElement = loading_indicator;
 
 			containerElement.appendChild(caption);
 			
@@ -87,7 +94,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			var iframe = document.createElement('iframe');
 			iframe.id = 'query-service-frame';
-			iframe.src = this.UIProviderURL;
+			iframe.src = 'about:blank';
+			iframe.onload = this.onFrameLoad.bind(this);
 			this.serviceAreaContainer.appendChild(iframe);
 
 			this.serviceAreaFrame = iframe;
@@ -108,6 +116,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		beforeOpen: function() {
 			this.jURLinput.val('');
 			this.jAutoloadCheck.removeAttr('checked');
+			this.serviceAreaFrame.src = 'about:blank';
+			this.setLoadingIndicatorVisible(true);
+			
+			setTimeout((function() {
+				this.serviceAreaFrame.src = this.UIProviderURL;
+			}).bind(this), 90);
 		},
 
 		getURL: function() {
@@ -146,6 +160,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.ownerApp.saveRemoteDownloaderURL(url);
 				}
 				
+				this.setLoadingIndicatorVisible(true);
 				this.UIProviderURL = url;
 				this.serviceAreaFrame.src = url;
 			}
@@ -163,6 +178,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		updateProviderURLBox: function() {
 			this.jProviderInput.val( this.extractHostName(this.UIProviderURL) );
+		},
+		
+		setRemoteDownloaderURL: function(url) {
+			this.UIProviderURL = url || DEFAULT_PAGE;
+			this.updateProviderURLBox();
+		},
+		
+		onFrameLoad: function() {
+			this.setLoadingIndicatorVisible(false);
+		},
+		
+		setLoadingIndicatorVisible: function(v) {
+			this.loadingIndicatorElement.style.display = v ? 'inline' : '';
 		}
 	}
 

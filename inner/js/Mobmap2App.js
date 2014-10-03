@@ -556,6 +556,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onMessage_restoreRemoteDownloaderURL: function(params) {
+			this.remoteCSVDialog.setRemoteDownloaderURL(params.url || null);
+		},
+		
 		saveRemoteDownloaderURL: function(url) {
 			Mobmap2App.sendOuterMessage('saveRemoteDownloaderURL', {url: url});
 		},
