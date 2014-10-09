@@ -17,6 +17,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.element = this.expandablePanel.element;
 		this.jElement = $(this.element);
 		this.jTailConfContainer = null;
+		this.jLabelConfContainer = null;
 		this.expandablePanel.setTitle("Marker");
 		
 		this.markerSliderElements = {
@@ -368,6 +369,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		buildMarkerLabelOptions: function(containerElement) {
 			var MO = mobmap.LayerMarkerOptions;
 			var fs = makeFieldSetWithLegend('Label');
+			this.jLabelConfContainer = $(fs);
 // - - - - - - - - - - - - - - - - - - - -
 			var pair = generateCheckboxInLabel("Show label", 'MarkerLabelCheck', "marker-label-check");
 			$(pair.input).click( this.onLabelCheckChange.bind(this) );
@@ -388,6 +390,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			 keyup(handler).blur(handler);
 
 			containerElement.appendChild(fs);
+		},
+		
+		changeLabelConfContainerClass: function() {
+			var b = this.getShowLabelCheckValue();
+			if (this.jLabelConfContainer) {
+				if (b) {
+					this.jLabelConfContainer.addClass('mm-label-conf-enabled');
+				} else {
+					this.jLabelConfContainer.removeClass('mm-label-conf-enabled');
+				}
+			}
 		},
 		
 		addConfigurationRadioSet: function(containerElement, name, labelClass, setData, handler) {
@@ -563,6 +576,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onLabelCheckChange: function(e) {
+			this.changeLabelConfContainerClass();
 			this.sendAttrToShowLabel();
 		},
 

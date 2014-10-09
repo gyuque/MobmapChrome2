@@ -225,8 +225,7 @@ label.tailconf-segs,
 label.tailconf-step,
 label.tailconf-width,
 label.marker-index-mapping-check,
-label.marker-label-check,
-label.label-limit-num-input {
+label.marker-label-check {
 	display: block;
 }
 
@@ -268,6 +267,13 @@ label.label-limit-num-input {
 	color: #fff;
 	background-color: #c00;
 	font-weight: bold;
+}
+
+label.label-limit-num-input,
+.mm-label-attr-combo { display: none; }
+.mm-label-conf-enabled label.label-limit-num-input,
+.mm-label-conf-enabled .mm-label-attr-combo {
+	display: block;
 }
 
 /* hover state */
