@@ -32,19 +32,28 @@ if (!window.mobmap) { window.mobmap={}; }
 			xhr.responseType = 'blob';
 			
 			var success_handler = this.onDownloadSuccess.bind(this);
+			var nwerror_handler = this.sendDownloadError.bind(this, clientId);
 			
 			xhr.onload = function(e) {
-				if (this.status == 200) {
+				if (this.status === 200) {
 					success_handler(xhr, clientId);
-				} else if ((this.status - 0) >= 300) {
-					
+				} else if ((this.status - 0) >= 400) {
+					nwerror_handler();
 				}
 			};
 			
-			xhr.onerror = function(e) {
-			};
+			xhr.onerror = (function(e) {
+				console.log(e, xhr.status);
+				this.sendDownloadError(clientId);
+			}).bind(this);
 			
+			xhr.onprogress = (function(e) {
+				 this.sendDownloadProgress(e.loaded, clientId);
+			}).bind(this);
+			
+			//setTimeout(function(){
 			xhr.send();
+			//},99);
 		},
 		
 		onDownloadSuccess: function(xhr, clientId) {
@@ -86,6 +95,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			var m = {
 				command: RemoteDownloadInnerClient.COMMAND_HAND_LINE_COUNT,
 				count: lc,
+				clientId: clientId
+			};
+			
+			this.recieverWindow.postMessage(JSON.stringify(m), '*');
+		},
+		
+		sendDownloadError: function(clientId) {
+			var m = {
+				command: RemoteDownloadInnerClient.COMMAND_NOTIFY_DOWNLOAD_ERROR,
+				clientId: clientId
+			};
+			
+			this.recieverWindow.postMessage(JSON.stringify(m), '*');
+		},
+		
+		sendDownloadProgress: function(loadedBytes, clientId) {
+			var m = {
+				command: RemoteDownloadInnerClient.COMMAND_NOTIFY_DOWNLOAD_PROGRESS,
+				loaded: loadedBytes,
 				clientId: clientId
 			};
 			
@@ -158,6 +186,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	RemoteDownloadInnerClient.COMMAND_HAND_CSV_LINE         = 'rdlHandCSVLine';
 	RemoteDownloadInnerClient.COMMAND_HAND_LINE_COUNT       = 'rdlHandLineCount';
 	RemoteDownloadInnerClient.COMMAND_NOTIFY_DOWNLOAD_ERROR = 'rdlNotifyDownloadError';
+	RemoteDownloadInnerClient.COMMAND_NOTIFY_DOWNLOAD_PROGRESS = 'rdlNotifyDownloadProgress';
 	RemoteDownloadInnerClient.COMMAND_NOTIFY_DATA_ERROR     = 'rdlNotifyDataError';
 	RemoteDownloadInnerClient.COMMAND_FINISH = 'rdlFinish';
 
@@ -207,7 +236,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		command_rdlNotifyDownloadError: function() {
-			
+			if (this.loaderListener && this.loaderListener.csvloaderDownloadError) {
+				this.loaderListener.csvloaderDownloadError();
+			}
+		},
+		
+		command_rdlNotifyDownloadProgress: function(params) {
+			if (this.loaderListener && this.loaderListener.csvloaderDownloadProgress) {
+				this.loaderListener.csvloaderDownloadProgress(params.loaded);
+			}
 		},
 
 		command_rdlNotifyDataError: function(params) {
@@ -230,7 +267,6 @@ if (!window.mobmap) { window.mobmap={}; }
 		command_rdlFinish: function(params) {
 			if (this.loaderListener) {
 				this.loaderListener.csvloaderLoadFinish();
-				console.log("finish");
 			}
 		},
 		

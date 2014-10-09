@@ -429,8 +429,11 @@ if (!window.mobmap) { window.mobmap={}; }
 					var LE = mobmap.LayerEvent;
 					layer.eventDispatcher().
 					 bind(LE.LoadWillStart, this.willStartLayerLoad.bind(this)).
+					 bind(LE.BodyLoadStarted, this.onBodyLoadStarted.bind(this)).
 					 bind(LE.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
 					 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
+					 bind(LE.DownloadError, this.onLayerDownloadError.bind(this)).
+					 bind(LE.DownloadProgress, this.onLayerDownloadProgress.bind(this)).
 					 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 					 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this, layer));
 					
@@ -455,7 +458,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		willStartLayerLoad: function(e, layer) {
 			if (layer.hasPrimaryView()) {
+				if (layer.remote) {
+					layer.primaryView.showDownloadingLabel();
+				}
+				
 				layer.primaryView.setSubCaption(layer.getShortDescription());
+			}
+		},
+		
+		onBodyLoadStarted: function(e, layer) {
+			if (layer.remote && layer.hasPrimaryView()) {
+				layer.primaryView.showLoadingLabel();
 			}
 		},
 		
@@ -471,6 +484,18 @@ if (!window.mobmap) { window.mobmap={}; }
 				lv.setLayerReady(true);
 				lv.setSubCaption(layer.getShortDescription());
 				lv.updateAdditionalPropertyList();
+			}
+		},
+		
+		onLayerDownloadError: function(e, layer) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.showDownloadError();
+			}
+		},
+		
+		onLayerDownloadProgress: function(e, layer, loadedBytes) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.showDownloadProgress(loadedBytes);
 			}
 		},
 		
@@ -514,6 +539,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.build();
 		
 		this.layerReady = false;
+		this.acceptDownloadProgress = true;
 	}
 	
 	LayerItemView.prototype = {
@@ -688,10 +714,29 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.progressBar.setRatio(ratio);
 		},
 		
+		showDownloadError: function() {
+			this.acceptDownloadProgress = false;
+			this.progressLabel.className += ' mm-layer-dl-error';
+			this.progressLabel.innerHTML = 'Download error';
+		},
+		
 		hideProgress: function() {
 			this.progressBar.hide();
 			this.progressLabel.style.display = 'none';
 		},
+		
+		showDownloadProgress: function(loadedBytes) {
+			if (this.acceptDownloadProgress) {
+				this.progressLabel.innerHTML = 'DL ' + (loadedBytes | 0) + 'bytes';
+			}
+		},
+		
+		showLoadingLabel: function() {
+			this.acceptDownloadProgress = false;
+			this.progressLabel.innerHTML = 'Loading...';
+		},
+		
+		showDownloadingLabel: function() { this.progressLabel.innerHTML = 'Downloading...'; },
 		
 		setLayerReady: function(r) {
 			this.layerReady = r;

@@ -10,9 +10,12 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	var LayerEvent = {
 		LoadWillStart: 'mm-layer-model-event-load-will-start',
+		BodyLoadStarted: 'mm-layer-model-event-body-load-started',
 		LoadProgressChange: 'mm-layer-model-event-load-progress-change',
 		LoadFinish: 'mm-layer-model-event-load-progress-finish',
 		LoadError: 'mm-layer-model-event-load-error',
+		DownloadError: 'mm-layer-model-event-download-error',
+		DownloadProgress: 'mm-layer-model-event-download-progress',
 		DataChange: 'mm-layer-model-event-data-change',
 		VisibilityChange: 'mm-layer-model-event-visibility-change',
 		RequestDelete: 'mm-layer-model-event-request-delete',
@@ -209,6 +212,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var all = this.sourceLoader.countLines();
 			if (all === 0) { all = 1; }
 			
+			if (lineno === 1) {
+				this.eventDispatcher().trigger(LayerEvent.BodyLoadStarted, this);
+			}
+			
 			var rat = lineno / all;
 			if ((lineno % 100) === 0 || rat > 0.999999) {
 				this.eventDispatcher().trigger(LayerEvent.LoadProgressChange, rat);
@@ -243,6 +250,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.eventDispatcher().trigger(LayerEvent.LoadError, this);
 		},
 		
+		csvloaderDownloadError: function(e) {
+			this.eventDispatcher().trigger(LayerEvent.DownloadError, this);
+		},
+
+		csvloaderDownloadProgress: function(loadedBytes) {
+			this.eventDispatcher().trigger(LayerEvent.DownloadProgress, [this, loadedBytes]);
+		},
+
 		csvloaderLoadFinish: function() {
 			this.finishLoading();
 		},

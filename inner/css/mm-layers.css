@@ -264,6 +264,12 @@ label.label-limit-num-input {
 	display: none;
 }
 
+.mm-layer-dl-error {
+	color: #fff;
+	background-color: #c00;
+	font-weight: bold;
+}
+
 /* hover state */
 .mm-layer-view-selection-count:hover {
 	color: transparent;
