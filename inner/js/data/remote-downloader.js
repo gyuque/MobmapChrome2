@@ -92,32 +92,30 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		sendLineCount: function(lc, clientId) {
-			var m = {
+			this.postToClient({
 				command: RemoteDownloadInnerClient.COMMAND_HAND_LINE_COUNT,
 				count: lc,
 				clientId: clientId
-			};
-			
-			this.recieverWindow.postMessage(JSON.stringify(m), '*');
+			});
 		},
 		
 		sendDownloadError: function(clientId) {
-			var m = {
+			this.postToClient({
 				command: RemoteDownloadInnerClient.COMMAND_NOTIFY_DOWNLOAD_ERROR,
 				clientId: clientId
-			};
-			
-			this.recieverWindow.postMessage(JSON.stringify(m), '*');
+			});
 		},
 		
 		sendDownloadProgress: function(loadedBytes, clientId) {
-			var m = {
+			this.postToClient({
 				command: RemoteDownloadInnerClient.COMMAND_NOTIFY_DOWNLOAD_PROGRESS,
 				loaded: loadedBytes,
 				clientId: clientId
-			};
-			
-			this.recieverWindow.postMessage(JSON.stringify(m), '*');
+			});
+		},
+		
+		postToClient: function(msg) {
+			this.recieverWindow.postMessage(JSON.stringify(msg), '*');
 		}
 	};
 	
