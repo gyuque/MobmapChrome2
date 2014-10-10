@@ -727,7 +727,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		showDownloadProgress: function(loadedBytes) {
 			if (this.acceptDownloadProgress) {
-				this.progressLabel.innerHTML = 'DL ' + (loadedBytes | 0) + 'bytes';
+				this.progressLabel.innerHTML = 'DL ' + makeLoadedBytesLabel(loadedBytes | 0);
 			}
 		},
 		
@@ -818,6 +818,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.visibilityButton.setSelectedStyle(h);
 		}
 	};
+
+	function makeLoadedBytesLabel(n) {
+		if (n < 10000) {
+			return n + 'bytes';
+		}
+		
+		return Math.floor(n / 1000) + 'KB';
+	}
 
 	function generateLayerVisibilityButton() {
 		var btn = new mobmap.ToolButton("layer-visibility", 16, 15);
