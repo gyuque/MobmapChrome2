@@ -125,7 +125,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		getURL: function() {
-			return this.jURLinput.val();
+			return fixURLScheme( this.jURLinput.val() );
 		},
 		
 		setURL: function(u) {
@@ -154,7 +154,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		navigateProviderURL: function() {
-			var url = this.jProviderInput.val();
+			var url = fixURLScheme( this.jProviderInput.val() );
 			if (isValidProviderURL(url)) {
 				if (this.ownerApp) {
 					this.ownerApp.saveRemoteDownloaderURL(url);
@@ -198,6 +198,28 @@ if (!window.mobmap) { window.mobmap={}; }
 		var valid = /^(file|https?):\/\/+[-.0-9a-zA-Z]+/ ;
 		return !!u.match(valid) ;
 	}
+	
+	function fixURLScheme(srcURL) {
+		var maybeURL = /^[^\/]+\.[^\/]+\/.*/
+		if (srcURL.indexOf('http') !== 0) {
+			if (srcURL.match(maybeURL)) {
+				return 'http://' + srcURL;
+			}
+		}
+		
+		return srcURL;
+	}
+	
+	/*
+	function test_fixURLScheme() {
+		console.log( fixURLScheme('google.com/test.csv') );
+		console.log( fixURLScheme('http://google.com/test.csv') );
+		console.log( fixURLScheme('test/sample.csv') );
+		console.log( fixURLScheme(DEFAULT_PAGE) );
+	}
+	
+	test_fixURLScheme();
+	*/
 
 	mobmap.MMDialogBaseInstallAPIs(RemoteSourceDialog.prototype);
 	aGlobal.mobmap.RemoteSourceDialog = RemoteSourceDialog;
