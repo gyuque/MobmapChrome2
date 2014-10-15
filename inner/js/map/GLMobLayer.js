@@ -39,6 +39,8 @@ function installMobLayer(pkg) {
 		this.nTrianglesBuffered = 0;
 		this.nSegmentsBuffered = 0;
 		this.labelRenderer = null;
+
+		this.postprocessor = null;
 		// WebGL objects ------------------------------
 		
 		// Default values
@@ -174,6 +176,23 @@ function installMobLayer(pkg) {
 			);
 		
 		this.setupGLBuffers(gl);
+	};
+	
+	GLMobLayer.prototype.ensurePostprocessor = function() {
+		if (!this.postprocessor) {
+			this.postprocessor = new mobmap.GLPostProcessor(this.gl);
+		}
+		
+		return this.postprocessor;
+	};
+	
+	GLMobLayer.prototype.configurePostprocessor = function() {
+		var pp = this.postprocessor;
+		if (!pp) { return; }
+		
+		if (pp.enabled) {
+			pp.generateOrExpandOffscreen(this.canvasSize.w, this.canvasSize.h);
+		}
 	};
 
 	GLMobLayer.prototype.compileNormalMarkerShader = function(gl) {
@@ -376,6 +395,10 @@ function installMobLayer(pkg) {
 		if (!gl) {return;}
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
 
+		var postp = this.ensurePostprocessor();
+		//postp.enable();
+
+		this.configurePostprocessor();
 		this.updateProjectionGrid(this.projectionGrid);
 //		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ZERO);
 		if (this.composition === kMarkerCompositionNormal) {
@@ -395,6 +418,7 @@ function installMobLayer(pkg) {
 		}
 		
 		gl.flush();
+		postp.transferAndDisable(this.canvasSize.w, this.canvasSize.h);
 	};
 	
 	function putTestMarkers(pl) {
@@ -1182,6 +1206,7 @@ function installMobLayer(pkg) {
 
 		return vbo;
 	}
+	GLMobLayer.generateDynamicVBO = generateDynamicVBO;
 
 	// -----------
 	function MarkerPool() {
