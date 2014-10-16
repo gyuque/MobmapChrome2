@@ -396,7 +396,7 @@ function installMobLayer(pkg) {
 		gl.viewport(0, 0, this.canvasSize.w, this.canvasSize.h);
 
 		var postp = this.ensurePostprocessor();
-		//postp.enable();
+		// postp.enable();
 
 		this.configurePostprocessor();
 		this.updateProjectionGrid(this.projectionGrid);
@@ -416,7 +416,7 @@ function installMobLayer(pkg) {
 		if (this.visible) {
 			this.renderLayerStack();
 		}
-		
+
 		gl.flush();
 		postp.transferAndDisable(this.canvasSize.w, this.canvasSize.h);
 	};
@@ -939,6 +939,11 @@ function installMobLayer(pkg) {
 		var w = this.canvasSize.w || 1;
 		var h = this.canvasSize.h || 1;
 		
+		if (this.postprocessor && this.postprocessor.enabled) {
+			w = this.postprocessor.offscreenWidth;
+			h = this.postprocessor.offscreenHeight;
+		}
+		
 		var wScale =  2.0 / w;
 		var hScale = -2.0 / h;
 		
@@ -1180,7 +1185,7 @@ function installMobLayer(pkg) {
 		var pt = pj.fromLatLngToContainerPixel(ll);
 
 		canvasOffset.x = Math.floor(-pt.x + 0.00001);
-		canvasOffset.y = Math.floor(-pt.y + 0.00001);
+		canvasOffset.y = Math.floor(-pt.y - 0.00001);
 
 		var st = lyr.canvas.style;
 		st.position = "absolute";
@@ -1197,6 +1202,7 @@ function installMobLayer(pkg) {
 		
 		return true;
 	}
+	GLMobLayer.checkWGLShaderError = checkWGLShaderError;
 
 	function generateDynamicVBO(gl, sourceArray) {
 		var vbo = gl.createBuffer();
