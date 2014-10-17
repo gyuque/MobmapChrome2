@@ -99,6 +99,10 @@ function installMobLayer(pkg) {
 	GLMobLayer.prototype.setTailDirectionColorEnabled = function(e) { this.tailDirectionColorEnabled = e; };
 	GLMobLayer.prototype.setLabelEnabled = function(enabled) { this.enableLabel = enabled; };
 	GLMobLayer.prototype.setLabelDisplayLimit = function(n) { this.nLabelLimit = n; };
+	
+	GLMobLayer.prototype.setLabelInverted = function(b) {
+		this.ensureLabelRenderer().invertedColor = b;
+	};
 
 	// View management ------------------------------------------
 	GLMobLayer.prototype.draw = function() {

@@ -28,6 +28,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.checkShowTyphoonCloud = null;
 		this.checkShowSelectedOnly = null;
 		this.checkShowLabel = null;
+		this.checkInvertLabel = null;
 		this.checkTailFade = null;
 		this.numinTailSegs = null;
 		this.numinTailStep = null;
@@ -389,6 +390,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			 attr('value', 500).
 			 keyup(handler).blur(handler);
 
+			var pair_iv = generateCheckboxInLabel("Invert color", 'MarkerLabelInvertCheck', "marker-label-invert-check");
+			$(pair_iv.input).click( this.onLabelInvertCheckChange.bind(this) );
+			fs.appendChild(pair_iv.label);
+			this.checkInvertLabel = pair_iv.input;
+
 			containerElement.appendChild(fs);
 		},
 		
@@ -486,6 +492,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		sendLabelInverted: function() {
+			var mo = this.boundLayer._markerOptions || null;
+			if (mo) {
+				mo.setLabelInverted( this.getInvertLavelCheckValue() );
+			}
+		},
+		
 		sendLabelLimit: function() {
 			var mo = this.boundLayer._markerOptions || null;
 			if (mo) {
@@ -509,6 +522,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		getShowLabelCheckValue: function() {
 			return this.checkShowLabel ? this.checkShowLabel.checked : false;
+		},
+		
+		getInvertLavelCheckValue: function() {
+			return this.checkInvertLabel ? this.checkInvertLabel.checked : false;
 		},
 
 		getLabelLimitValue: function() {
@@ -578,6 +595,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLabelCheckChange: function(e) {
 			this.changeLabelConfContainerClass();
 			this.sendAttrToShowLabel();
+		},
+		
+		onLabelInvertCheckChange: function(e) {
+			this.sendLabelInverted();
 		},
 
 		onTailRadioChange: function(e) {

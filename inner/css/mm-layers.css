@@ -269,10 +269,11 @@ label.marker-label-check {
 	font-weight: bold;
 }
 
-label.label-limit-num-input,
+label.label-limit-num-input, .marker-label-invert-check,
 .mm-label-attr-combo { display: none; }
 .mm-label-conf-enabled label.label-limit-num-input,
-.mm-label-conf-enabled .mm-label-attr-combo {
+.mm-label-conf-enabled .mm-label-attr-combo,
+.mm-label-conf-enabled .marker-label-invert-check {
 	display: block;
 }
 

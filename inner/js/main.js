@@ -32,6 +32,7 @@ var theApp = null;
 							'tools-pane'
 						);
 						
+		mobmap.LabelTextureRenderer.detectFontSize();
 		theApp = new mobmap.Mobmap2App(appScreen);
 		mobmap.Mobmap2App.sendOuterMessage('notifyAppReady', null);
 	}

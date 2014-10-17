@@ -1,10 +1,13 @@
 if (!window.mobmap) { window.mobmap={}; }
 
 (function(pkg) {
+	var FontSizeFor9px = 11;
+	
 	function LabelTextureRenderer(gl) {
 		this.texture = null;
 		this.canvas = null;
 		this.g = null;
+		this.invertedColor = false;
 		
 		this.labelBoxHeight = 16;
 		this.gl = gl;
@@ -53,7 +56,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.configureCanvasSize(this.textureSize, this.textureSize);
 			
 			this.g = this.canvas.getContext('2d');
-			this.g.font = "normal 600 11px sans-serif";
+			this.g.font = makeFontName(FontSizeFor9px);
 		},
 		
 		configureCanvasSize: function(w, h) {
@@ -79,15 +82,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		drawLabel: function(text, yBase) {
+			var wclr = '#fff';
+			var bclr = '#fff';
+			
 			var g = this.g;
 			g.save();
-			g.fillStyle = '#000';
+			g.fillStyle = this.invertedColor ? '#000' : '#fff';
 			g.fillText(text, 2, yBase+ 11);
 			g.fillText(text, 2, yBase+ 13);
 			g.fillText(text, 1, yBase+ 12);
 			g.fillText(text, 3, yBase+ 12);
 			
-			g.fillStyle = '#fff';
+			g.fillStyle = this.invertedColor ? '#fff' : '#000';
 			g.fillText(text, 2, yBase+ 12);
 			g.restore();
 			
@@ -112,6 +118,67 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.g.clearRect(0, 0, this.textureSize, this.textureSize);
 		}
 	};
+	
+	LabelTextureRenderer.detectFontSize = function(debugContainerElement) {
+		var cv = document.createElement('canvas');
+		cv.style.backgroundColor = '#359';
+		if (debugContainerElement) {
+			debugContainerElement.appendChild(cv);
+		}
+		
+		var g = cv.getContext('2d');
+		var ox = 16;
+		var oy = 16;
+		var validWidth = 64;
+		var validHeight = 64;
+		
+		function drawTestText(fontSize) {
+			g.save();
+			g.clearRect(0, 0, validWidth, validHeight);
+			
+			g.font = makeFontName(fontSize);
+			g.fillStyle = "#fff";
+			g.fillText('M', ox, oy);
+
+			g.restore();
+		}
+		
+		function measureDrawnHeight() {
+			var imagedata = g.getImageData(0, 0, validWidth, validHeight);
+			var pixels = imagedata.data;
+			var pos = 0;
+			
+			var maxY = 0, minY = 999;
+			
+			for (var y = 0;y < validHeight;++y) {
+				for (var x = 0;x < validWidth;++x) {
+					if (pixels[pos+3] > 127) {
+						maxY = Math.max(y, maxY);
+						minY = Math.min(y, minY);
+					}
+				
+					pos += 4;
+				}
+			}
+			
+			return Math.max(0, maxY - minY);
+		}
+		
+		for (var k = 10; k < 16;++k) {
+			drawTestText(k);
+			var drawnH = measureDrawnHeight();
+			if (drawnH >= 9) {
+				break;
+			}
+		}
+		
+		FontSizeFor9px = k;
+		return k;
+	};
+	
+	function makeFontName(size) {
+		return "normal 600 " +(size | 0)+ "px sans-serif";
+	}
 	
 	pkg.LabelTextureRenderer = LabelTextureRenderer;
 })(window.mobmap);

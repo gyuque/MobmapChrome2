@@ -17,6 +17,7 @@ this.tailSpeedLimit = 0;
 		this.boundAttributeName = null;
 		this.labelAttributeName = null;
 		this.labelDisplayLimit = 500;
+		this.bLabelInverted = false;
 		
 		this.indexMap = new LayerMarkerOptions.CustomIndexMapping();
 	}
@@ -123,6 +124,13 @@ this.tailSpeedLimit = 0;
 			
 			if (this.labelDisplayLimit !== n) {
 				this.labelDisplayLimit = n;
+				this.fire(false);
+			}
+		},
+		
+		setLabelInverted: function(b) {
+			if (this.bLabelInverted !== b) {
+				this.bLabelInverted = b;
 				this.fire(false);
 			}
 		},
