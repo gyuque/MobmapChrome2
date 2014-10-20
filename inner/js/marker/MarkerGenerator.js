@@ -204,25 +204,34 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 	MarkerGenerator.renderScalingMarker = function(g, baseColor, blendColor, ratioPosition) {
-		var r = (6 * ratioPosition) + 1;
+		MarkerGenerator.renderScalingMarkerSized(g, baseColor, blendColor, ratioPosition, 3, 3, 6);
+	};
+
+	MarkerGenerator.renderLargeScalingMarker = function(g, baseColor, blendColor, ratioPosition) {
+		MarkerGenerator.renderScalingMarkerSized(g, baseColor, blendColor, ratioPosition, 11, 11, 14, 3);
+	};
+
+	MarkerGenerator.renderScalingMarkerSized = function(g, baseColor, blendColor, ratioPosition, cx, cy, maxSize, gradientScale) {
+		var r = (maxSize * ratioPosition) + 1;
+		var fillSize = (maxSize*2) + 4;
 		
 		g.save();
 		g.fillStyle = '#000';
 		g.beginPath();
-		g.arc(3, 3, r, 0, Math.PI*2, false);
+		g.arc(cx, cy, r, 0, Math.PI*2, false);
 		g.fill();
 
-		g.fillStyle = MarkerGenerator.createBallGradient(g, baseColor.r, baseColor.g, baseColor.b, 1, ratioPosition);
+		g.fillStyle = MarkerGenerator.createBallGradient(g, baseColor.r, baseColor.g, baseColor.b, 1, ratioPosition, gradientScale);
 		g.beginPath();
-		g.arc(3, 3, r-1, 0, Math.PI*2, false);
+		g.arc(cx, cy, r-1, 0, Math.PI*2, false);
 		g.clip();
-		g.fillRect(-4, -4, 16, 16);
+		g.fillRect(-4, -4, fillSize, fillSize);
 
 		if (blendColor) {
 			g.save();
 			g.fillStyle = blendColor;
 			g.globalAlpha = 0.9;
-			g.fillRect(-4, -4, 16, 16);
+			g.fillRect(-4, -4, fillSize, fillSize);
 			g.restore();
 		}
 
@@ -312,11 +321,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			MarkerGenerator.renderScalingMarker);
 	};
 
+	MarkerGenerator.renderLargeScalingMarkerSequence = function(g, n, xStep, yStep, baseColorList) {
+		MarkerGenerator.renderMarkerSequence(g, n, xStep, yStep, baseColorList,
+			MarkerGenerator.renderLargeScalingMarker);
+	};
+
 
 	MarkerGenerator.renderMarkerSequenceWithCompositeType = function(compositionType, g, n, xStep, yStep, baseColorList, useScaling) {
-		if (useScaling)
-			MarkerGenerator.renderScalingMarkerSequence(g, n, xStep, yStep, baseColorList);
-		else if (compositionType === kMarkerCompositionNormal)
+		if (useScaling) {
+			if (xStep < 20) {
+				MarkerGenerator.renderScalingMarkerSequence(g, n, xStep, yStep, baseColorList);
+			} else {
+				MarkerGenerator.renderLargeScalingMarkerSequence(g, n, xStep, yStep, baseColorList);
+			}
+		} else if (compositionType === kMarkerCompositionNormal)
 			MarkerGenerator.renderDotMarkerSequence(g, n, xStep, yStep, baseColorList);
 		else
 			MarkerGenerator.renderSpotMarkerSequence(g, n, xStep, yStep, baseColorList);
@@ -345,12 +363,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	MarkerGenerator.createBallGradient = function(g, cR, cG, cB, hdiv, radd) {
+	MarkerGenerator.createBallGradient = function(g, cR, cG, cB, hdiv, radd, scale) {
+		if (!scale) { scale = 1; }
 		radd = (radd ? radd : 0);
 		
 		hdiv = (hdiv < 2) ? 1 : hdiv;
-		var gr = g.createRadialGradient(3.3-radd, 2.5-radd, 1,
-			                            3.5-radd, 3-radd, 4 + radd);
+		var gr = g.createRadialGradient(3.3*scale -radd, 2.5*scale -radd, 1,
+			                            3.5*scale -radd, 3  *scale -radd, (4 + radd)*scale);
 		gr.addColorStop(0  , this.toRGB(cR, cG, cB, 130 / hdiv));
 		gr.addColorStop(0.3, this.toRGB(cR, cG, cB, 50 / hdiv));
 		gr.addColorStop(1  , this.toRGB(cR, cG, cB));

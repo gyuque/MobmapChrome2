@@ -464,8 +464,6 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			// Vary marker by attribute(if set) --------------------------------------
 			var boundAttrName = null;
-			var chipW = overlay.markerTextureConf.chipWidth;
-			var chipH = overlay.markerTextureConf.chipHeight;
 			if (sourceLayer._markerOptions && sourceLayer._markerOptions.varyingType === mobmap.LayerMarkerOptions.MV_ATTR) {
 				boundAttrName = sourceLayer._markerOptions.boundAttributeName;
 			}
@@ -506,6 +504,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			mk_pool.clear();
 			
 			this.prepareOverlayMarkerImage(overlay, sourceLayer); // dirty only
+			// Chip size may be changed. Pick here.
+			var chipW = overlay.markerTextureConf.chipWidth;
+			var chipH = overlay.markerTextureConf.chipHeight;
 			
 //var benchT1 = new Date();
 			// Get prepared pick pool (create if not ready)
@@ -640,6 +641,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var textureSourceImage = mg.updateTextureCanvas();
 			targetLayer.setMarkerComposition(mg.options.compositionType);
 			var crop = mg.options.enableCrop;
+
+			targetLayer.setMarkerChipSize(mg.options.chipWidth, mg.options.chipHeight);
 			if (targetLayer.setMarkerImage(textureSourceImage, crop)) { // Success?
 				mg.dirty = false;
 			}

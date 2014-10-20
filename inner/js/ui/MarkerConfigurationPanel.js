@@ -91,13 +91,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		generatePresetMenuItem: function(presetData, index) {
 			var li = $H('li', 'mm-marker-preset-menu-item');
-						
-			var pw = 160;
-			var ph = 16;
+			
+			var nPreviews = (presetData.chipWidth > 20) ? 5 : 10;
+			
+			var pw = presetData.chipWidth * nPreviews;
+			var ph = presetData.chipHeight;
 			var previewCanvas = $H('canvas');
 			previewCanvas.width = pw;
 			previewCanvas.height = ph;
-			this.renderMarkerPresetPreview(previewCanvas.getContext('2d'), index, 10);
+			this.renderMarkerPresetPreview(previewCanvas.getContext('2d'), index, nPreviews);
 
 			var caption = $H('h4');
 			caption.appendChild( $T(presetData.name) );
@@ -109,7 +111,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		renderMarkerPresetPreview: function(g, presetIndex, count) {
-			var n = 10;
+			var n = count;
 			var presetData = this.markerPresetList[presetIndex];
 			var baseColors = mobmap.MarkerGenerator.generateMarkerBaseColors(presetData, n);
 			
@@ -118,7 +120,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				g.fillRect(0, 0, 640, 480);
 			}
 			
-			mobmap.MarkerGenerator.renderMarkerSequenceWithCompositeType(presetData.compositionType, g, n, 16, 16, baseColors, presetData.useScaling);
+			mobmap.MarkerGenerator.renderMarkerSequenceWithCompositeType(presetData.compositionType, g, n, presetData.chipWidth, presetData.chipHeight, baseColors, presetData.useScaling);
 		},
 		
 		onPresetMenuSelect: function(e) {
@@ -142,6 +144,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			mo.useScaling = presetData.useScaling;
 			mo.enableCrop = !presetData.useScaling;
 			
+			var changed_size = (mo.chipWidth != presetData.chipWidth) || (mo.chipHeight != presetData.chipHeight);
+			mo.chipWidth = presetData.chipWidth;
+			mo.chipHeight = presetData.chipHeight;
+			
+			if (changed_size) {
+				this.markerGenerator.configureCanvas();
+			}
 			this.markerGenerator.forceRebuild();
 		},
 		
@@ -835,6 +844,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			outList.push( new MarkerSetPreset('Dot marker - scaling'              , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cLBlue, cLBlue) );
 			outList.push( new MarkerSetPreset('Dot marker - gradient&scaling'     , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			
+			var large_m = new MarkerSetPreset('Large marker - scaling'            , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed);
+			large_m.setChipSize(32, 32);
+			outList.push( large_m );
 
 			outList.push( new MarkerSetPreset('Spot marker - hue gradient'         , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Spot marker - BW + hue gradient'    , BW, kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
@@ -856,6 +869,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.includeBW = false;
 		this.useScaling = false;
 		
+		this.chipWidth = 16;
+		this.chipHeight = 16;
+		
 		if (flags === 0) {
 			// No flags
 		} else if (flags === kMarkerPresetIncludeBW) {
@@ -867,6 +883,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		}
 	}
 	
+	MarkerSetPreset.prototype.setChipSize = function(w, h) {
+		this.chipWidth = w;
+		this.chipHeight = h;
+	};
 	
 	function makeComboWithLabel(container, labelText, labelClass) {
 		var cb = $H('select');

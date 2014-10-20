@@ -526,10 +526,10 @@ function installMobLayer(pkg) {
 
 		if (!is_typhoon)
 		{
-			spriteCX = 7;
-			spriteCY = 7;
-			spriteW2 = 32;
-			spriteH2 = 32;
+			spriteCX = (this.markerTextureConf.chipWidth >> 1) - 1;
+			spriteCY = (this.markerTextureConf.chipHeight >> 1) - 1;
+			spriteW2 = this.markerTextureConf.chipWidth * 2;
+			spriteH2 = this.markerTextureConf.chipHeight * 2;
 		} else {
 			spriteCX = 63;
 			spriteCY = 63;
@@ -1056,6 +1056,11 @@ function installMobLayer(pkg) {
 		this.markerTexture = tex;
 		this.renderGL();
 		return true;
+	};
+	
+	GLMobLayer.prototype.setMarkerChipSize = function(w, h) {
+		this.markerTextureConf.chipWidth  = w;
+		this.markerTextureConf.chipHeight = h;
 	};
 
 	GLMobLayer.prototype.setCurrentMarkerTexture = function(tex) {
