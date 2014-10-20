@@ -13,6 +13,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.onMarkerGeneratorConfigurationChange.bind(this)
 		);
 		
+		this.markerGradient = null;
+		this.markerGradientEditor = null;
+		this.gradientEventElement = null;
+		this.setupGradientObjects();
+
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
 		this.jElement = $(this.element);
@@ -61,6 +66,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			ec.appendChild( this.markerGenerator.resultCanvas );
 			
 			this.buildMarkerColumnsSlider(ec);
+			this.buildMarkerGradientOptions(ec);
 			this.buildMarkerVaryOptions(ec);
 			this.buildMarkerAttrBindOptions(ec);
 			this.buildMarkerTailOptions(ec);
@@ -292,6 +298,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(rl_day.input).click(v_handler);
 
 			containerElement.appendChild(fs);
+		},
+		
+buildMarkerGradientOptions: function(containerElement) {
+			var optionContainer = makeFieldSetWithLegend('Gradient');
+			this.markerGradientEditor = new mobmap.GradientEditor( this.markerGradient, null );
+			optionContainer.appendChild(this.markerGradientEditor.element);
+			containerElement.appendChild(optionContainer);
 		},
 		
 		buildMarkerAttrBindOptions: function(containerElement) {
@@ -856,6 +869,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			outList.push( new MarkerSetPreset('Spot marker - blue to red'          , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 			
 			return outList;
+		},
+		
+		setupGradientObjects: function() {
+			this.gradientEventElement = $(createEventDummyElement);
+			this.markerGradient = new mobmap.MMMeshLayer.ColorRule( this.gradientEventElement );
+			
+			this.gradientEventElement.bind(mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onMarkerColoringRuleChange.bind(this));
+		},
+		
+		onMarkerColoringRuleChange: function() {
+			this.markerGradientEditor.syncFromModel();
 		}
 	};
 	
