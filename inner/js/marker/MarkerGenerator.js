@@ -81,6 +81,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		setBlendStartColor: function(r, g, b) {
+			this.setBlendStopColor(this.options.blendStart, r, g, b);
+		},
+
+		setBlendEndColor: function(r, g, b) {
+			this.setBlendStopColor(this.options.blendEnd, r, g, b);
+		},
+
+		setBlendStopColor: function(target, r, g, b) {
+			target.r = r;
+			target.g = g;
+			target.b = b;
+		},
+
 		forceRebuild: function() {
 			this.dirty = true;
 			this.generate();
@@ -156,7 +170,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		if (markerOptions.gradientType === MarkerGenerator.HueGradient)
 			ret= MarkerGenerator.generateRainbowColors(n, 220, markerOptions.reverseOrder);
 		else
-			ret= MarkerGenerator.generateBlendGradient(n, markerOptions.color1, markerOptions.color2);
+			ret= MarkerGenerator.generateBlendGradient(n, markerOptions.blendStart, markerOptions.blendEnd);
+//			ret= MarkerGenerator.generateBlendGradient(n, markerOptions.color1, markerOptions.color2);
 			
 		if (require_add_bw) {
 			ret.unshift( new RGBColor(0, 0, 0) );
@@ -432,6 +447,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.includeBW = false;
 		this.useScaling = false;
 		this.enableCrop = true;
+		
+		this.blendStart = new MMGradientStop(0,  0  , 0, 255, 1);
+		this.blendEnd   = new MMGradientStop(0,  255, 0,   0, 1);
 	}
 	
 	aGlobal.mobmap.MarkerGenerator = MarkerGenerator;

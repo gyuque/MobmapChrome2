@@ -6,11 +6,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	var kPresetPreviewWidth = 100;
 	var kPresetPreviewHeight = 10;
 	
-	function GradientEditor(boundGradient, label_p) {
+	function GradientEditor(boundGradient, label_p, altPreset, noAlpha) {
 		this.element = document.createElement('div');
 		this.jElement = $( this.element );
+		this.alternativePreset = altPreset || 0;
+		this.noAlpha = !!noAlpha;
 		this.boundGradient = boundGradient;
-		this.stopListView = new GradientStopListView();
+		this.stopListView = new GradientStopListView(!noAlpha);
 		this.previewLabelProvider = label_p || null;
 		
 		this.previewHeight = 10;
@@ -80,8 +82,38 @@ if (!window.mobmap) { window.mobmap={}; }
 			]
 		}
 	];
+
+	GradientEditor.PresetGradient2 = [
+		{
+			name: 'Blue to Red',
+			stops: [
+				[  0,0,255, 1,0],
+				[255,0,  0, 1,1]
+			]
+		},
+
+		{
+			name: 'Red to Yellow',
+			stops: [
+				[255,0  ,0, 1,0],
+				[255,255,0, 1,1]
+			]
+		},
+
+		{
+			name: 'White to Blue',
+			stops: [
+				[255,255,255, 1,0],
+				[  0,  0,255, 1,1]
+			]
+		}
+	];
 	
 	GradientEditor.prototype = {
+		pickPreset: function() {
+			return this.alternativePreset ? GradientEditor.PresetGradient2 : GradientEditor.PresetGradient;
+		},
+		
 		buildPresetSelector: function(containerElement) {
 			var menuElement = $H('ul');
 
@@ -91,7 +123,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			var preset_ls = $H('ul');
 			topItem.appendChild(preset_ls);
-			this.appendPresetMenuItems(preset_ls, GradientEditor.PresetGradient);
+			this.appendPresetMenuItems(preset_ls, this.pickPreset());
 			
 			$(menuElement).kendoMenu({ select: this.onPresetMenuSelect.bind(this) });
 			containerElement.appendChild(menuElement);
@@ -118,7 +150,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!selectedElement) {return;}
 			
 			var selectedIndex = selectedElement.getAttribute('data-index') - 0;
-			this.usePreset(GradientEditor.PresetGradient[selectedIndex]);
+			this.usePreset( (this.pickPreset())[selectedIndex] );
 		},
 		
 		usePreset: function(presetData) {
@@ -326,10 +358,11 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	function GradientStopListView() {
+	function GradientStopListView(enableAlpha) {
 		this.element = $H('table');
 		this.jElement = $(this.element);
 		this.items = [];
+		this.enableAlpha = enableAlpha;
 	}
 	
 	GradientStopListView.ITEM_CHANGE_EVENT = "gradient-stop-listview-item-change-event";
@@ -351,7 +384,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addStopItem: function(gstop) {
-			var item = new GradientStopListViewItem(this, gstop);
+			var item = new GradientStopListViewItem(this, gstop, this.enableAlpha);
 			this.element.appendChild(item.element);
 			this.items.push(item);
 		},
@@ -408,7 +441,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	function GradientStopListViewItem(owner, initialStopData) {
+	function GradientStopListViewItem(owner, initialStopData, enableAlpha) {
 		this.owner = owner;
 		this.element = $H('tr');
 		this.jPickerElement = null;
@@ -421,34 +454,41 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.stopData.copyFrom(initialStopData);
 		}
 		
-		this.buildView();
+		this.buildView(enableAlpha);
 		this.syncFromStopData(initialStopData);
 	}
 
 	GradientStopListViewItem.prototype = {
-		buildView: function() {
+		buildView: function(enableAlpha) {
+			var stopsMovable = enableAlpha;
+			
 			var td1 = $H('td');
 			this.element.appendChild(td1);
 			var td2 = $H('td', 'mm-gradient-param-col');
 			this.element.appendChild(td2);
 			
 			var pickerElement = $H('input');
-			td1.appendChild(pickerElement);
-			
-			this.jPickerElement = $(pickerElement);
-			this.jPickerElement.kendoColorPicker({
-				opacity: true,
-				change: this.onColorPickerChange.bind(this)
-			});
-
 			var s_pos = $H('span');
 			s_pos.innerHTML = 'Position';
-			td2.appendChild(s_pos);
 			var r_pos = this.makeGradientStopOptionRange();
-			td2.appendChild(r_pos);
 
 			this.jPosLabel = $(s_pos);
 			this.jPosRange = $(r_pos).change( this.onPositionRangeChange.bind(this) );
+			
+			if (stopsMovable) {
+				td1.appendChild(pickerElement);
+				td2.appendChild(s_pos);
+				td2.appendChild(r_pos);
+			} else {
+				td1.appendChild( document.createTextNode( (this.stopData.position < 0.5) ? "Start" : "End") );
+				td2.appendChild(pickerElement);
+			}
+
+			this.jPickerElement = $(pickerElement);
+			this.jPickerElement.kendoColorPicker({
+				opacity: enableAlpha,
+				change: this.onColorPickerChange.bind(this)
+			});
 		},
 		
 		onPositionRangeChange: function() {

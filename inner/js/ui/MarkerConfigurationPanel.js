@@ -302,7 +302,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 buildMarkerGradientOptions: function(containerElement) {
 			var optionContainer = makeFieldSetWithLegend('Gradient');
-			this.markerGradientEditor = new mobmap.GradientEditor( this.markerGradient, null );
+			this.markerGradientEditor = new mobmap.GradientEditor( this.markerGradient, null, 1, true);
 			optionContainer.appendChild(this.markerGradientEditor.element);
 			containerElement.appendChild(optionContainer);
 		},
@@ -802,6 +802,7 @@ buildMarkerGradientOptions: function(containerElement) {
 				this.updateMappingTextBoxVisibility();
 				this.syncShowLabelLimit(mo);
 				this.syncShowLabelCheck(mo);
+				this.syncMarkerGradient(this.markerGenerator.options);
 			}
 			
 			this.syncShowTyphoonCloudCheckValue();
@@ -852,21 +853,20 @@ buildMarkerGradientOptions: function(containerElement) {
 			outList.push( new MarkerSetPreset('Dot marker - hue gradient'         , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Dot marker - BW + hue gradient'    , BW, kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Dot marker - reversed hue gradient', 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, true) );
-			outList.push( new MarkerSetPreset('Dot marker - white to blue'        , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
-			outList.push( new MarkerSetPreset('Dot marker - blue to red'          , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			//outList.push( new MarkerSetPreset('Dot marker - white to blue'        , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
+			outList.push( new MarkerSetPreset('Dot marker - simple gradient'      , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 
-			outList.push( new MarkerSetPreset('Dot marker - scaling'              , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cLBlue, cLBlue) );
-			outList.push( new MarkerSetPreset('Dot marker - gradient&scaling'     , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			outList.push( new MarkerSetPreset('Scaling marker'                    , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 			
-			var large_m = new MarkerSetPreset('Large marker - scaling'            , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed);
+			var large_m = new MarkerSetPreset('Large scaling marker'              , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed);
 			large_m.setChipSize(32, 32);
 			outList.push( large_m );
 
 			outList.push( new MarkerSetPreset('Spot marker - hue gradient'         , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Spot marker - BW + hue gradient'    , BW, kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Spot marker - reversed hue gradient', 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, true) );
-			outList.push( new MarkerSetPreset('Spot marker - white to blue'        , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
-			outList.push( new MarkerSetPreset('Spot marker - blue to red'          , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			//outList.push( new MarkerSetPreset('Spot marker - white to blue'        , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
+			outList.push( new MarkerSetPreset('Spot marker - simple gradient'      , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 			
 			return outList;
 		},
@@ -874,12 +874,39 @@ buildMarkerGradientOptions: function(containerElement) {
 		setupGradientObjects: function() {
 			this.gradientEventElement = $(createEventDummyElement);
 			this.markerGradient = new mobmap.MMMeshLayer.ColorRule( this.gradientEventElement );
+			this.markerGradient.addStop( new MMGradientStop(0,  255, 90, 255, 1) );
+			this.markerGradient.addStop( new MMGradientStop(1,  255, 0,   90, 1) );
 			
 			this.gradientEventElement.bind(mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onMarkerColoringRuleChange.bind(this));
 		},
 		
 		onMarkerColoringRuleChange: function() {
 			this.markerGradientEditor.syncFromModel();
+
+			var s0 = this.markerGradient.getAt(0);
+			var s1 = this.markerGradient.getAt(1);
+			if (!s0 || !s1) {return;}
+			
+			var mg = this.markerGenerator;
+			mg.setBlendStartColor(s0.r, s0.g, s0.b);
+			mg.setBlendEndColor(s1.r, s1.g, s1.b);
+			mg.forceRebuild();
+		},
+		
+		syncMarkerGradient: function(markerGeneratorOptions) {
+			var s0 = this.markerGradient.getAt(0);
+			var s1 = this.markerGradient.getAt(1);
+			if (!s0 || !s1) {return;}
+			
+			s0.r = markerGeneratorOptions.blendStart.r;
+			s0.g = markerGeneratorOptions.blendStart.g;
+			s0.b = markerGeneratorOptions.blendStart.b;
+			s1.r = markerGeneratorOptions.blendEnd.r;
+			s1.g = markerGeneratorOptions.blendEnd.g;
+			s1.b = markerGeneratorOptions.blendEnd.b;
+
+			this.markerGradientEditor.syncFromModel();
+			this.markerGradientEditor.redraw();
 		}
 	};
 	
@@ -895,6 +922,9 @@ buildMarkerGradientOptions: function(containerElement) {
 		
 		this.chipWidth = 16;
 		this.chipHeight = 16;
+
+		this.blendStart = c1 || null;
+		this.blendEnd   = c2 || null;
 		
 		if (flags === 0) {
 			// No flags
