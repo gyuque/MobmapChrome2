@@ -7,6 +7,8 @@
 	display: none;
 }
 
+.mm-gradient-swap-button {display: block;}
+
 #mm-layers-welcome {
 	top: 3%;
 	position: relative;

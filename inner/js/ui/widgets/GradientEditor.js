@@ -9,6 +9,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function GradientEditor(boundGradient, label_p, altPreset, noAlpha) {
 		this.element = document.createElement('div');
 		this.jElement = $( this.element );
+		this.jSwapButton = this.generateSwapButton();
 		this.alternativePreset = altPreset || 0;
 		this.noAlpha = !!noAlpha;
 		this.boundGradient = boundGradient;
@@ -24,6 +25,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.buildPresetSelector(this.element);
 		this.element.appendChild(this.previewCanvas);
 		this.element.appendChild(this.stopListView.element);
+		this.element.appendChild(this.jSwapButton[0]);
 
 		this.smallPreviewCanvas = document.createElement('canvas');
 		this.smallPreviewCanvasG = this.smallPreviewCanvas.getContext('2d');
@@ -194,6 +196,52 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.smallPreviewCanvas;
 		},
 		
+		generateSwapButton: function() {
+			var btn = document.createElement('button');
+			var j = $(btn).text('Swap start/end').addClass('mm-gradient-swap-button').hide();
+			
+			j.click(this.onSwapButtonClick.bind(this));
+			return j;
+		},
+		
+		toggleSwapButton: function() {
+			if (this.jSwapButton) {
+				if (this.stopListView.countStops() === 2) {
+					this.jSwapButton.show();
+				} else {
+					this.jSwapButton.hide();
+				}
+			}
+		},
+		
+		onSwapButtonClick: function() {
+			var gr = this.boundGradient;
+			var len = gr.countStops();
+			if (len < 2) { return; }
+			
+			var s0 = gr.getAt(0);
+			var s1 = gr.getAt(1);
+			
+			var r0 = s0.r;
+			var g0 = s0.g;
+			var b0 = s0.b;
+			var a0 = s0.a;
+
+			s0.r = s1.r;
+			s0.g = s1.g;
+			s0.b = s1.b;
+			s0.a = s1.a;
+			
+			s1.r = r0;
+			s1.g = g0;
+			s1.b = b0;
+			s1.a = a0;
+			
+			this.redraw();
+			this.sendColorList();
+			gr.fire();
+		},
+
 		sendColorList: function() {
 			this.boundGradient.cachedColorList.makeCacheFromCanvas( this.gradientCanvas );
 		},
@@ -346,6 +394,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (dirty) {
 				this.stopListView.syncFrom(gr);
 			}
+
+			this.toggleSwapButton();
 		},
 		
 		onGradientStopListViewItemChange: function(e, index) {
