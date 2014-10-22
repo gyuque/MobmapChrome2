@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jElement = $(this.element);
 		this.jTailConfContainer = null;
 		this.jLabelConfContainer = null;
+		this.jGradientConfContainer = null;
 		this.expandablePanel.setTitle("Marker");
 		
 		this.markerSliderElements = {
@@ -133,11 +134,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			var itemElement = e.item;
 			var index = parseInt( itemElement.getAttribute('data-index') );
 
-			this.applyMarkerSetPreset(index);
+			var newPreset = this.applyMarkerSetPreset(index);
+			this.toggleGradientConf(newPreset);
 		},
 		
 		applyMarkerSetPreset: function(presetIndex) {
 			var presetData = this.markerPresetList[presetIndex];
+			if (!presetData) { return null; }
 			
 			var mo = this.markerGenerator.options;
 			mo.gradientType = presetData.gradientType;
@@ -158,6 +161,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.markerGenerator.configureCanvas();
 			}
 			this.markerGenerator.forceRebuild();
+			
+			return presetData;
 		},
 		
 		configureTyphoonMarkerPanelContent: function() {
@@ -300,11 +305,30 @@ if (!window.mobmap) { window.mobmap={}; }
 			containerElement.appendChild(fs);
 		},
 		
-buildMarkerGradientOptions: function(containerElement) {
+		buildMarkerGradientOptions: function(containerElement) {
 			var optionContainer = makeFieldSetWithLegend('Gradient');
 			this.markerGradientEditor = new mobmap.GradientEditor( this.markerGradient, null, 1, true);
 			optionContainer.appendChild(this.markerGradientEditor.element);
 			containerElement.appendChild(optionContainer);
+			
+			this.jGradientConfContainer = $(optionContainer);
+		},
+		
+		toggleGradientConf: function(markerPreset)  {
+			if (!this.jGradientConfContainer || !markerPreset) { return; }
+			
+			var visible = false;
+			if (markerPreset) {
+				if (markerPreset.gradientType === mobmap.MarkerGenerator.BlendGradient) {
+					visible = true;
+				}
+			}
+			
+			if (visible) {
+				this.jGradientConfContainer.show();
+			} else {
+				this.jGradientConfContainer.hide();
+			}
 		},
 		
 		buildMarkerAttrBindOptions: function(containerElement) {
@@ -854,7 +878,7 @@ buildMarkerGradientOptions: function(containerElement) {
 			outList.push( new MarkerSetPreset('Dot marker - BW + hue gradient'    , BW, kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Dot marker - reversed hue gradient', 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.HueGradient, true) );
 			//outList.push( new MarkerSetPreset('Dot marker - white to blue'        , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
-			outList.push( new MarkerSetPreset('Dot marker - simple gradient'      , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			outList.push( new MarkerSetPreset('Dot marker - custom gradient'      , 0 , kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 
 			outList.push( new MarkerSetPreset('Scaling marker'                    , SC, kMarkerCompositionNormal, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 			
@@ -866,7 +890,7 @@ buildMarkerGradientOptions: function(containerElement) {
 			outList.push( new MarkerSetPreset('Spot marker - BW + hue gradient'    , BW, kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, false) );
 			outList.push( new MarkerSetPreset('Spot marker - reversed hue gradient', 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.HueGradient, true) );
 			//outList.push( new MarkerSetPreset('Spot marker - white to blue'        , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cWhite, cBlue) );
-			outList.push( new MarkerSetPreset('Spot marker - simple gradient'      , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
+			outList.push( new MarkerSetPreset('Spot marker - custom gradient'      , 0 , kMarkerCompositionAdd, mobmap.MarkerGenerator.BlendGradient, false, cBlue, cRed) );
 			
 			return outList;
 		},
@@ -907,6 +931,8 @@ buildMarkerGradientOptions: function(containerElement) {
 
 			this.markerGradientEditor.syncFromModel();
 			this.markerGradientEditor.redraw();
+			
+			this.toggleGradientConf(markerGeneratorOptions);
 		}
 	};
 	
