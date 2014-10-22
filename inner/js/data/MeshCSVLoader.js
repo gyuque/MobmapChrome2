@@ -89,6 +89,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			md.originLng = 100;
 
 			switch(meshLevel) {
+			case 4:
+			// 4-ji (2x2 div of 3-ji)
+				md.stepLat = (1.0 / 1.5) / 160.0;
+				md.stepLng = (1.0      ) / 160.0;
+				break;
+
 			case 3:
 			// 3-ji (1/10 of 2-ji)
 				md.stepLat = (1.0 / 1.5) / 80.0;
@@ -174,6 +180,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		calcLatIndexFromMeshCode: function(meshCode) {
 			var index = 0;
 			switch (this.usingMeshCode.level) {
+			case 4:
+				index = this.calcLv4LatitudeIndexFromCode(meshCode);
+				break;
+
 			case 3:
 				var i1 = Math.floor(meshCode / 1000000);
 				var yx2 = Math.floor(meshCode / 100) % 100;
@@ -200,9 +210,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			return index;
 		},
 		
+		calcLv4LatitudeIndexFromCode: function(meshCode) {
+			// Example: 533923431
+			// Pick:    ^^  ^ ^ ^
+			
+			var i1 = Math.floor(meshCode / 10000000);
+
+			var yx2 = Math.floor(meshCode / 1000) % 100;
+			var i2  = Math.floor(yx2 / 10);
+
+			var yx3 = Math.floor(meshCode / 10) % 100;
+			var i3  = Math.floor(yx3 / 10);
+
+			var yx4 = meshCode % 10;
+			var i4 = (yx4 < 3) ? 0 : 1;
+
+			return i1 * 160 + i2 * 20 + i3 * 2 + i4;
+		},
+		
 		calcLngIndexFromMeshCode: function(meshCode) {
 			var index = 0;
 			switch (this.usingMeshCode.level) {
+			case 4:
+				index = this.calcLv4LongitudeIndexFromCode(meshCode);
+				break;
+
 			case 3:
 				var i1 = Math.floor(meshCode / 10000) % 100;
 				var i2 = Math.floor(meshCode / 100) % 10;
@@ -224,6 +256,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			return index;
+		},
+
+		calcLv4LongitudeIndexFromCode: function(meshCode) {
+			// Example: 533923431
+			// Pick:      ^^ ^ ^^
+
+			var i1 = Math.floor(meshCode / 100000) % 100;
+			var i2 = Math.floor(meshCode / 1000) % 10;
+			var i3 = Math.floor(meshCode / 10) % 10;
+
+			var yx4 = meshCode % 10;
+			var i4 = (yx4 === 2 || yx4 === 4) ? 1 : 0;
+
+			return i1 * 160 + i2 * 20 + i3 * 2 + i4;
 		},
 
 		// callbacks - - - - - - - - - - - - -
