@@ -528,6 +528,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.progressLabel = null;
 		this.subCaptionElement = null;
 		this.markerPanel = null;
+		this.connectionPanel = null;
 		this.meshPanel = null;
 		this.explorePanel = null;
 		
@@ -577,6 +578,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (use_marker) {
 				this.buildMarkerConfigurationPanel();
+				this.buildMarkerConnectionPanel();
 			}
 			
 			if (use_mesh) {
@@ -686,6 +688,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.appendChild(this.markerPanel.element);
 		},
 		
+		buildMarkerConnectionPanel: function() {
+			this.connectionPanel = new mobmap.MarkerConnectionSubPanel(this.boundLayer);
+			this.connectionPanel.hide();
+			this.element.appendChild(this.connectionPanel.element);
+		},
+		
 		buildMeshConfigurationPanel: function() {
 			this.meshPanel = new mobmap.MeshConfigurationPanel(this.boundLayer);
 			this.meshPanel.hide();
@@ -746,18 +754,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		toggleVisibilities: function() {
 			if (this.layerReady) {
 				this.hideProgress();
-				if (this.markerPanel ) { this.markerPanel.show();  }
-				if (this.meshPanel   ) { this.meshPanel.show();    }
-				if (this.explorePanel) { this.explorePanel.show(); }
+				if (this.markerPanel )     { this.markerPanel.show();      }
+				if (this.connectionPanel ) { this.connectionPanel.show();  }
+				if (this.meshPanel   )     { this.meshPanel.show();        }
+				if (this.explorePanel)     { this.explorePanel.show();     }
 			}
 		},
 		
 		updateAdditionalPropertyList: function() {
 			var mp = this.markerPanel;
+			var cp = this.connectionPanel;
 			if (!mp) {return;}
 
 			mp.clearAdditionalPropertyList();
 			mp.addPresetProperties();
+			if (cp) { cp.clearAdditionalPropertyList(); }
 
 			var lyr = this.boundLayer;
 			if (!lyr) {return;}
@@ -766,6 +777,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var mdat = lyr.movingData;
 			mdat.forEachExtraProperty(function(attrName, flags){
 				mp.addAdditionalPropertyName(attrName);
+				if (cp) { cp.addAdditionalPropertyName(attrName); }
 			});
 			
 			mp.sendAttrNameToBind();

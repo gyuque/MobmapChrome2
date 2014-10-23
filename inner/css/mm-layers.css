@@ -382,3 +382,7 @@ label.label-limit-num-input, .marker-label-invert-check,
 .remote-refresh-button:hover:active {
 	box-shadow: 0 1px 4px rgba(0,0,0,0.5) inset;
 }
+
+
+/* Connection panel*/
+.marker-connection-check { display:block; }

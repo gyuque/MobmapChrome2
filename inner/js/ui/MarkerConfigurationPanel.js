@@ -780,27 +780,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addPresetProperties: function() {
-			this.addAttributeComboboxOption(this.attrLabelComboElement, '_id');
+			addAttributeComboboxOption(this.attrLabelComboElement, '_id');
 		},
 		
 		addAdditionalPropertyName: function(attrName) {
-			this.addAttributeComboboxOption(this.attrBindComboElement, attrName);
-			this.addAttributeComboboxOption(this.attrLabelComboElement, attrName);
+			addAttributeComboboxOption(this.attrBindComboElement, attrName);
+			addAttributeComboboxOption(this.attrLabelComboElement, attrName);
 		},
-		
-		addAttributeComboboxOption: function(target, attrName) {
-			if (!target) {
-				return false;
-			}
-			
-			var opt = $H('option');
-			opt.appendChild( $T(attrName) );
-			opt.value = attrName;
-			
-			target.appendChild(opt);
-			return true;
-		},
-		
+
 		syncFromModel: function() {
 			var mo = this.boundLayer._markerOptions || null;
 			if (mo) {
@@ -1002,5 +989,20 @@ if (!window.mobmap) { window.mobmap={}; }
 		return val;
 	}
 	
+	function addAttributeComboboxOption(target, attrName) {
+		if (!target) {
+			return false;
+		}
+		
+		var opt = $H('option');
+		opt.appendChild( $T(attrName) );
+		opt.value = attrName;
+		
+		target.appendChild(opt);
+		return true;
+	}
+	
+	MarkerConfigurationPanel.makeComboWithLabel = makeComboWithLabel;
+	MarkerConfigurationPanel.addAttributeComboboxOption = addAttributeComboboxOption;
 	aGlobal.mobmap.MarkerConfigurationPanel = MarkerConfigurationPanel;
 })(window);

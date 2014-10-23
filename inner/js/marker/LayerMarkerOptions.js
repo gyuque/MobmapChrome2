@@ -16,6 +16,7 @@ this.tailSpeedLimit = 0;
 		this.showSelectedOnly = false;
 		this.boundAttributeName = null;
 		this.labelAttributeName = null;
+		this.connectionAttributeName = null;
 		this.labelDisplayLimit = 500;
 		this.bLabelInverted = false;
 		
@@ -114,6 +115,13 @@ this.tailSpeedLimit = 0;
 		bindLabelAttribute: function(a_name) {
 			if (this.labelAttributeName !== a_name) {
 				this.labelAttributeName = a_name;
+				this.fire(false);
+			}
+		},
+		
+		bindConnectionAttributeName: function(a_name) {
+			if (this.connectionAttributeName !== a_name) {
+				this.connectionAttributeName = a_name;
 				this.fire(false);
 			}
 		},
