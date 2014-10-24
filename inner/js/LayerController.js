@@ -2,11 +2,17 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var connMapNextId = 1;
 
 	function LayerController(ownerApp) {
 		this.ownerApp = ownerApp;
 		this.mapOverlayList = [];
 		this.exploreMapType = null;
+		
+		this.connectionTempMapSet = {
+			refs: {},
+			ids: {}
+		};
 	}
 
 	LayerController.prototype = {
@@ -492,6 +498,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				dircolor_enabled = (sourceLayer._markerOptions.tailColoring === mobmap.LayerMarkerOptions.TC_DIRECTION);
 				tailFade = sourceLayer._markerOptions.tailFade;
 			}
+			
+			// Connection ------------------------------------------------------------
+			++connMapNextId;
+			var connAttr = null;
+			if (sourceLayer._markerOptions) {
+				connAttr = sourceLayer._markerOptions.connectionAttributeName;
+			}
+			
+			var cmapIDs  = this.connectionTempMapSet.ids;
+			var cmapRefs = this.connectionTempMapSet.refs;
+			
 			// -----------------------------------------------------------------------
 		//console.log(">>>>>", tailLength);
 			// Selection --
@@ -523,9 +540,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			mk_pool.begin(count);
 			var src_array = pickPool.getArray();
 			var m_array = mk_pool.getArray();
+
 			for (var i = 0;i < count;++i) {
 				var sourceRecord = src_array[i];
 				var marker_data = m_array[i];
+				
+				// Register reference to this marker
+				marker_data.connectedMarker = null;
+				if (connAttr) {
+					cmapIDs[sourceRecord._id] = connMapNextId;
+					cmapRefs[sourceRecord._id] = marker_data;
+				}
 				
 				if (selOnly && anySelected) {
 					if (!selection_pl.isIDSelected(sourceRecord._id)) {
@@ -603,6 +628,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 			
+			// Connect references
+			if (connAttr) {
+				this.setConnectedMarkerReferences(src_array, m_array, connMapNextId, cmapRefs, cmapIDs, connAttr);
+			}
+			
 			if (tailLength > 0) { overlay.setTailWidth( sourceLayer._markerOptions.tailWidth ); }
 			overlay.setTailDrawEnabled(tailLength > 0);
 			overlay.setTailDirectionColorEnabled(dircolor_enabled);
@@ -613,7 +643,24 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.ownerApp.notifyMovingDataPicked(sourceLayer, src_array, count);
 			}
 		},
-		
+
+		setConnectedMarkerReferences: function(sourceRecordList, markerDataList, refid, refMap, ridMap, connAttrName) {
+			var len = sourceRecordList.length;
+			
+			for (var i = 0;i < len;++i) {
+				var srcRec = sourceRecordList[i];
+				var srcMarker = markerDataList[i];
+				var destId = srcRec[connAttrName];
+
+				var rid = ridMap[destId];
+				var ref = refMap[destId];
+
+				if (rid === refid && ref) {
+					srcMarker.connectedMarker = ref;
+				}
+			}
+		},
+
 		calcSpeedBetweenTails: function(originRecord, firstTailRecord, tailInterval) {
 			var meters = calcDistanceFromLatLng(
 				originRecord.x, originRecord.y,

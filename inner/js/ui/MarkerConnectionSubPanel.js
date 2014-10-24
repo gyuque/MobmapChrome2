@@ -14,7 +14,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.expandablePanel.setTitle("Connection");
 		
 		this.configurePanelContent();
-		//XXX: observe combo box
+		this.syncFromModel();
+
+		this.updateClosedPanelContent();
 	}
 	
 	MarkerConnectionSubPanel.prototype = {
@@ -29,6 +31,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			// observe events
 			$(this.enabledCheckbox).click(this.onMainCheckboxClick.bind(this));
+			$(this.attrBindComboElement).change(this.onAttributeComboChange.bind(this));
+		},
+		
+		updateClosedPanelContent: function() {
+			var el = this.expandablePanel.closedContentElement;
+			var enabled = false;
+			
+			var mo = this.getBoundMarkerOptions();
+			if (mo) {
+				enabled = !!( mo.connectionAttributeName );
+			}
+
+			if (enabled) {
+				el.innerHTML = 'Using attribute: ';
+				el.appendChild( document.createTextNode( mo.connectionAttributeName ) );
+			} else {
+				el.innerHTML = '(None)';
+			}
 		},
 
 		clearAdditionalPropertyList: function() {
@@ -49,6 +69,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (mo) {
 				mo.bindConnectionAttributeName(attrName);
 			}
+			
+			this.updateClosedPanelContent();
 		},
 		
 		getBoundMarkerOptions: function() {
@@ -62,13 +84,41 @@ if (!window.mobmap) { window.mobmap={}; }
 		getMainCheckboxValue: function() {
 			return !!(this.enabledCheckbox.checked);
 		},
-		
+
+		setMainCheckboxValue: function(newValue) {
+			if (this.getMainCheckboxValue() !== newValue) {
+				this.enabledCheckbox.checked = newValue;
+			}
+		},
+
 		getAttributeComboValue: function() {
 			return this.attrBindComboElement.value;
 		},
 		
+		setAttributeComboValue: function(newValue) {
+			if (this.getAttributeComboValue() !== newValue) {
+				this.attrBindComboElement.value = newValue;
+			}
+		},
+		
 		onMainCheckboxClick: function() {
 			this.sendToModel();
+		},
+		
+		onAttributeComboChange: function() {
+			this.sendToModel();
+		},
+		
+		syncFromModel: function() {
+			var mo = this.getBoundMarkerOptions();
+			if (mo) {
+				var enabled = !!(mo.connectionAttributeName);
+				this.setMainCheckboxValue(enabled);
+				
+				if (enabled) {
+					this.setAttributeComboValue(mo.connectionAttributeName);
+				}
+			}
 		}
 	};
 	

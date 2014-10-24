@@ -573,11 +573,16 @@ function installMobLayer(pkg) {
 		var maxSX = this.canvasSize.w + 12;
 		var maxSY = this.canvasSize.h + 12;
 		
+		var bMarkerHasConnection = false;
 		var nMarkerDrawn = 0;
 		this.gl.useProgram(this.shaderProgram);
 		vi = 0;
 		for (i = 0;i < len;++i) {
 			mk = m_arr[i];
+			if ( !!(mk.connectedMarker) ) {
+				bMarkerHasConnection = true;
+			}
+			
 			if (mk.chipY >= 0) {
 				this.projectionGrid.calc(mk);
 
@@ -619,6 +624,18 @@ function installMobLayer(pkg) {
 				this.drawBufferedPrimitives(this.gl);
 				
 				vi = txi = bi = triCount = 0;
+			}
+		}
+
+		// [Draw] Connections
+		vi = 0;
+		segCount = 0;
+		if (bMarkerHasConnection) {
+			for (i = 0;i < len;++i) {
+				mk = m_arr[i];
+				if (mk.connectedMarker) {
+					vi += this.writeConnectionVertices(vlist, vi, mk);
+				}
 			}
 		}
 
@@ -677,6 +694,27 @@ function installMobLayer(pkg) {
 
 		//console.log("Triangles: ",vpos, vlist[0], vlist[1], vlist[2], vlist[3]);
 		this.drawLabelPolygons(textureObject, vpos >> 1);
+	};
+	
+	GLMobLayer.prototype.writeConnectionVertices = function(vlist, startIndex, markerData) {
+		var cIndex = (startIndex << 1);
+		var destMarker = markerData.connectedMarker;
+		var i = 0;
+
+		var sx1 = markerData.screenX;
+		var sy1 = markerData.screenY;
+		var sx2 = destMarker.screenX;
+		var sy2 = destMarker.screenY;
+
+		// p0
+		vlist[startIndex + (i++) ] = sx1;
+		vlist[startIndex + (i++) ] = sy1;
+		
+		// p1
+		vlist[startIndex + (i++) ] = sx2;
+		vlist[startIndex + (i++) ] = sy2;
+
+		return i;
 	};
 
 	GLMobLayer.prototype.writeLabelVertexPositions = function(markerData, vlist, startPos, labelSpriteWidth, labelSpriteHeight) {
@@ -1294,7 +1332,8 @@ function installMobLayer(pkg) {
 		this.tailLengthToRender = 0;
 		
 		this.renderingID = 0;
-		this.labelText = null;
+		this.labelText = null
+		this.connectedMarker = null;
 	}
 	
 	MarkerDisplayData.prototype.ensureTailArray = function(length) {
