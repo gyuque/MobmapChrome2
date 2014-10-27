@@ -631,12 +631,28 @@ function installMobLayer(pkg) {
 		vi = 0;
 		segCount = 0;
 		if (bMarkerHasConnection) {
+			this.gl.useProgram(this.colorLineShaderObjects.shaderProgram);
+
 			for (i = 0;i < len;++i) {
 				mk = m_arr[i];
 				if (mk.connectedMarker) {
-					vi += this.writeConnectionVertices(vlist, vi, mk);
+					vi += this.writeConnectionVertices(vlist, cllist, vi, mk);
+					++segCount;
+				}
+
+				// Buffer is almost full! (or last)
+				if (segCount >= segFlushThreshold ||
+					i === lastIndex) {
+					
+					this.nSegmentsBuffered = segCount;
+
+					this.drawBufferedLinePrimitives(this.gl);
+					segCount = 0;
+					vi = 0;
 				}
 			}
+
+			this.gl.useProgram(this.shaderProgram);
 		}
 
 		//console.log("drawn markers", nMarkerDrawn);
@@ -696,7 +712,7 @@ function installMobLayer(pkg) {
 		this.drawLabelPolygons(textureObject, vpos >> 1);
 	};
 	
-	GLMobLayer.prototype.writeConnectionVertices = function(vlist, startIndex, markerData) {
+	GLMobLayer.prototype.writeConnectionVertices = function(vlist, colorList, startIndex, markerData) {
 		var cIndex = (startIndex << 1);
 		var destMarker = markerData.connectedMarker;
 		var i = 0;
@@ -710,9 +726,19 @@ function installMobLayer(pkg) {
 		vlist[startIndex + (i++) ] = sx1;
 		vlist[startIndex + (i++) ] = sy1;
 		
+		colorList[cIndex++] = 255;
+		colorList[cIndex++] = 255;
+		colorList[cIndex++] = 255;
+		colorList[cIndex++] = 255;
+		
 		// p1
 		vlist[startIndex + (i++) ] = sx2;
 		vlist[startIndex + (i++) ] = sy2;
+		
+		colorList[cIndex++] = 255;
+		colorList[cIndex++] = 255;
+		colorList[cIndex++] = 255;
+		colorList[cIndex++] = 255;
 
 		return i;
 	};
