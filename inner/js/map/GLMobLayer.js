@@ -58,6 +58,7 @@ function installMobLayer(pkg) {
 		this.canvasOffset = {x: 0, y:0};
 		this.canvasSize = {w: 0, h:0};
 		this.prevRenderRegion = {minLat:-1, maxLat:-1, minLng:-1, maxLng:-1};
+		this.connectionColors = [ [255,0,0, 255], [0,0,255, 255] ];
 		
 		this.ownerObject = null;
 		this.canvasReadyCallback = null;
@@ -102,6 +103,18 @@ function installMobLayer(pkg) {
 	
 	GLMobLayer.prototype.setLabelInverted = function(b) {
 		this.ensureLabelRenderer().invertedColor = b;
+	};
+	
+	GLMobLayer.prototype.setConnectionColors = function(st, end) {
+		this.connectionColors[0][0] = st.r;
+		this.connectionColors[0][1] = st.g;
+		this.connectionColors[0][2] = st.b;
+		this.connectionColors[0][3] = Math.floor(st.a * 255.0);
+
+		this.connectionColors[1][0] = end.r;
+		this.connectionColors[1][1] = end.g;
+		this.connectionColors[1][2] = end.b;
+		this.connectionColors[1][3] = Math.floor(end.a * 255.0);
 	};
 
 	// View management ------------------------------------------
@@ -716,6 +729,9 @@ function installMobLayer(pkg) {
 		var cIndex = (startIndex << 1);
 		var destMarker = markerData.connectedMarker;
 		var i = 0;
+		
+		var startColor = this.connectionColors[0];
+		var endColor = this.connectionColors[1];
 
 		var sx1 = markerData.screenX;
 		var sy1 = markerData.screenY;
@@ -726,19 +742,19 @@ function installMobLayer(pkg) {
 		vlist[startIndex + (i++) ] = sx1;
 		vlist[startIndex + (i++) ] = sy1;
 		
-		colorList[cIndex++] = 255;
-		colorList[cIndex++] = 255;
-		colorList[cIndex++] = 255;
-		colorList[cIndex++] = 255;
+		colorList[cIndex++] = startColor[0];
+		colorList[cIndex++] = startColor[1];
+		colorList[cIndex++] = startColor[2];
+		colorList[cIndex++] = startColor[3];
 		
 		// p1
 		vlist[startIndex + (i++) ] = sx2;
 		vlist[startIndex + (i++) ] = sy2;
 		
-		colorList[cIndex++] = 255;
-		colorList[cIndex++] = 255;
-		colorList[cIndex++] = 255;
-		colorList[cIndex++] = 255;
+		colorList[cIndex++] = endColor[0];
+		colorList[cIndex++] = endColor[1];
+		colorList[cIndex++] = endColor[2];
+		colorList[cIndex++] = endColor[3];
 
 		return i;
 	};

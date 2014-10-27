@@ -310,7 +310,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.markerGradientEditor = new mobmap.GradientEditor( this.markerGradient, null, 1, true);
 			optionContainer.appendChild(this.markerGradientEditor.element);
 			containerElement.appendChild(optionContainer);
-			
+
 			this.jGradientConfContainer = $(optionContainer);
 		},
 		
@@ -883,7 +883,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		setupGradientObjects: function() {
-			this.gradientEventElement = $(createEventDummyElement);
+			this.gradientEventElement = $(createEventDummyElement());
 			this.markerGradient = new mobmap.MMMeshLayer.ColorRule( this.gradientEventElement );
 			this.markerGradient.addStop( new MMGradientStop(0,  255, 90, 255, 1) );
 			this.markerGradient.addStop( new MMGradientStop(1,  255, 0,   90, 1) );

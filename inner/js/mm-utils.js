@@ -303,6 +303,15 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		return this;
 	};
+
+	aGlobal.MMGradientStop.prototype.copyColorFrom = function(s) {
+		this.r = s.r;
+		this.g = s.g;
+		this.b = s.b;
+		this.a = s.a;
+
+		return this;
+	};
 	
 	// Used for generated gradient colors
 	aGlobal.CachedColorList = function() {

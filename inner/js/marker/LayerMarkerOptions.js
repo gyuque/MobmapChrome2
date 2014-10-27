@@ -19,6 +19,9 @@ this.tailSpeedLimit = 0;
 		this.connectionAttributeName = null;
 		this.labelDisplayLimit = 500;
 		this.bLabelInverted = false;
+
+		this.gstopConnectionStart = new MMGradientStop(0,    0,255,  0, 1);
+		this.gstopConnectionEnd   = new MMGradientStop(1,    0,155,255, 1);
 		
 		this.indexMap = new LayerMarkerOptions.CustomIndexMapping();
 	}
@@ -147,6 +150,13 @@ this.tailSpeedLimit = 0;
 			if (this.showSelectedOnly === newVal) { return; }
 			this.showSelectedOnly = newVal;
 			this.fire();
+		},
+		
+		setConnectionLineGradient: function(startStopSource, endStopSource) {
+			this.gstopConnectionStart.copyColorFrom(startStopSource);
+			this.gstopConnectionEnd.copyColorFrom(endStopSource);
+			
+			this.fire(false);
 		},
 		
 		fire: function(affect_traj) {

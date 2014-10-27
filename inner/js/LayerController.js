@@ -631,6 +631,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Connect references
 			if (connAttr) {
 				this.setConnectedMarkerReferences(src_array, m_array, connMapNextId, cmapRefs, cmapIDs, connAttr);
+				overlay.setConnectionColors(sourceLayer._markerOptions.gstopConnectionStart, sourceLayer._markerOptions.gstopConnectionEnd);
 			}
 			
 			if (tailLength > 0) { overlay.setTailWidth( sourceLayer._markerOptions.tailWidth ); }

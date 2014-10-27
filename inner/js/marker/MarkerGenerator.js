@@ -449,7 +449,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.enableCrop = true;
 		
 		this.blendStart = new MMGradientStop(0,  0  , 0, 255, 1);
-		this.blendEnd   = new MMGradientStop(0,  255, 0,   0, 1);
+		this.blendEnd   = new MMGradientStop(1,  255, 0,   0, 1);
 	}
 	
 	aGlobal.mobmap.MarkerGenerator = MarkerGenerator;
