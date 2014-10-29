@@ -6,14 +6,14 @@ if (!window.mobmap) { window.mobmap={}; }
 	var kPresetPreviewWidth = 100;
 	var kPresetPreviewHeight = 10;
 	
-	function GradientEditor(boundGradient, label_p, altPreset, noAlpha) {
+	function GradientEditor(boundGradient, label_p, altPreset, noAlpha, fixedStops) {
 		this.element = document.createElement('div');
 		this.jElement = $( this.element );
 		this.jSwapButton = this.generateSwapButton();
 		this.alternativePreset = altPreset || 0;
 		this.noAlpha = !!noAlpha;
 		this.boundGradient = boundGradient;
-		this.stopListView = new GradientStopListView(!noAlpha);
+		this.stopListView = new GradientStopListView(!noAlpha, fixedStops);
 		this.previewLabelProvider = label_p || null;
 		
 		this.previewHeight = 10;
@@ -408,11 +408,12 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	function GradientStopListView(enableAlpha) {
+	function GradientStopListView(enableAlpha, fixedStops) {
 		this.element = $H('table');
 		this.jElement = $(this.element);
 		this.items = [];
 		this.enableAlpha = enableAlpha;
+		this.fixedStops = !!(fixedStops);
 	}
 	
 	GradientStopListView.ITEM_CHANGE_EVENT = "gradient-stop-listview-item-change-event";
@@ -434,7 +435,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addStopItem: function(gstop) {
-			var item = new GradientStopListViewItem(this, gstop, this.enableAlpha);
+			var item = new GradientStopListViewItem(this, gstop, this.enableAlpha, this.fixedStops);
 			this.element.appendChild(item.element);
 			this.items.push(item);
 		},
@@ -491,9 +492,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	function GradientStopListViewItem(owner, initialStopData, enableAlpha) {
+	function GradientStopListViewItem(owner, initialStopData, enableAlpha, fixedStops) {
 		this.owner = owner;
 		this.element = $H('tr');
+		this.fixedStops = !!(fixedStops);
 		this.jPickerElement = null;
 		this.jPosLabel = null;
 		this.jPosRange = null;
@@ -510,8 +512,6 @@ if (!window.mobmap) { window.mobmap={}; }
 
 	GradientStopListViewItem.prototype = {
 		buildView: function(enableAlpha) {
-			var stopsMovable = enableAlpha;
-			
 			var td1 = $H('td');
 			this.element.appendChild(td1);
 			var td2 = $H('td', 'mm-gradient-param-col');
@@ -525,7 +525,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jPosLabel = $(s_pos);
 			this.jPosRange = $(r_pos).change( this.onPositionRangeChange.bind(this) );
 			
-			if (stopsMovable) {
+			if (!this.fixedStops) {
 				td1.appendChild(pickerElement);
 				td2.appendChild(s_pos);
 				td2.appendChild(r_pos);

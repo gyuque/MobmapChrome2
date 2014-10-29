@@ -385,4 +385,4 @@ label.label-limit-num-input, .marker-label-invert-check,
 
 
 /* Connection panel*/
-.marker-connection-check { display:block; }
+.marker-connection-check, .connconf-width { display:block; }

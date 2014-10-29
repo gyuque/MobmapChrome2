@@ -632,6 +632,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (connAttr) {
 				this.setConnectedMarkerReferences(src_array, m_array, connMapNextId, cmapRefs, cmapIDs, connAttr);
 				overlay.setConnectionColors(sourceLayer._markerOptions.gstopConnectionStart, sourceLayer._markerOptions.gstopConnectionEnd);
+				overlay.setConnectionArrowEnabled(sourceLayer._markerOptions.enableConnectionArrow);
+				overlay.setConnectionLineWidth(sourceLayer._markerOptions.connectionLineWidth);
 			}
 			
 			if (tailLength > 0) { overlay.setTailWidth( sourceLayer._markerOptions.tailWidth ); }

@@ -36,6 +36,7 @@ function installMobLayer(pkg) {
 		this.markerTexture = 0;
 		this.markerTextureConf = new MarkerTextureConfiguration();
 		this.markerTransformMatrix = mat4.create();
+		this.tempVec2 = vec2.create();
 		this.nTrianglesBuffered = 0;
 		this.nSegmentsBuffered = 0;
 		this.labelRenderer = null;
@@ -59,7 +60,9 @@ function installMobLayer(pkg) {
 		this.canvasSize = {w: 0, h:0};
 		this.prevRenderRegion = {minLat:-1, maxLat:-1, minLng:-1, maxLng:-1};
 		this.connectionColors = [ [255,0,0, 255], [0,0,255, 255] ];
-		
+		this.enableConnectionArrow = true;
+		this.connectionWidth = 2;
+
 		this.ownerObject = null;
 		this.canvasReadyCallback = null;
 		this.projectionGrid = new mobmap.FastProjectionGrid(9);
@@ -105,6 +108,8 @@ function installMobLayer(pkg) {
 		this.ensureLabelRenderer().invertedColor = b;
 	};
 	
+	GLMobLayer.prototype.setConnectionLineWidth = function(w) { this.connectionWidth = w; };
+	GLMobLayer.prototype.setConnectionArrowEnabled = function(b) { this.enableConnectionArrow = b; };
 	GLMobLayer.prototype.setConnectionColors = function(st, end) {
 		this.connectionColors[0][0] = st.r;
 		this.connectionColors[0][1] = st.g;
@@ -645,12 +650,14 @@ function installMobLayer(pkg) {
 		segCount = 0;
 		if (bMarkerHasConnection) {
 			this.gl.useProgram(this.colorLineShaderObjects.shaderProgram);
+			this.gl.lineWidth(this.connectionWidth);
 
 			for (i = 0;i < len;++i) {
 				mk = m_arr[i];
 				if (mk.connectedMarker) {
-					vi += this.writeConnectionVertices(vlist, cllist, vi, mk);
-					++segCount;
+					var nBufferedCount = this.writeConnectionVertices(vlist, cllist, vi, mk);
+					vi += nBufferedCount;
+					segCount += (nBufferedCount >> 2);
 				}
 
 				// Buffer is almost full! (or last)
@@ -755,6 +762,53 @@ function installMobLayer(pkg) {
 		colorList[cIndex++] = endColor[1];
 		colorList[cIndex++] = endColor[2];
 		colorList[cIndex++] = endColor[3];
+
+		if (this.enableConnectionArrow) {
+			var vn = this.tempVec2;
+			vec2.set(vn, sx2-sx1, sy2-sy1);
+			
+			var vlen = vec2.length(vn);
+			if (vlen > 0.1) {
+				vn[0] /= vlen;
+				vn[1] /= vlen;
+				vn[0] *= -8.0;
+				vn[1] *= -8.0;
+
+				var nx = -vn[1] * 0.5;
+				var ny =  vn[0] * 0.5;
+
+				vlist[startIndex + (i++) ] = sx2;
+				vlist[startIndex + (i++) ] = sy2;
+				colorList[cIndex++] = endColor[0];
+				colorList[cIndex++] = endColor[1];
+				colorList[cIndex++] = endColor[2];
+				colorList[cIndex++] = endColor[3];
+
+				vlist[startIndex + (i++) ] = sx2 + vn[0] + nx;
+				vlist[startIndex + (i++) ] = sy2 + vn[1] + ny;
+				colorList[cIndex++] = endColor[0];
+				colorList[cIndex++] = endColor[1];
+				colorList[cIndex++] = endColor[2];
+				colorList[cIndex++] = endColor[3];
+
+
+				vlist[startIndex + (i++) ] = sx2;
+				vlist[startIndex + (i++) ] = sy2;
+				colorList[cIndex++] = endColor[0];
+				colorList[cIndex++] = endColor[1];
+				colorList[cIndex++] = endColor[2];
+				colorList[cIndex++] = endColor[3];
+
+				vlist[startIndex + (i++) ] = sx2 + vn[0] - nx;
+				vlist[startIndex + (i++) ] = sy2 + vn[1] - ny;
+				colorList[cIndex++] = endColor[0];
+				colorList[cIndex++] = endColor[1];
+				colorList[cIndex++] = endColor[2];
+				colorList[cIndex++] = endColor[3];
+
+			}
+			// else zero vector
+		}
 
 		return i;
 	};

@@ -17,6 +17,8 @@ this.tailSpeedLimit = 0;
 		this.boundAttributeName = null;
 		this.labelAttributeName = null;
 		this.connectionAttributeName = null;
+		this.connectionLineWidth = 2;
+		this.enableConnectionArrow = true;
 		this.labelDisplayLimit = 500;
 		this.bLabelInverted = false;
 
@@ -157,6 +159,22 @@ this.tailSpeedLimit = 0;
 			this.gstopConnectionEnd.copyColorFrom(endStopSource);
 			
 			this.fire(false);
+		},
+		
+		setConnectionArrowEnabled: function(newVal) {
+			if (this.enableConnectionArrow !== newVal) {
+				this.enableConnectionArrow = newVal;
+				this.fire(false);
+			}
+		},
+		
+		setConnectionLineWidth: function(newVal) {
+			newVal = newVal | 0;
+			
+			if (this.connectionLineWidth !== newVal) {
+				this.connectionLineWidth = newVal;
+				this.fire(false);
+			}
 		},
 		
 		fire: function(affect_traj) {

@@ -304,10 +304,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			containerElement.appendChild(fs);
 		},
-		
+
 		buildMarkerGradientOptions: function(containerElement) {
 			var optionContainer = makeFieldSetWithLegend('Gradient');
-			this.markerGradientEditor = new mobmap.GradientEditor( this.markerGradient, null, 1, true);
+			this.markerGradientEditor = new mobmap.GradientEditor( this.markerGradient, null, 1, true, true);
 			optionContainer.appendChild(this.markerGradientEditor.element);
 			containerElement.appendChild(optionContainer);
 
