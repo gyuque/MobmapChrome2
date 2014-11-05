@@ -79,6 +79,16 @@ if (!window.mobmap) window.mobmap={};
 			
 			return newMax;
 		},
+		
+		// Configure
+		setRemainSidesMode: function(enabled) {
+			var ls = this.tlList;
+			var len = ls.length;
+			for (var i = 0;i < len;++i) {
+				var t_l = ls[i];
+				t_l.remainSides = enabled;
+			}
+		},
 
 		// Pick API -------------------------------------
 		pickAt: function(pickPool, timeInSec, pickIndex, tailLength, tailInterval) {
@@ -217,6 +227,12 @@ if (!window.mobmap) window.mobmap={};
 			
 			return this.pool[this.pickedCount++];
 		},
+		
+		cancelLastFetch: function() {
+			if (this.pickedCount > 0) {
+				--this.pickedCount;
+			}
+		},
 
 		allocate: function(len) {
 			this.pool = [];
@@ -274,6 +290,7 @@ if (!window.mobmap) window.mobmap={};
 		this.id = objId;
 		this.stringId = objId.toString();
 		this.recordList = [];
+		this.remainSides = true;
 
 		this.cahcedIndex = -1;
 		this.cahcedTime  = -1;
@@ -304,6 +321,7 @@ if (!window.mobmap) window.mobmap={};
 			var ls = this.recordList;
 			var len = ls.length;
 			var startIndex = 0;
+			var fetchedPool = false;
 
 			// Forward pick optimization
 			if (this.cahcedIndex >= 0 && this.cahcedTime < seconds) {
@@ -328,10 +346,12 @@ if (!window.mobmap) window.mobmap={};
 				}
 
 				// Set output record object if null
+				fetchedPool = false;
 				if (!pickedRec) {
 					pickedRec = pickPool.getPooledRecord();
 					pickedRec._pickIndex = pickIndex;
 					pickedRec._pickTime  = seconds;
+					fetchedPool = true;
 				}
 
 				if (!pickedRec) {
@@ -344,12 +364,26 @@ if (!window.mobmap) window.mobmap={};
 						// Interpolate between two items in timed list
 						this.pickIntpRecord(pickedRec, ls, previ, i, seconds, extraProps);
 					} else {
-						// Use right-end of timed list
-						this.pickEndRecord(pickedRec, ls, len - 1, extraProps);
+						if (this.remainSides) {
+							// Use right-end of timed list
+							this.pickEndRecord(pickedRec, ls, len - 1, extraProps);
+						} else {
+							if (fetchedPool) {
+								pickPool.cancelLastFetch();
+								pickedRec = null;
+							}
+						}
 					}
 				} else {
-					// Use left-end of timed list
-					this.pickEndRecord(pickedRec, ls, 0, extraProps);
+					if (this.remainSides) {
+						// Use left-end of timed list
+						this.pickEndRecord(pickedRec, ls, 0, extraProps);
+					} else {
+						if (fetchedPool) {
+							pickPool.cancelLastFetch();
+							pickedRec = null;
+						}
+					}
 				}
 			}
 			

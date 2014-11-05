@@ -11,7 +11,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.connectionTempMapSet = {
 			refs: {},
-			ids: {}
+			ids: {},
+			olds: {}
 		};
 	}
 
@@ -226,6 +227,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.RequestGoDown, this.onLayerRequestGoDown.bind(this)).
 			 bind(LE.RequestGoUp, this.onLayerRequestGoUp.bind(this)).
 			 bind(LE.RequestRemoteRefresh, this.onLayerRequestRemoteRefresh.bind(this)).
+			 bind(LE.DataOptionChange, this.onLayerDataOptionChange.bind(this)).
 			 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
 			 bind(LE.ExploreTargetSet, this.onLayerExploreTargetSet.bind(this)).
 			 bind(LE.ExploreViewTypeChange, this.onLayerExploreViewTypeChange.bind(this)).
@@ -307,6 +309,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (ov && this.mapOverlayList.length === 1) {
 				this.moveToOverlayCenter(ov);
 			}
+		},
+		
+		onLayerDataOptionChange: function(e, sourceLayer) {
+			this.redrawMap();
 		},
 		
 		onLayerRequestDelete: function(e, sourceLayer) {
@@ -464,6 +470,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			return overlay._stockPickPool;
 		},
 		
+		resetAnimation: function() {
+			var i;
+			var cmapOlds = this.connectionTempMapSet.olds;
+			for (i in cmapOlds) {
+				cmapOlds[i] = null;
+			}
+			
+			console.log("Clear");
+		},
+
 		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
 			if (!sourceLayer.dataReady) {return;}
 			var selOnly = sourceLayer._markerOptions.showSelectedOnly;
@@ -505,9 +521,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (sourceLayer._markerOptions) {
 				connAttr = sourceLayer._markerOptions.connectionAttributeName;
 			}
-			
+
 			var cmapIDs  = this.connectionTempMapSet.ids;
 			var cmapRefs = this.connectionTempMapSet.refs;
+			var cmapOlds = this.connectionTempMapSet.olds;
+			var connAnimationEnabled = this.ownerApp.isAutoPlaying();
 			
 			// -----------------------------------------------------------------------
 		//console.log(">>>>>", tailLength);
@@ -544,16 +562,32 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i = 0;i < count;++i) {
 				var sourceRecord = src_array[i];
 				var marker_data = m_array[i];
+				var recId = sourceRecord._id;
 				
 				// Register reference to this marker
 				marker_data.connectedMarker = null;
 				if (connAttr) {
-					cmapIDs[sourceRecord._id] = connMapNextId;
-					cmapRefs[sourceRecord._id] = marker_data;
+					var connDestId = sourceRecord[connAttr];
+					// Calc animation frame
+					if (connAnimationEnabled) {
+						if (cmapOlds[recId] !== connDestId) {
+							marker_data.connectionAnimationOriginTime = (new Date()) - 0;
+							marker_data.connectionAnimationT = 0;
+						} else {
+							marker_data.connectionAnimationT = Math.min(1,  (new Date() - marker_data.connectionAnimationOriginTime) * 0.004  );
+						}
+					} else {
+						marker_data.connectionAnimationT = 1;
+					}
+
+					//console.log(cmapOlds[recId], connDestId, connAnimationEnabled)
+					cmapIDs[recId] = connMapNextId;
+					cmapRefs[recId] = marker_data;
+					cmapOlds[recId] = connDestId;
 				}
 				
 				if (selOnly && anySelected) {
-					if (!selection_pl.isIDSelected(sourceRecord._id)) {
+					if (!selection_pl.isIDSelected(recId)) {
 						marker_data.chipY = -1;
 						marker_data.tailLengthToRender = 0;
 						continue;
@@ -580,7 +614,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					marker_data.chipX = mkIndex * chipW;
 					
 					if (anySelected) {
-						var this_selected = selection_pl.isIDSelected(sourceRecord._id);
+						var this_selected = selection_pl.isIDSelected(recId);
 						if (!this_selected) {
 							marker_data.chipY = chipH;
 						}

@@ -17,6 +17,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		DownloadError: 'mm-layer-model-event-download-error',
 		DownloadProgress: 'mm-layer-model-event-download-progress',
 		DataChange: 'mm-layer-model-event-data-change',
+		DataOptionChange: 'mm-layer-model-event-data-option-change',
 		VisibilityChange: 'mm-layer-model-event-visibility-change',
 		RequestDelete: 'mm-layer-model-event-request-delete',
 		RequestGoDown: 'mm-layer-model-event-request-go-down',
@@ -64,6 +65,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.markerGenerator = new mobmap.MarkerGenerator();
 		this.markerGenerator.setParentEventElement(this.jElement[0]);
 		this.movingData = null;
+		this.mdataRemainSides = true;
 		this.attributeMapping = null;
 		this.tp_count_cache = -1;
 		this.localSelectionPool = new mobmap.SelectionPool();
@@ -166,6 +168,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		newMovingData: function() {
 			this.movingData = new mobmap.MovingData();
 			return this.movingData;
+		},
+		
+		setRemainSides: function(newValue) {
+			newValue = !!(newValue);
+
+			if (this.mdataRemainSides !== newValue) {
+				this.mdataRemainSides = newValue;
+				this.movingData.setRemainSidesMode(newValue);
+
+				this.eventDispatcher().trigger(LayerEvent.DataOptionChange, this);
+			}
 		},
 		
 		setAttributeMapping: function(a) {

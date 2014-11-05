@@ -527,11 +527,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.progressBar = null;
 		this.progressLabel = null;
 		this.subCaptionElement = null;
+		this.remainSidesCheckbox = null;
 		this.markerPanel = null;
 		this.connectionPanel = null;
 		this.meshPanel = null;
 		this.explorePanel = null;
-		
+
 		this.visibilityButton = null;
 		this.jSelCountIndicator = null;
 		this.jSelCountIndicatorText = null;
@@ -541,6 +542,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.layerReady = false;
 		this.acceptDownloadProgress = true;
+		this.syncRemainSidesCheckboxFromModel();
 	}
 	
 	LayerItemView.prototype = {
@@ -577,6 +579,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.element.appendChild(this.progressBar.element);
 			
 			if (use_marker) {
+				this.buildDataOptions();
 				this.buildMarkerConfigurationPanel();
 				this.buildMarkerConnectionPanel();
 			}
@@ -681,6 +684,50 @@ if (!window.mobmap) { window.mobmap={}; }
 				return "Mesh";
 			}
 		},
+
+		// Moving data option UI
+
+		buildDataOptions: function() {
+			var pair = generateCheckboxInLabel('Remain before first/after last', 'mm-moving-data-option', 'mm-moving-data-option');
+			this.element.appendChild(pair.label);
+			
+			this.remainSidesCheckbox = pair.input;
+			$(pair.input).click( this.onRemainSidesCheckboxClick.bind(this) );
+		},
+
+		getRemainSidesCheckboxValue: function() {
+			if (!this.remainSidesCheckbox) {
+				return false;
+			}
+			
+			return !!(this.remainSidesCheckbox.checked);
+		},
+		
+		setRemainSidesCheckboxValue: function(newValue) {
+			if (!this.remainSidesCheckbox) { return; }
+
+			newValue = !!(newValue);
+			if (this.getRemainSidesCheckboxValue() !== newValue) {
+				this.remainSidesCheckbox.checked = newValue;
+			}
+		},
+
+		syncRemainSidesCheckboxFromModel: function() {
+			if (this.boundLayer) {
+				var val = !!(this.boundLayer.mdataRemainSides);
+				this.setRemainSidesCheckboxValue(val);
+			}
+		},
+		
+		onRemainSidesCheckboxClick: function() {
+			if (this.boundLayer && this.boundLayer.setRemainSides) {
+				var val = this.getRemainSidesCheckboxValue();
+				this.boundLayer.setRemainSides(val);
+			}
+		},
+
+
+
 		
 		buildMarkerConfigurationPanel: function() {
 			this.markerPanel = new mobmap.MarkerConfigurationPanel(this.boundLayer.markerGenerator, this.boundLayer);

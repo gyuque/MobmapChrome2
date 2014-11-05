@@ -473,6 +473,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Play buttons - - - - - - - - - - - -
 		onPlayStateButtonPush_play: function() {
 			this.playController.play();
+			
+			//   Reset animation params AFTER invoking play controller
+			// to avoid disturbed by auto-rewind.
+			this.layerController.resetAnimation();
 		},
 
 		onPlayStateButtonPush_stop: function() {
@@ -481,6 +485,11 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		onPlayStateButtonPush_ff: function() {
 			this.playController.playFast();
+			this.layerController.resetAnimation();
+		},
+		
+		isAutoPlaying: function() {
+			return this.playController.isPlaying();
 		},
 
 		onPlaySpeedSliderChange: function() {

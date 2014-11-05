@@ -740,10 +740,17 @@ function installMobLayer(pkg) {
 		var startColor = this.connectionColors[0];
 		var endColor = this.connectionColors[1];
 
+		var aT = markerData.connectionAnimationT;
+		aT = 1.0 - (1.0-aT)*(1.0-aT);
+		
 		var sx1 = markerData.screenX;
 		var sy1 = markerData.screenY;
 		var sx2 = destMarker.screenX;
 		var sy2 = destMarker.screenY;
+		var dx = sx2 - sx1;
+		var dy = sy2 - sy1;
+		var sx3 = sx1 + dx*aT;
+		var sy3 = sy1 + dy*aT;
 
 		// p0
 		vlist[startIndex + (i++) ] = sx1;
@@ -755,8 +762,8 @@ function installMobLayer(pkg) {
 		colorList[cIndex++] = startColor[3];
 		
 		// p1
-		vlist[startIndex + (i++) ] = sx2;
-		vlist[startIndex + (i++) ] = sy2;
+		vlist[startIndex + (i++) ] = sx3;
+		vlist[startIndex + (i++) ] = sy3;
 		
 		colorList[cIndex++] = endColor[0];
 		colorList[cIndex++] = endColor[1];
@@ -765,7 +772,7 @@ function installMobLayer(pkg) {
 
 		if (this.enableConnectionArrow) {
 			var vn = this.tempVec2;
-			vec2.set(vn, sx2-sx1, sy2-sy1);
+			vec2.set(vn, dx, dy);
 			
 			var vlen = vec2.length(vn);
 			if (vlen > 0.1) {
@@ -777,30 +784,30 @@ function installMobLayer(pkg) {
 				var nx = -vn[1] * 0.5;
 				var ny =  vn[0] * 0.5;
 
-				vlist[startIndex + (i++) ] = sx2;
-				vlist[startIndex + (i++) ] = sy2;
+				vlist[startIndex + (i++) ] = sx3;
+				vlist[startIndex + (i++) ] = sy3;
 				colorList[cIndex++] = endColor[0];
 				colorList[cIndex++] = endColor[1];
 				colorList[cIndex++] = endColor[2];
 				colorList[cIndex++] = endColor[3];
 
-				vlist[startIndex + (i++) ] = sx2 + vn[0] + nx;
-				vlist[startIndex + (i++) ] = sy2 + vn[1] + ny;
+				vlist[startIndex + (i++) ] = sx3 + (vn[0] + nx)*aT;
+				vlist[startIndex + (i++) ] = sy3 + (vn[1] + ny)*aT;
 				colorList[cIndex++] = endColor[0];
 				colorList[cIndex++] = endColor[1];
 				colorList[cIndex++] = endColor[2];
 				colorList[cIndex++] = endColor[3];
 
 
-				vlist[startIndex + (i++) ] = sx2;
-				vlist[startIndex + (i++) ] = sy2;
+				vlist[startIndex + (i++) ] = sx3;
+				vlist[startIndex + (i++) ] = sy3;
 				colorList[cIndex++] = endColor[0];
 				colorList[cIndex++] = endColor[1];
 				colorList[cIndex++] = endColor[2];
 				colorList[cIndex++] = endColor[3];
 
-				vlist[startIndex + (i++) ] = sx2 + vn[0] - nx;
-				vlist[startIndex + (i++) ] = sy2 + vn[1] - ny;
+				vlist[startIndex + (i++) ] = sx3 + (vn[0] - nx)*aT;
+				vlist[startIndex + (i++) ] = sy3 + (vn[1] - ny)*aT;
 				colorList[cIndex++] = endColor[0];
 				colorList[cIndex++] = endColor[1];
 				colorList[cIndex++] = endColor[2];
@@ -1430,6 +1437,8 @@ function installMobLayer(pkg) {
 		this.renderingID = 0;
 		this.labelText = null
 		this.connectedMarker = null;
+		this.connectionAnimationT = 1;
+		this.connectionAnimationOriginTime = -1;
 	}
 	
 	MarkerDisplayData.prototype.ensureTailArray = function(length) {

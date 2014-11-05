@@ -916,8 +916,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			s1.g = markerGeneratorOptions.blendEnd.g;
 			s1.b = markerGeneratorOptions.blendEnd.b;
 
-			this.markerGradientEditor.syncFromModel();
-			this.markerGradientEditor.redraw();
+			if (this.markerGradientEditor) {
+				this.markerGradientEditor.syncFromModel();
+				this.markerGradientEditor.redraw();
+			}
 			
 			this.toggleGradientConf(markerGeneratorOptions);
 		}
