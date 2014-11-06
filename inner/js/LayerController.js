@@ -311,7 +311,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
-		onLayerDataOptionChange: function(e, sourceLayer) {
+		onLayerDataOptionChange: function(e, sourceLayer, changeFlags) {
+			if (this.ownerApp && (changeFlags & mobmap.DataOptionChangeFlag_TimeOffset)) {
+				this.ownerApp.refreshAllLayersTimeRange();
+			}
+
 			this.redrawMap();
 		},
 		

@@ -139,8 +139,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				var lyr = this.layerList.getLayerAt(i);
 
 				if (lyr.hasTimeRange()) {
-					if (lyr.dataTimeRange.start < start_t) { start_t = lyr.dataTimeRange.start; }
-					if (lyr.dataTimeRange.end > end_t) { end_t = lyr.dataTimeRange.end; }
+					var st = lyr.dataTimeRange.start + lyr.getDataOffset();
+					var ed = lyr.dataTimeRange.end + lyr.getDataOffset();
+					if (st < start_t) { start_t = st; }
+					if (ed > end_t) { end_t = ed; }
 				}
 			}
 

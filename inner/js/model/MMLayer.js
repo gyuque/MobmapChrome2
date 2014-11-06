@@ -7,6 +7,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		var i = gLayerNextId++;
 		return i;
 	};
+	
+	aGlobal.mobmap.DataOptionChangeFlag_TimeOffset = 0x1;
 
 	var LayerEvent = {
 		LoadWillStart: 'mm-layer-model-event-load-will-start',
@@ -66,6 +68,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.markerGenerator.setParentEventElement(this.jElement[0]);
 		this.movingData = null;
 		this.mdataRemainSides = true;
+		this.mdataOffset = 0;
 		this.attributeMapping = null;
 		this.tp_count_cache = -1;
 		this.localSelectionPool = new mobmap.SelectionPool();
@@ -122,6 +125,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.eventDispatcher().trigger(LayerEvent.VisibilityChange, this);
 		}
 	}
+	
+	function layerbase_getDataOffset() {
+		return this.mdataOffset || 0;
+	}
+
 
 	aGlobal.mobmap.MMLayerBase = {
 		eventDispatcher: layerbase_eventDispatcher,
@@ -133,7 +141,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		requestGoUp:   layerbase_requestGoUp,
 		destroy: layerbase_destroy,
 		toggleVisibility: layerbase_toggleVisibility,
-		setVisibility: layerbase_setVisibility
+		setVisibility: layerbase_setVisibility,
+		getDataOffset: layerbase_getDataOffset
 	};
 
 	aGlobal.mobmap.InstallMMLayerBaseMethods = function(targetPrototype) {
@@ -177,10 +186,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.mdataRemainSides = newValue;
 				this.movingData.setRemainSidesMode(newValue);
 
-				this.eventDispatcher().trigger(LayerEvent.DataOptionChange, this);
+				this.eventDispatcher().trigger(LayerEvent.DataOptionChange, [this, 0]);
 			}
 		},
 		
+		setDataOffset: function(seconds) {
+			seconds |= 0;
+			
+			if (this.mdataOffset !== seconds) {
+				this.mdataOffset = seconds;
+				this.movingData.pickOffset = -this.mdataOffset;
+				this.eventDispatcher().trigger(LayerEvent.DataOptionChange, [this, mobmap.DataOptionChangeFlag_TimeOffset]);
+			}
+		},
+
 		setAttributeMapping: function(a) {
 			this.attributeMapping = a;
 		},
@@ -353,7 +372,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tls = this.movingData.getFlattenTLArray();
 			var recs = tls[polylineIndex].getRecordList();
 			
-			return recs[vertexIndex]._time;
+			return recs[vertexIndex]._time + this.mdataOffset;
 		},
 
 		tpGetOwnerObjectId: function(polylineIndex) {

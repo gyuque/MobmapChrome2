@@ -432,6 +432,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					 bind(LE.BodyLoadStarted, this.onBodyLoadStarted.bind(this)).
 					 bind(LE.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
 					 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
+					 bind(LE.DataOptionChange, this.onLayerDataOptionChange.bind(this)).
 					 bind(LE.DownloadError, this.onLayerDownloadError.bind(this)).
 					 bind(LE.DownloadProgress, this.onLayerDownloadProgress.bind(this)).
 					 bind(LE.Destroy, this.onLayerDestroy.bind(this)).
@@ -487,6 +488,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		onLayerDataOptionChange: function(e, layer) {
+			if (layer.hasPrimaryView()) {
+				layer.primaryView.syncRemainSidesCheckboxFromModel();
+			}
+		},
+		
 		onLayerDownloadError: function(e, layer) {
 			if (layer.hasPrimaryView()) {
 				layer.primaryView.showDownloadError();
@@ -528,6 +535,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.progressLabel = null;
 		this.subCaptionElement = null;
 		this.remainSidesCheckbox = null;
+		this.dataOffsetInput = null;
 		this.markerPanel = null;
 		this.connectionPanel = null;
 		this.meshPanel = null;
@@ -688,11 +696,29 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Moving data option UI
 
 		buildDataOptions: function() {
+			// Remain sides
 			var pair = generateCheckboxInLabel('Remain before first/after last', 'mm-moving-data-option', 'mm-moving-data-option');
 			this.element.appendChild(pair.label);
 			
 			this.remainSidesCheckbox = pair.input;
 			$(pair.input).click( this.onRemainSidesCheckboxClick.bind(this) );
+			
+			// Offset
+			var pair_days = generateInputElementInLabel('number', 'Offset ', 'mm-moving-data-offset', 'mm-moving-data-offset', true);
+			pair_days.label.appendChild(document.createTextNode('day(s)'));
+			this.configureOffsetNumberInput(pair_days.input);
+			this.element.appendChild(pair_days.label);
+			
+			var ofs_handler = this.onDataOffsetInputChange.bind(this);
+			this.dataOffsetInput = pair_days.input;
+			$(pair_days.input).change(ofs_handler).keyup(ofs_handler);
+		},
+		
+		configureOffsetNumberInput: function(input) {
+			input.setAttribute('min', -99999);
+			input.setAttribute('max', 99999);
+			input.setAttribute('step', 1);
+			input.setAttribute('value', 0);
 		},
 
 		getRemainSidesCheckboxValue: function() {
@@ -711,11 +737,31 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.remainSidesCheckbox.checked = newValue;
 			}
 		},
+		
+		getDataOffsetInputValue: function() {
+			if (!this.dataOffsetInput) {
+				return 0;
+			}
+			
+			return this.dataOffsetInput.value | 0;
+		},
+		
+		setDataOffsetInputValueBySeconds: function(seconds) {
+			var nDays = Math.floor(seconds / (24*3600));
+
+			if (this.getDataOffsetInputValue() !== nDays) {
+				this.dataOffsetInput.value = nDays;
+			}
+		},
 
 		syncRemainSidesCheckboxFromModel: function() {
 			if (this.boundLayer) {
 				var val = !!(this.boundLayer.mdataRemainSides);
 				this.setRemainSidesCheckboxValue(val);
+				
+				if (this.boundLayer.getDataOffset) {
+					this.setDataOffsetInputValueBySeconds( this.boundLayer.getDataOffset() );
+				}
 			}
 		},
 		
@@ -723,6 +769,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.boundLayer && this.boundLayer.setRemainSides) {
 				var val = this.getRemainSidesCheckboxValue();
 				this.boundLayer.setRemainSides(val);
+			}
+		},
+		
+		onDataOffsetInputChange: function() {
+			if (this.boundLayer && this.boundLayer.setDataOffset) {
+				var val = this.getDataOffsetInputValue();
+				this.boundLayer.setDataOffset(val * 24 * 3600);
 			}
 		},
 

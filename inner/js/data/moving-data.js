@@ -5,6 +5,7 @@ if (!window.mobmap) window.mobmap={};
 	var PROP_INTERPOLATE = 0x1;
 
 	function MovingData() {
+		this.pickOffset = 0;
 		this.idMap = createCleanHash();
 		this.tlList = null;
 
@@ -93,6 +94,7 @@ if (!window.mobmap) window.mobmap={};
 		// Pick API -------------------------------------
 		pickAt: function(pickPool, timeInSec, pickIndex, tailLength, tailInterval) {
 			if (!pickIndex) {pickIndex=0;}
+			timeInSec += this.pickOffset;
 			
 			var i;
 			var ls = this.tlList;
@@ -111,6 +113,8 @@ if (!window.mobmap) window.mobmap={};
 		},
 		
 		pickById: function(outRecord, seconds, objId) {
+			seconds += this.pickOffset;
+			
 			var tl = this.idMap[objId];
 			tl.pickAt(null, outRecord, seconds, this.extraProps);
 		},
@@ -127,6 +131,7 @@ if (!window.mobmap) window.mobmap={};
 			var tl = this.idMap[objId];
 			if (!tl) { return false; }
 			
+			seconds += this.pickOffset;
 			return !! tl.getKeyFrameRecord(seconds);
 		},
 
@@ -134,6 +139,7 @@ if (!window.mobmap) window.mobmap={};
 			var tl = this.idMap[objId];
 			if (!tl) { return null; }
 			
+			seconds += this.pickOffset;
 			return tl.getKeyFrameRecord(seconds);
 		},
 
