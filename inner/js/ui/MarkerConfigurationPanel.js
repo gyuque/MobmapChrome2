@@ -2,8 +2,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var sharedNextMarkerPanelId = 1;
 	
 	function MarkerConfigurationPanel(markerGenerator, layer) {
+		this.panelId = sharedNextMarkerPanelId++;
 		this.boundLayer = layer;
 		this.markerPresetList = this.generatePresetMarkerSets();
 		
@@ -277,12 +279,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.markerGenerator.setNumOfVariation(v);
 		},
 		
+		nameWithPanelId: function(name) {
+			return name + '-' + this.panelId;
+		},
+		
 		buildMarkerVaryOptions: function(containerElement) {
 			var fs = makeFieldSetWithLegend('Varying');
 			
-			var rl_none = generateRadioInLabel('None',         'MarkerVaryType', 'varytypeopt');
-			var rl_attr = generateRadioInLabel('By attribute', 'MarkerVaryType', 'varytypeopt');
-			var rl_day  = generateRadioInLabel('By day',       'MarkerVaryType', 'varytypeopt');
+			var radio_name = this.nameWithPanelId('MarkerVaryType');
+			var rl_none = generateRadioInLabel('None',         radio_name, 'varytypeopt');
+			var rl_attr = generateRadioInLabel('By attribute', radio_name, 'varytypeopt');
+			var rl_day  = generateRadioInLabel('By day',       radio_name, 'varytypeopt');
 
 			this.varyingRadios.none = rl_none;
 			this.varyingRadios.attr = rl_attr;
@@ -360,7 +367,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			// Type selection ======================================================
 			fs.appendChild(this.generateOptionHeading('Type'));
-			this.addConfigurationRadioSet(fs, 'TailType', 'tailopt', [
+			this.addConfigurationRadioSet(fs, this.nameWithPanelId('TailType'), 'tailopt', [
 				['None'             , MO.TAIL_NONE       ],
 				['Show with marker' , MO.TAIL_WITH_MARKER],
 				['Show tail only'   , MO.TAIL_ONLY       ]
@@ -479,7 +486,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		buildMarkerTailColoringOptions: function(containerElement) {
 			var MO = mobmap.LayerMarkerOptions;
-			this.addConfigurationRadioSet(containerElement, 'TailColoring', 'tailclr', [
+			this.addConfigurationRadioSet(containerElement, this.nameWithPanelId('TailColoring'), 'tailclr', [
 				['Marker color'     , MO.TC_MARKER_COLOR ],
 				['Hue by direction' , MO.TC_DIRECTION    ]
 			], this.onTailColoringRadioChange.bind(this));
@@ -579,15 +586,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		getSelectedVaryingType: function() {
-			return pickIntRadioboxVal(this.jElement, 'MarkerVaryType');
+			return pickIntRadioboxVal(this.jElement, this.nameWithPanelId('MarkerVaryType'));
 		},
 		
 		getSelectedTailType: function() {
-			return pickIntRadioboxVal(this.jElement, 'TailType');
+			return pickIntRadioboxVal(this.jElement, this.nameWithPanelId('TailType'));
 		},
 
 		getSelectedTailColoringType: function() {
-			return pickIntRadioboxVal(this.jElement, 'TailColoring');
+			return pickIntRadioboxVal(this.jElement, this.nameWithPanelId('TailColoring'));
 		},
 
 
@@ -731,15 +738,15 @@ if (!window.mobmap) { window.mobmap={}; }
 
 
 		checkVaryingTypeRadio: function(newVal) {
-			checkRadioboxByInt(this.jElement, 'MarkerVaryType', newVal);
+			checkRadioboxByInt(this.jElement, this.nameWithPanelId('MarkerVaryType'), newVal);
 		},
 		
 		checlTailTypeRadio: function(newVal) {
-			checkRadioboxByInt(this.jElement, 'TailType', newVal);
+			checkRadioboxByInt(this.jElement, this.nameWithPanelId('TailType'), newVal);
 		},
 		
 		checkTailColoringRadio: function(newVal) {
-			checkRadioboxByInt(this.jElement, 'TailColoring', newVal);
+			checkRadioboxByInt(this.jElement, this.nameWithPanelId('TailColoring'), newVal);
 		},
 		
 		onTailFadeCheckChange: function() {

@@ -181,6 +181,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	// Base ---------------------------------------------------
 	function HugeCSVLoader(inFile) {
 		this.owner = null;
+		this.rerunCount = 0;
 		this.ignoreFirstLineEnabled = false;
 		this.inputFile = inFile;
 		this.inputBytes = null;
@@ -198,7 +199,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		preload: function(listenerObject) {
 			var file = this.inputFile;
 			var reader = new FileReader();
-			
+
 			reader.onloadend = (function(e) {
 				var abuf = e.target.result;
 				this.inputBytes = new Uint8Array(abuf, 0);
@@ -252,7 +253,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			if (hasMore && fullMode) {
-				setTimeout(this.advanceClosure, 1, fullMode);
+				var intv_ms = ((++this.rerunCount % 25) === 0) ? 80 : 1;
+				setTimeout(this.advanceClosure, intv_ms, fullMode);
 			} else {
 				this.loadJob.listenerObject.csvloaderLoadFinish(this);
 			}

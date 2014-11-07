@@ -14,6 +14,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.element = this.jElement = this.previewContainer = null;
 		this.jIgnoreFirstLineCheck = null;
+		this.jTriggerContainer = null;
 		this.csvLoader = null;
 		this.previewTable = null;
 		this.autoDetector = null;
@@ -89,6 +90,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			containerElement.appendChild(lbIgnore);
 			buttonContainer.appendChild(loadButton);
 			containerElement.appendChild(buttonContainer);
+			
+			this.jTriggerContainer = $(buttonContainer);
 		},
 		
 		onFullLoadClick: function() {
@@ -107,6 +110,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		// Preload and preview ===================
 		generatePreview: function(sourceFile) {
+			this.clearPreviewArea();
+			this.showTrigger(false);
+			
 			this.csvLoader = new mobmap.GeoCSVLoader(sourceFile);
 			this.csvLoader.preload(this);
 		},
@@ -124,7 +130,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onPreviewLoadFinish: function(success, previewRecords) {
 			if (success) {
-				this.clearPreviewArea();
+				this.showTrigger(true);
 
 				this.attrMap = new mobmap.AttributeMapping();
 				this.addDefaultAttributes(this.attrMap);
@@ -192,6 +198,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		checkIgnoreFirstLine: function() {
 			this.jIgnoreFirstLineCheck.attr('checked', 'checked');
 			this.onIgnoreFirstCheckClick();
+		},
+		
+		showTrigger: function(visible) {
+			if (visible) {
+				this.jTriggerContainer.show();
+			} else {
+				this.jTriggerContainer.hide();
+			}
 		}
 	};
 
