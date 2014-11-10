@@ -42,7 +42,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		PolygonSelectable: 0x20,
 		FixOnBottom: 0x100,
 		ExploreOtherLayer: 0x200,
-		StaticData: 0x400
+		StaticData: 0x400,
+		StatOtherLayer: 0x800
 	};
 
 	function MovingObjectLayer() {

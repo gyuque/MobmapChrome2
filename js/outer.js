@@ -109,6 +109,10 @@
 			chrome.storage.local.set({'remoteDownloaderURL': params.url}, function() {
 				console.log('saved',  params.url);
 			});
+		},
+		
+		resetApp: function() {
+			chrome.runtime.reload();
 		}
 	};
 	

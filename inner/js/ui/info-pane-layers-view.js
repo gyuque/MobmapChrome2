@@ -343,9 +343,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			// Send target list to explore layer
 			for (i = 0;i < len;++i) {
 				layer = ls.getLayerAt(i);
-				if (layer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
-					if (layer.hasPrimaryView()) {
+				if (layer.hasPrimaryView()) {
+					if (layer.capabilities & mobmap.LayerCapability.ExploreOtherLayer) {
 						layer.primaryView.setExploreTargetList(targetLayerList);
+					}
+				
+					if (layer.capabilities & mobmap.LayerCapability.StatOtherLayer) {
+						layer.primaryView.setStatTargetList(targetLayerList);
 					}
 				}
 			}
@@ -539,6 +543,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.markerPanel = null;
 		this.connectionPanel = null;
 		this.meshPanel = null;
+		this.meshStatPanel = null;
 		this.explorePanel = null;
 
 		this.visibilityButton = null;
@@ -798,6 +803,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.meshPanel = new mobmap.MeshConfigurationPanel(this.boundLayer);
 			this.meshPanel.hide();
 			this.element.appendChild(this.meshPanel.element);
+			
+			this.meshStatPanel = new mobmap.MeshStatSubPanel(this.boundLayer);
+			this.meshStatPanel.hide();
+			this.element.appendChild(this.meshStatPanel.element);
 		},
 		
 		buildExploreConfigurationPanel: function() {
@@ -857,6 +866,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (this.markerPanel )     { this.markerPanel.show();      }
 				if (this.connectionPanel ) { this.connectionPanel.show();  }
 				if (this.meshPanel   )     { this.meshPanel.show();        }
+				if (this.meshStatPanel)    { this.meshStatPanel.show();    }
 				if (this.explorePanel)     { this.explorePanel.show();     }
 			}
 		},
@@ -902,6 +912,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		setExploreTargetList: function(targetLayerList) {
 			this.explorePanel.setTargetList(targetLayerList);
+		},
+		
+		setStatTargetList: function(targetLayerList) {
+			if (this.meshStatPanel) {
+				this.meshStatPanel.setTargetList(targetLayerList);
+			}
 		},
 		
 		onLayerDeleteButtonClick: function() {

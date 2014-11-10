@@ -10,7 +10,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.visible = true;
 		this.remote = false;
 		this.primaryView = null;
-		this.capabilities = mobmap.LayerCapability.MeshRenderable;
+		this.capabilities = mobmap.LayerCapability.MeshRenderable | mobmap.LayerCapability.StatOtherLayer;
 		this.dataTimeRange = {
 			start: 0,
 			end: 0

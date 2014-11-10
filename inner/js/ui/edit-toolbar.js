@@ -21,6 +21,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.gateButtonNameMap = this.addGateButtons('gate');
 		this.annButtonNameMap = this.addAnnotationButtons('ann');
 		this.movButtonNameMap = this.addMovieButtons('mov');
+		this.resetButtonNameMap = this.addResetButtons('reset');
 		this.allButtonNameMap = this.makeAllButtonNameMap(this.selectionButtonNameMap, this.gateButtonNameMap);
 	}
 	
@@ -35,11 +36,12 @@ if (!window.mobmap) { window.mobmap={}; }
 				["sel",       "Selection"],
 				["gate",      "Gate"     ],
 				["ann",       "Location Annotation"],
-				["mov",       "Movie"]
+				["mov",       "Movie"],
+				["reset",     "Reset",             true]
 			];
 			
 			for (var i in list) {
-				this.addGroupColumn(list[i][0], list[i][1]);
+				this.addGroupColumn(list[i][0], list[i][1], !!list[i][2]);
 			}
 		},
 		
@@ -74,6 +76,14 @@ if (!window.mobmap) { window.mobmap={}; }
 					['generate_movie', 12]
 				],
 				this.observeMovieButton.bind(this)
+			);
+		},
+
+		addResetButtons: function(colName) {
+			return this.addButtons(colName, [
+					['reset_app', 13]
+				],
+				this.observeResetButton.bind(this)
 			);
 		},
 			
@@ -131,16 +141,27 @@ if (!window.mobmap) { window.mobmap={}; }
 			 click(this.onMovieButtonClick.bind(this, btnObj));
 		},
 		
-		addGroupColumn: function(name, initialText) {
+		observeResetButton: function(btnObj) {
+			btnObj.eventDispatcher().
+			 click(this.onResetButtonClick.bind(this, btnObj));
+		},
+		
+		addGroupColumn: function(name, initialText, spacing) {
 			var tdHeadCol = document.createElement('th');
 			var tdBodyCol = document.createElement('td');
 			
 			tdHeadCol.setAttribute('class', 'mm-editbarcol-caption');
 			tdBodyCol.setAttribute('class', 'mm-editbarcol-body editbarcol-body-'+name);
-			tdHeadCol.appendChild( document.createTextNode(initialText) );
 			
+			if (initialText && initialText.length > 0) {
+				tdHeadCol.appendChild( document.createTextNode(initialText) );
+			}
+
 			this.tableRow.appendChild(tdHeadCol);
 			this.tableRow.appendChild(tdBodyCol);
+			if (spacing) {
+				tdHeadCol.style.paddingLeft = '2em';
+			}
 			
 			this.groupColumnMap[name] = tdBodyCol;
 		},
@@ -187,6 +208,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		onMovieButtonClick: function(btnObj, e) {
 			if (this.ownerApp) {
 				this.ownerApp.openMovieWindow();
+			}
+		},
+		
+		onResetButtonClick: function(btnObj, e) {
+			if (this.ownerApp) {
+				this.ownerApp.reset();
 			}
 		},
 		

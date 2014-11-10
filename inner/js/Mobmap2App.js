@@ -692,6 +692,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (prj) {
 				prj.annotationList.removeById(targetAnnotationId);
 			}
+		},
+
+		reset: function() {
+			Mobmap2App.sendOuterMessage('resetApp', {});
 		}
 	};
 
