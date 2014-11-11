@@ -454,6 +454,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					overlay.setShowTyphoonCloud(layer.typhoonMarkerOptions.showCloud);
 					this.fillMarkerPool(overlay, layer, targetTimeSec);
 				} else if (overlay.setPickTime) {
+					this.configureDynStatBeforeRendering(layer, overlay);
 					overlay.resetRenderedRegion();
 					overlay.setPickTime(targetTimeSec);
 					overlay.setRenderValueMax(layer.renderValueRange.max);
@@ -464,7 +465,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 		},
-		
+
+		configureDynStatBeforeRendering: function(layerModel, overlay) {
+			if (layerModel.capabilities & mobmap.LayerCapability.StatOtherLayer) {
+				console.log("IMPL HERE");
+			}
+		},
+
 		ensureOverlayPickPool: function(overlay) {
 			if (!overlay._stockPickPool) {
 				var movingData = overlay.ownerObject.movingData;

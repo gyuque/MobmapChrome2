@@ -30,6 +30,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			max: 10000
 		};
 		
+		this.statTargetLayerId = -1;
+		this.statTargetAttributeName = null;
+		
 		this.otherRenderingOptions = {
 			labeled: false,
 			spacing: 0
@@ -42,6 +45,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	MMMeshLayer.COLOR_RULE_CHANGE = "mm-mesh-layer-event-color-rule-change";
 	MMMeshLayer.RENDER_VALUE_RANGE_CHANGE = "mm-mesh-layer-event-render-value-range-change";
 	MMMeshLayer.CELL_APPEARANCE_CHANGE = "mm-mesh-layer-event-cell-appearance-change";
+	MMMeshLayer.STAT_TARGET_LAYER_CHANGE = "mm-mesh-layer-event-stat-target-layer-change";
 	
 	MMMeshLayer.prototype = {
 		setMeshData: function(md) {
@@ -111,6 +115,16 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			this.otherRenderingOptions.spacing = s;
 			this.eventDispatcher().trigger(MMMeshLayer.CELL_APPEARANCE_CHANGE, this);
+		},
+		
+		setStatTargetLayerId: function(newId) {
+			newId = newId | 0;
+			if (newId < 0) { newId = -1;}
+			
+			if (this.statTargetLayerId !== newId) {
+				this.statTargetLayerId = newId;
+				this.eventDispatcher().trigger(MMMeshLayer.STAT_TARGET_LAYER_CHANGE, this);
+			}
 		}
 	};
 	

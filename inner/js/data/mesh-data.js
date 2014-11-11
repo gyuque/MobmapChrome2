@@ -6,6 +6,7 @@ if (!window.mobmap) window.mobmap={};
 	function MeshData() {
 		this.meshMap = {};
 		this.dynamic = false;
+		this.dynStatProvider = null;
 		
 		// + for pick optimization +
 		//   Use this hash to skip empty row.
@@ -121,6 +122,14 @@ if (!window.mobmap) window.mobmap={};
 		
 		hasRowAnyData: function(yIndex) {
 			return !! this.usedRowMap[yIndex];
+		},
+		
+		ensureDynStat: function() {
+			if (!this.dynStatProvider) {
+				this.dynStatProvider = new MeshDynStatProvider();
+			}
+			
+			return this.dynStatProvider;
 		}
 	};
 
@@ -192,6 +201,16 @@ if (!window.mobmap) window.mobmap={};
 		this.t = t;
 		this.val = v;
 	}
+	
+	
+	// Statistical feature
+	function MeshDynStatProvider() {
+		this.targetMovingData = null;
+	}
+	
+	MeshDynStatProvider.prototype = {
+		
+	};
 	
 	
 	// Utility functions
