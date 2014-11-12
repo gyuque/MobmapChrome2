@@ -48,7 +48,31 @@ if (!window.mobmap) window.mobmap={};
 				return null;
 			}
 		},
+
+		// DynStat
+		isDynStatEnabled: function() {
+			if (this.dynStatProvider) {
+				return !!(this.dynStatProvider.targetMovingData);
+			}
+			
+			return false;
+		},
 		
+		updateDynStat: function(tSeconds) {
+			this.resetStatValue();
+			if (this.dynStatProvider) {
+				this.dynStatProvider.calc(tSeconds, this.meshDefinition, this);
+			}
+		},
+		
+		resetStatValue: function() {
+			var m = this.meshMap;
+			for (var i in m) {
+				m[i].lastStatValue = 0;
+				m[i].lastStatCount = 0;
+			}
+		},
+
 		ensureCell: function(x, y) {
 			var k = makeMeshKey(x, y);
 			var m = this.meshMap;
@@ -57,6 +81,10 @@ if (!window.mobmap) window.mobmap={};
 			}
 
 			return m[k];
+		},
+		
+		getCell: function(x, y) {
+			return this.meshMap[ makeMeshKey(x, y) ] || null;
 		},
 		
 		close: function() {
@@ -130,6 +158,11 @@ if (!window.mobmap) window.mobmap={};
 			}
 			
 			return this.dynStatProvider;
+		},
+		
+		setDynStatTargetMovingData: function(movingData) {
+			var ds = this.ensureDynStat();
+			ds.setTargetMovingData(movingData);
 		}
 	};
 
@@ -138,6 +171,8 @@ if (!window.mobmap) window.mobmap={};
 		this.cellIndexX = cx;
 		this.cellIndexY = cy;
 		this.timedList = [];
+		this.lastStatValue = 0;
+		this.lastStatCount = 0;
 	}
 	
 	MeshCell.prototype = {
@@ -167,14 +202,17 @@ if (!window.mobmap) window.mobmap={};
 			
 			// [t] is after end
 			if (i === len) {
+				ls[len-1].statVal = this.lastStatValue;
 				return ls[len-1];
 			}
 			
 			// [t] is before start 
 			if (nextT === 0) {
+				ls[0].statVal = this.lastStatValue;
 				return ls[0];
 			}
 			
+			ls[nextT - 1].statVal = this.lastStatValue;
 			return ls[nextT - 1];
 		},
 		
@@ -200,16 +238,67 @@ if (!window.mobmap) window.mobmap={};
 	function MeshRecord(t, v) {
 		this.t = t;
 		this.val = v;
+		this.statVal = 0;
 	}
 	
 	
 	// Statistical feature
 	function MeshDynStatProvider() {
 		this.targetMovingData = null;
+		this.targetAttributeName = null;
+		this.pickPool = null;
 	}
 	
 	MeshDynStatProvider.prototype = {
+		setTargetMovingData: function(d) {
+			this.targetMovingData = d;
+		},
 		
+		calc: function(timeInSeconds, meshDefinition, meshData) {
+			// Prepare
+			var mdat = this.targetMovingData;
+			if (!mdat) {
+				return;
+			}
+			
+			if (!this.pickPool) {
+				this.pickPool = mdat.createPickPool();
+			}
+			
+			// Pick
+			this.pickPool.clear();
+			mdat.pickAt(this.pickPool, timeInSeconds);
+			this.totalPickedRecords(this.pickPool, meshDefinition, meshData);
+		},
+		
+		totalPickedRecords: function(ppool, meshDefinition, meshData) {
+			var count = ppool.pickedCount;
+			var src_array = ppool.getArray();
+			
+			var ox = meshDefinition.originLng;
+			var xstep = meshDefinition.stepLng;
+
+			var oy = meshDefinition.originLat;
+			var ystep = meshDefinition.stepLat;
+			var attr = this.targetAttributeName;
+
+			for (var i = 0;i < count;++i) {
+				var rec = src_array[i];
+				var cx = Math.floor((rec.x - ox) / xstep);
+				var cy = Math.floor((rec.y - oy) / ystep);
+
+				var cell = meshData.getCell(cx, cy);
+				if (cell) {
+					++cell.lastStatCount;
+					
+					if (attr) {
+						cell.lastStatValue += rec[attr];
+					} else {
+						++cell.lastStatValue;
+					}
+				}
+			}
+		}
 	};
 	
 	

@@ -108,6 +108,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!this.updateProjectionGrid(this.projectionGrid)) {
 				return;
 			}
+
+			md.updateDynStat(this.pickTime);
+			var use_dynstat = md.isDynStatEnabled();
 			
 			// Map bounds  - -
 			var mbnd = this.getMap().getBounds();
@@ -194,6 +197,10 @@ if (!window.mobmap) { window.mobmap={}; }
 							g.fillRect(sx1 + spacing, sy2 + spacing, cellWidth - size_reduce, cellHeight - size_reduce);
 						
 							if (use_label) {
+								if (use_dynstat) {
+									this.renderCellLabel(g, sx1, sy2 - 13, cellWidth, cellHeight, cellVal.statVal);
+								}
+
 								this.renderCellLabel(g, sx1, sy2, cellWidth, cellHeight, cellVal.val);
 							}
 

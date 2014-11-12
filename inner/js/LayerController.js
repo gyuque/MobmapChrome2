@@ -236,6 +236,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.ExploreTargetDataChange, this.onLayerExploreTargetDataChange.bind(this)).
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
+			 bind( mobmap.MMMeshLayer.STAT_TARGET_LAYER_CHANGE, this.onLayerStatTargetLayerChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.CELL_APPEARANCE_CHANGE, this.onLayerCellAppearanceChange.bind(this) );
 
@@ -278,6 +279,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerRenderValueMaxChange: function() {
+			this.redrawMap();
+		},
+		
+		onLayerStatTargetLayerChange: function() {
 			this.redrawMap();
 		},
 		
@@ -467,8 +472,21 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		configureDynStatBeforeRendering: function(layerModel, overlay) {
+			var prj = this.ownerApp.getCurrentProject();
+			if (!prj) { return; }
+
 			if (layerModel.capabilities & mobmap.LayerCapability.StatOtherLayer) {
-				console.log("IMPL HERE");
+				var targetLayer = prj.getLayerById(layerModel.statTargetLayerId);
+				var targetMovingData = null;
+				if (targetLayer) {
+					targetMovingData = targetLayer.movingData || null;
+				}
+				
+				var originMeshData = layerModel.meshData;
+				if (originMeshData) {
+					originMeshData.setDynStatTargetMovingData(targetMovingData);
+				}
+//				console.log(targetLayer)
 			}
 		},
 
