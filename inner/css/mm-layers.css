@@ -228,7 +228,8 @@ label.tailconf-segs,
 label.tailconf-step,
 label.tailconf-width,
 label.marker-index-mapping-check,
-label.marker-label-check {
+label.marker-label-check,
+.mm-target-selector-label {
 	display: block;
 }
 

@@ -366,7 +366,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var fs = makeFieldSetWithLegend('Tail');
 
 			// Type selection ======================================================
-			fs.appendChild(this.generateOptionHeading('Type'));
+			fs.appendChild(mobmap.LayersView.generateOptionHeading('Type'));
 			this.addConfigurationRadioSet(fs, this.nameWithPanelId('TailType'), 'tailopt', [
 				['None'             , MO.TAIL_NONE       ],
 				['Show with marker' , MO.TAIL_WITH_MARKER],
@@ -377,11 +377,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tailConfContainer = $H('div', 'mm-tail-conf-container');
 			
 			//  coloring
-			tailConfContainer.appendChild(this.generateOptionHeading('Coloring'));
+			tailConfContainer.appendChild(mobmap.LayersView.generateOptionHeading('Coloring'));
 			this.buildMarkerTailColoringOptions(tailConfContainer);
 			
 			//  fade
-			tailConfContainer.appendChild(this.generateOptionHeading('Other options'));
+			tailConfContainer.appendChild(mobmap.LayersView.generateOptionHeading('Other options'));
 			var c_fade = generateCheckboxInLabel('Faded', 'MarkerTailFade', 'tailconf-fade');
 			tailConfContainer.appendChild(c_fade.label);
 			$(c_fade.input).click(this.onTailFadeCheckChange.bind(this));
@@ -476,14 +476,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				$(input_pair.input).click(handler);
 			}
 		},
-		
-		generateOptionHeading: function(text) {
-			var h = document.createElement('h5');
-			h.setAttribute('class', 'mm-option-heading');
-			h.appendChild( document.createTextNode(text) );
-			return h;
-		},
-		
+
 		buildMarkerTailColoringOptions: function(containerElement) {
 			var MO = mobmap.LayerMarkerOptions;
 			this.addConfigurationRadioSet(containerElement, this.nameWithPanelId('TailColoring'), 'tailclr', [

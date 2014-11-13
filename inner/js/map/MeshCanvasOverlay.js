@@ -198,7 +198,7 @@ if (!window.mobmap) { window.mobmap={}; }
 						
 							if (use_label) {
 								if (use_dynstat) {
-									this.renderCellLabel(g, sx1, sy2 - 13, cellWidth, cellHeight, cellVal.statVal);
+									this.renderCellLabel(g, sx1, sy2 - 13, cellWidth, cellHeight, cellVal.statVal, 13);
 								}
 
 								this.renderCellLabel(g, sx1, sy2, cellWidth, cellHeight, cellVal.val);
@@ -214,12 +214,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			// console.log("N:",nDrawnCells);
 		};
 
-		MeshCanvasOverlay.prototype.renderCellLabel = function(g, cellOriginX, cellOriginY, cellWidth, cellHeight, value) {
+		MeshCanvasOverlay.prototype.renderCellLabel = function(g, cellOriginX, cellOriginY, cellWidth, cellHeight, value, h_margin) {
 			g.save();
 			g.font = '10px sans-serif';
 			var labelText = value.toString();
 			var m = g.measureText(labelText);
-			if (m.width < (cellWidth - 5)) {
+			var requireH = h_margin ? (11 + h_margin) : 11;
+			if (m.width < (cellWidth - 5) && requireH < cellHeight) {
 				g.fillStyle = "#fff";
 				g.shadowOffsetX = 0;
 				g.shadowOffsetY = 1;

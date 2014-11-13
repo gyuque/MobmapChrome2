@@ -237,6 +237,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind(LE.VisibilityChange, this.onLayerVisibilityChange.bind(this)).
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.STAT_TARGET_LAYER_CHANGE, this.onLayerStatTargetLayerChange.bind(this) ).
+			 bind( mobmap.MMMeshLayer.STAT_TARGET_ATTRIBUTE_NAME_CHANGE, this.onLayerStatTargetAttributeNameChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.CELL_APPEARANCE_CHANGE, this.onLayerCellAppearanceChange.bind(this) );
 
@@ -290,6 +291,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.redrawMap();
 		},
 		
+		onLayerStatTargetAttributeNameChange: function() {
+			this.redrawMap();
+		},
+
 		onLayerCellAppearanceChange: function() {
 			this.redrawMap();
 		},
@@ -485,6 +490,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				var originMeshData = layerModel.meshData;
 				if (originMeshData) {
 					originMeshData.setDynStatTargetMovingData(targetMovingData);
+					originMeshData.setDynStatTargetAttributeName(layerModel.statTargetAttributeName);
+					originMeshData.setDynStatFunctionType(layerModel.statFunctionType);
 				}
 //				console.log(targetLayer)
 			}

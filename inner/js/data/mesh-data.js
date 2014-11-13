@@ -62,6 +62,9 @@ if (!window.mobmap) window.mobmap={};
 			this.resetStatValue();
 			if (this.dynStatProvider) {
 				this.dynStatProvider.calc(tSeconds, this.meshDefinition, this);
+				if (this.dynStatProvider.functionType === kStatFunctionAverage) {
+					this.calcStatAverage();
+				}
 			}
 		},
 		
@@ -70,6 +73,13 @@ if (!window.mobmap) window.mobmap={};
 			for (var i in m) {
 				m[i].lastStatValue = 0;
 				m[i].lastStatCount = 0;
+			}
+		},
+		
+		calcStatAverage: function() {
+			var m = this.meshMap;
+			for (var i in m) {
+				m[i].lastStatValue /= m[i].lastStatCount;
 			}
 		},
 
@@ -163,6 +173,16 @@ if (!window.mobmap) window.mobmap={};
 		setDynStatTargetMovingData: function(movingData) {
 			var ds = this.ensureDynStat();
 			ds.setTargetMovingData(movingData);
+		},
+		
+		setDynStatTargetAttributeName: function(attrName) {
+			var ds = this.ensureDynStat();
+			ds.setTargetAttributeName(attrName);
+		},
+		
+		setDynStatFunctionType: function(t) {
+			var ds = this.ensureDynStat();
+			ds.setFunctionType(t);
 		}
 	};
 
@@ -246,12 +266,21 @@ if (!window.mobmap) window.mobmap={};
 	function MeshDynStatProvider() {
 		this.targetMovingData = null;
 		this.targetAttributeName = null;
+		this.functionType = kStatFunctionSum;
 		this.pickPool = null;
 	}
 	
 	MeshDynStatProvider.prototype = {
 		setTargetMovingData: function(d) {
 			this.targetMovingData = d;
+		},
+		
+		setTargetAttributeName: function(attrName) {
+			this.targetAttributeName = attrName;
+		},
+		
+		setFunctionType: function(t) {
+			this.functionType = t;
 		},
 		
 		calc: function(timeInSeconds, meshDefinition, meshData) {

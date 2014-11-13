@@ -32,6 +32,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.statTargetLayerId = -1;
 		this.statTargetAttributeName = null;
+		this.statFunctionType = kStatFunctionSum;
 		
 		this.otherRenderingOptions = {
 			labeled: false,
@@ -46,7 +47,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	MMMeshLayer.RENDER_VALUE_RANGE_CHANGE = "mm-mesh-layer-event-render-value-range-change";
 	MMMeshLayer.CELL_APPEARANCE_CHANGE = "mm-mesh-layer-event-cell-appearance-change";
 	MMMeshLayer.STAT_TARGET_LAYER_CHANGE = "mm-mesh-layer-event-stat-target-layer-change";
-	
+	MMMeshLayer.STAT_TARGET_ATTRIBUTE_NAME_CHANGE = "mm-mesh-layer-event-stat-target-attribute-name-change";
+
 	MMMeshLayer.prototype = {
 		setMeshData: function(md) {
 			this.meshData = md;
@@ -125,6 +127,34 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.statTargetLayerId = newId;
 				this.eventDispatcher().trigger(MMMeshLayer.STAT_TARGET_LAYER_CHANGE, this);
 			}
+		},
+		
+		setStatTargetAttributeName: function(attrName) {
+			var changed = false;
+			if (this.statTargetAttributeName !== attrName) {
+				this.statTargetAttributeName = attrName;
+				changed = true;
+			}
+			
+			return changed;
+		},
+
+		setStatFunctionType: function(t) {
+			if (t !== kStatFunctionSum && t !== kStatFunctionAverage) {
+				// invalid
+				return false;
+			}
+			
+			if (t !== this.statFunctionType) {
+				this.statFunctionType = t;
+				return true;
+			} else {
+				return false;
+			}
+		},
+
+		fireStatTargetAttributeNameChange: function() {
+			this.eventDispatcher().trigger(MMMeshLayer.STAT_TARGET_ATTRIBUTE_NAME_CHANGE, this);
 		}
 	};
 	

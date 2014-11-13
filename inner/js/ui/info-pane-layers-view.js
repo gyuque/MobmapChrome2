@@ -960,6 +960,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		btn.addClass('layer-visibility-toggle');
 		return btn;
 	}
+	
+	LayersView.generateOptionHeading = function(text) {
+		var h = document.createElement('h5');
+		h.setAttribute('class', 'mm-option-heading');
+		h.appendChild( document.createTextNode(text) );
+		return h;
+	};
 
 	// +++ Export +++
 	aGlobal.mobmap.LayersView = LayersView;

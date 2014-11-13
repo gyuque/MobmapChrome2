@@ -36,6 +36,9 @@ var GateDirection = {
 	Bidirectional: 3
 };
 
+var kStatFunctionSum = 1;
+var kStatFunctionAverage = 2;
+
 var kMarkerCompositionNormal = 0;
 var kMarkerCompositionAdd    = 1;
 var kMarkerPresetIncludeBW   = 0x80;
