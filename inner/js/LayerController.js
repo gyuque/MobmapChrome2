@@ -238,6 +238,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			 bind( mobmap.MMMeshLayer.RENDER_VALUE_RANGE_CHANGE, this.onLayerRenderValueMaxChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.STAT_TARGET_LAYER_CHANGE, this.onLayerStatTargetLayerChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.STAT_TARGET_ATTRIBUTE_NAME_CHANGE, this.onLayerStatTargetAttributeNameChange.bind(this) ).
+			 bind( mobmap.MMMeshLayer.STAT_CHART_VISIBILITY_CHANGE, this.onLayerStatChartVisibilityChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.COLOR_RULE_CHANGE, this.onLayerColoringRuleChange.bind(this) ).
 			 bind( mobmap.MMMeshLayer.CELL_APPEARANCE_CHANGE, this.onLayerCellAppearanceChange.bind(this) );
 
@@ -292,6 +293,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLayerStatTargetAttributeNameChange: function() {
+			this.redrawMap();
+		},
+		
+		onLayerStatChartVisibilityChange: function() {
 			this.redrawMap();
 		},
 
@@ -492,6 +497,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					originMeshData.setDynStatTargetMovingData(targetMovingData);
 					originMeshData.setDynStatTargetAttributeName(layerModel.statTargetAttributeName);
 					originMeshData.setDynStatFunctionType(layerModel.statFunctionType);
+					overlay.statChartEnabled = !!(layerModel.statChartEnabled);
+					overlay.useDynStatValueForColoring = !!(layerModel.useDynStatValueForColoring);
 				}
 //				console.log(targetLayer)
 			}
@@ -518,6 +525,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		fillMarkerPool: function(overlay, sourceLayer, targetTimeSec) {
 			if (!sourceLayer.dataReady) {return;}
+			var rec_mode = this.ownerApp.idRecordingMode();
+			var rec_findex = this.ownerApp.recordingFrameIndex;
 			var selOnly = sourceLayer._markerOptions.showSelectedOnly;
 
 			// Vary marker by attribute(if set) --------------------------------------
@@ -561,7 +570,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var cmapIDs  = this.connectionTempMapSet.ids;
 			var cmapRefs = this.connectionTempMapSet.refs;
 			var cmapOlds = this.connectionTempMapSet.olds;
-			var connAnimationEnabled = this.ownerApp.isAutoPlaying();
+			var connAnimationEnabled = this.ownerApp.isAutoPlaying() || rec_mode;
 			
 			// -----------------------------------------------------------------------
 		//console.log(">>>>>", tailLength);
@@ -607,10 +616,15 @@ if (!window.mobmap) { window.mobmap={}; }
 					// Calc animation frame
 					if (connAnimationEnabled) {
 						if (cmapOlds[recId] !== connDestId) {
-							marker_data.connectionAnimationOriginTime = (new Date()) - 0;
 							marker_data.connectionAnimationT = 0;
+							marker_data.connectionAnimationOriginTime =
+							 rec_mode ? rec_findex
+							          : ( (new Date()) - 0 );
 						} else {
-							marker_data.connectionAnimationT = Math.min(1,  (new Date() - marker_data.connectionAnimationOriginTime) * 0.004  );
+							marker_data.connectionAnimationT = 
+							 rec_mode ? Math.min(1,  (rec_findex - marker_data.connectionAnimationOriginTime) * 0.2    )
+							          : Math.min(1,  (new Date() - marker_data.connectionAnimationOriginTime) * 0.004  );
+							if (marker_data.connectionAnimationT < 0) { marker_data.connectionAnimationT = 0; }
 						}
 					} else {
 						marker_data.connectionAnimationT = 1;

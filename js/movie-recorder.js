@@ -405,11 +405,12 @@
 			var rid = ++this.runStatus.nextRequestId;
 			
 			this.runStatus.lastRequestId = rid;
-			window.outerRequestMapRender(rid, dtime);
+			window.outerRequestMapRender(rid, dtime, this.runStatus.frameIndex);
 		},
 		
 		onTriggerClick: function() {
 			if (!this.runStatus.running) {
+				setNowRecording(true);
 				this.changeTriggerAppearance();
 				this.run();
 			}
@@ -426,6 +427,7 @@
 		afterEncoderClose: function() {
 			this.jTrigger.hide();
 			this.showSaveLink();
+			setNowRecording(false);
 		},
 		
 		showSaveLink: function() {

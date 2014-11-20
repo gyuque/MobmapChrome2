@@ -89,12 +89,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		replaceParentEventElement(this._jElement[0], parentEventElement);
 	}
 
-	function MMGateAnnotation(lat1, lng1, lat2, lng2, dir) {
+	function MMGateAnnotation(lat1, lng1, lat2, lng2, dir, condition) {
 		make_event_element(this);
 		this.id = gNextAnnId++;
 		this.typeName = 'Line Gate';
 		this.description = 'Untitled';
 
+		this.condition = condition;
 		this.direction = dir;
 		
 		this.startPos = {
@@ -116,8 +117,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		makeLocationString: function() {
 			var l1 = this.startPos;
 			var l2 = this.endPos;
-			
-			return '(' +l1.lat+ ',' +l1.lng+ ')-(' +l2.lat+ ',' +l2.lng+ ')';
+			var condstr = '';
+			if (this.condition) {
+				condstr = ' ' + this.condition;
+			}
+
+			return '(' +l1.lat+ ',' +l1.lng+ ')-(' +l2.lat+ ',' +l2.lng+ ')' + condstr;
 		},
 		
 		setDescription: annbase_setDescription,

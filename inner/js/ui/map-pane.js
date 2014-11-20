@@ -452,7 +452,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var e1  = sourceGateUI.getStartLocation();
 			var e2  = sourceGateUI.getEndLocation();
 			var dir = sourceGateUI.getGateDirection();
-			this.ownerApp.addAnnotatedGate(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir);
+			var cond = sourceGateUI.getConditionExpression();
+			this.ownerApp.addAnnotatedGate(e1.lat(), e1.lng(), e2.lat(), e2.lng(), dir, cond);
 			this.ownerApp.revealAnnotationView();
 		},
 		

@@ -33,6 +33,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.statTargetLayerId = -1;
 		this.statTargetAttributeName = null;
 		this.statFunctionType = kStatFunctionSum;
+		this.statChartEnabled = false;
+		this.useDynStatValueForColoring = false;
 		
 		this.otherRenderingOptions = {
 			labeled: false,
@@ -48,6 +50,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	MMMeshLayer.CELL_APPEARANCE_CHANGE = "mm-mesh-layer-event-cell-appearance-change";
 	MMMeshLayer.STAT_TARGET_LAYER_CHANGE = "mm-mesh-layer-event-stat-target-layer-change";
 	MMMeshLayer.STAT_TARGET_ATTRIBUTE_NAME_CHANGE = "mm-mesh-layer-event-stat-target-attribute-name-change";
+	MMMeshLayer.STAT_CHART_VISIBILITY_CHANGE = "mm-mesh-layer-event-stat-chart-visiblity-change";
 
 	MMMeshLayer.prototype = {
 		setMeshData: function(md) {
@@ -155,6 +158,22 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		fireStatTargetAttributeNameChange: function() {
 			this.eventDispatcher().trigger(MMMeshLayer.STAT_TARGET_ATTRIBUTE_NAME_CHANGE, this);
+		},
+		
+		setStatChartEnabled: function(newValue) {
+			newValue = !!(newValue);
+			if (this.statChartEnabled !== newValue) {
+				this.statChartEnabled = newValue;
+				this.eventDispatcher().trigger(MMMeshLayer.STAT_CHART_VISIBILITY_CHANGE, this);
+			}
+		},
+		
+		setUseDynStatValueForColoring: function(newValue) {
+			newValue = !!(newValue);
+			if (this.useDynStatValueForColoring !== newValue) {
+				this.useDynStatValueForColoring = newValue;
+				this.eventDispatcher().trigger(MMMeshLayer.CELL_APPEARANCE_CHANGE, this);
+			}
 		}
 	};
 	

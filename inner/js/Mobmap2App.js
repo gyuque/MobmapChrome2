@@ -26,7 +26,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.remoteRefreshConfirmDialog = null;
 		this.digitalTyphoonDialog = new mobmap.DigitalTyphoonDialog();
 		this.digitalTyphoonDialog.okCallback = this.onDigitalTyphoonDialogOK.bind(this);
-		
+
+		this.nowRecordingMode = false;
+		this.recordingFrameIndex = 0;
 		this.appScreen = appScreen;
 		this.setupScreen();
 		this.connectWithViews();
@@ -491,6 +493,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		isAutoPlaying: function() {
 			return this.playController.isPlaying();
 		},
+		
+		idRecordingMode: function() {
+			return this.nowRecordingMode;
+		},
 
 		onPlaySpeedSliderChange: function() {
 			var pane = this.getToolPane();
@@ -537,7 +543,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var pj = this.getCurrentProject();
 			if (!pj) { dtime = 0; }
 
-			//console.log(params)
+			this.recordingFrameIndex = params.frameIndex;
 			
 			if (dtime === 0) {
 				// just redraw
@@ -567,6 +573,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onMessage_restoreRemoteDownloaderURL: function(params) {
 			this.remoteCSVDialog.setRemoteDownloaderURL(params.url || null);
+		},
+		
+		onMessage_setNowRecording: function(params) {
+			var enabled = params.enabled;
+
+			this.nowRecordingMode = enabled;
+			console.log("Recording mode:", enabled);
 		},
 		
 		saveRemoteDownloaderURL: function(url) {
@@ -614,11 +627,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			return prj.annotationList.findById(aid);
 		},
 		
-		addAnnotatedGate: function(lat1, lng1, lat2, lng2, dir) {
+		addAnnotatedGate: function(lat1, lng1, lat2, lng2, dir, condition) {
 			var prj = this.getCurrentProject();
 			if (!prj) { return null; }
 			
-			var a = new mobmap.MMGateAnnotation(lat1, lng1, lat2, lng2, dir);
+			var a = new mobmap.MMGateAnnotation(lat1, lng1, lat2, lng2, dir, condition || null);
 			this.annView.setNewAnnotationId(a.id);
 			prj.annotationList.append(a);
 		},
@@ -639,6 +652,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var mp = this.getMapPane();
 			mp.putGate(gateAnnotation.startPos, gateAnnotation.endPos);
 			mp.gateUI.setDirection(gateAnnotation.direction);
+			mp.gateUI.clearCondition();
+			mp.gateUI.setCondition(gateAnnotation.condition);
 			mp.moveToGate();
 		},
 

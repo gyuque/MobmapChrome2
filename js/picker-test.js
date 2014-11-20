@@ -16,13 +16,19 @@
 		TEST_NEW = true;
 		
 		document.body.appendChild( document.createTextNode( !TEST_NEW ? "-OLD Impl" : "*NEW Impl" ));
-		var mdat = TEST_NEW ? (new mobmap.MovingData2()) : (new mobmap.MovingData());
+		var mdat = new mobmap.MovingData();
+		if (!TEST_NEW) {
+			mdat.useOldPick();
+		}
+		//mdat.noIndexCache = true;
+		
+		
 		console.log("data obj", mdat);
 		
 		for (var i = 0;i < src_len;++i) {
 			var record = src[i];
 			
-			var md_record = mobmap.MovingData2.createEmptyRecord();
+			var md_record = mobmap.MovingData.createEmptyRecord();
 			md_record._id = record.id;
 			md_record._time = mobmap.GeoCSVLoader.parseFieldTime(record.t);
 			md_record.x = record.x;

@@ -16,6 +16,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			// Default values
 			this.visible = true;
+			this.statChartEnabled = false;
+			this.useDynStatValueForColoring = false;
 			this.generatedListeners = [];
 			this.targetPane = 'overlayLayer';
 			this.canvasOffset = {x: 0, y:0};
@@ -111,6 +113,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			md.updateDynStat(this.pickTime);
 			var use_dynstat = md.isDynStatEnabled();
+			var use_chart = this.statChartEnabled;
 			
 			// Map bounds  - -
 			var mbnd = this.getMap().getBounds();
@@ -138,6 +141,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			g.clearRect(0,0, this.canvasSize.w, this.canvasSize.h);
 			if (!this.visible) { return; }
 			
+			var dyn_clr = use_dynstat && this.useDynStatValueForColoring;
 			var oldSY = null;
 			for (var y = sy;y < (sy+nY);++y) {
 
@@ -188,7 +192,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					// Render a cell
 					var cellVal = md.pick(y, x, this.pickTime);
 					if (cellVal) {
-						var cellColor = this.mapValueToCellColor(cellVal.val);
+						var cellColor = this.mapValueToCellColor(dyn_clr ? cellVal.statVal : cellVal.val);
 						g.fillStyle = cellColor;
 					
 						var cellWidth = sx2 - sx1;
@@ -196,6 +200,17 @@ if (!window.mobmap) { window.mobmap={}; }
 						if (cellWidth >= size_reduce && cellHeight >= size_reduce) {
 							g.fillRect(sx1 + spacing, sy2 + spacing, cellWidth - size_reduce, cellHeight - size_reduce);
 						
+							if (use_dynstat && use_chart && cellHeight >= 32 && cellWidth >= 32) {
+								var statRatio = cellVal.statVal / cellVal.val;
+								if (isFinite(statRatio)) {
+									var pieR = (Math.min(cellWidth, cellHeight) - 14) >> 1;
+									g.save();
+									g.translate(sx1 + (cellWidth>>1), sy2 + (cellHeight>>1));
+									MeshCanvasOverlay.drawCircleChart(g, pieR, statRatio);
+									g.restore();
+								}
+							}
+
 							if (use_label) {
 								if (use_dynstat) {
 									this.renderCellLabel(g, sx1, sy2 - 13, cellWidth, cellHeight, cellVal.statVal, 13);
@@ -234,6 +249,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 		
 		MeshCanvasOverlay.prototype.mapValueToCellColor = function(val) {
+			if (isNaN(val)) {
+				return 'rgba(0,0,0,0)';
+			}
+			
 			var a = val / this.renderValueMax;
 			if (this.colorList) {
 				return this.colorList.getColor(a);
@@ -268,6 +287,52 @@ if (!window.mobmap) { window.mobmap={}; }
 		MeshCanvasOverlay.prototype.resetRenderedRegion = mobmap.GLMobLayer.overlaybase_resetRenderedRegion;
 		MeshCanvasOverlay.prototype.updateRenderedRegion = mobmap.GLMobLayer.overlaybase_updateRenderedRegion;
 		MeshCanvasOverlay.prototype.isRenderedRegionChanged = mobmap.GLMobLayer.overlaybase_isRenderedRegionChanged;
+		
+		
+		MeshCanvasOverlay.drawCircleChart = function(g, radius, ratio) {
+			var DPI = Math.PI * 2.0;
+			var HPI = Math.PI / 2.0;
+			var a1 = Math.min(DPI, ratio * DPI);
+			var fsize = radius >> 1;
+			
+			g.save();
+
+			g.fillStyle = "rgba(0,0,0,0.4)";
+			g.beginPath();
+			g.arc(0, 0, radius + 3, 0, DPI, false);
+			g.fill();
+			g.beginPath();
+
+			g.strokeStyle = "rgba(255,255,255,0.6)";
+			g.lineWidth = 4;
+			g.beginPath();
+			g.lineCap = "butt";
+			g.arc(0, 0, radius, -HPI, a1 - HPI, false);
+			g.stroke();
+			
+			if (ratio > 1.0) {
+				var a2 = Math.min(DPI, (ratio - 1.0) * DPI);
+				g.strokeStyle = "rgba(255,255,255,0.9)";
+				g.lineWidth = 4;
+				g.beginPath();
+				g.lineCap = "butt";
+				g.arc(0, 0, radius-2, -HPI, a2 - HPI, false);
+				g.stroke();
+			}
+
+			g.font = fsize + "px sans-serif";
+			g.textBaseline = "middle";
+			g.fillStyle = "#000";
+			g.textAlign = "center";
+			g.fillText(Math.floor(ratio * 100) + '%', 0, 2);
+			
+			g.fillStyle = "#fff";
+			g.textAlign = "center";
+			g.fillText(Math.floor(ratio * 100) + '%', 0, 1);
+			
+			g.restore();
+		};
+		
 
 		pkg.MeshCanvasOverlay = MeshCanvasOverlay;
 	}

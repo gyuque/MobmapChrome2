@@ -9,6 +9,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.boundLayer = layer;
 		this.targetSelector = null;
 		this.funcSelector = null;
+		this.circleChartCheckbox = null;
+		this.useForColorCheckbox = null;
 
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
@@ -42,11 +44,25 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.funcSelector = new StatFuncSelector(this.fname_StatFunc);
 			containerElement.appendChild(this.funcSelector.wrapLabel('Function '));
+
+
+			var pair_chart_chk = generateCheckboxInLabel("Show circle chart", this.fname_ChartCheck, "mm-target-selector-label");
+			containerElement.appendChild(pair_chart_chk.label);
+			this.circleChartCheckbox = pair_chart_chk.input;
+			$(pair_chart_chk.input).click(this.onChartCheckClick.bind(this));
+
+
+			var pair_color_chk = generateCheckboxInLabel("Use for cell coloring", this.fname_ColorCheck, "mm-target-selector-label");
+			containerElement.appendChild(pair_color_chk.label);
+			this.useForColorCheckbox = pair_color_chk.input;
+			$(pair_color_chk.input).click(this.onUseForColorCheckClick.bind(this));
 		},
 		
 		initializeFormNames: function() {
 			this.fname_TargetSel = 'mm-mesh-stat-target-sel-' + sharedNextMeshStatPanelId;
 			this.fname_StatFunc  = 'mm-mesh-stat-func-sel-' + sharedNextMeshStatPanelId;
+			this.fname_ChartCheck  = 'mm-mesh-stat-chart-check-' + sharedNextMeshStatPanelId;
+			this.fname_ColorCheck  = 'mm-mesh-stat-color-check-' + sharedNextMeshStatPanelId;
 
 			++sharedNextMeshStatPanelId;
 		},
@@ -142,6 +158,42 @@ if (!window.mobmap) { window.mobmap={}; }
 		syncTargetLayerFromModel: function() {
 			var curId = this.getCurrentStatTargetId();
 			this.targetSelector.setValue(curId);
+		},
+		
+		// chart check
+		onChartCheckClick: function() {
+			this.sendChartCheckValue();
+		},
+		
+		getChartCheckValue: function() {
+			if (!this.circleChartCheckbox) { return false; }
+			
+			return !!(this.circleChartCheckbox.checked);
+		},
+		
+		sendChartCheckValue: function() {
+			var newValue = this.getChartCheckValue();
+			if (this.boundLayer) {
+				this.boundLayer.setStatChartEnabled(newValue);
+			}
+		},
+		
+		// color check
+		onUseForColorCheckClick: function() {
+			this.sendUseForColorCheckValue();
+		},
+		
+		sendUseForColorCheckValue: function() {
+			var newValue = this.getUseForColorCheckValue();
+			if (this.boundLayer) {
+				this.boundLayer.setUseDynStatValueForColoring(newValue);
+			}
+		},
+		
+		getUseForColorCheckValue: function() {
+			if (!this.useForColorCheckbox) { return false; }
+			
+			return !!(this.useForColorCheckbox.checked);
 		},
 
 		show: function() { this.expandablePanel.show(); },

@@ -187,6 +187,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.updateDirectionIcon();
 		},
 		
+		clearCondition: function() {
+			this.textInputConditionExpression.value = '';
+		},
+		
+		setCondition: function(cond) {
+			if (cond && cond.length > 0) {
+				this.textInputConditionExpression.value = cond;
+			}
+		},
+		
 		configureArrow: function() {
 			this.arrowDynamicIcon.enableFwdArrow  = (this.direction !== GateDirection.Back);
 			this.arrowDynamicIcon.enableBackArrow = (this.direction !== GateDirection.Forward);

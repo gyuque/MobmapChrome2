@@ -93,6 +93,7 @@
 				}, function(wnd){
 					MovieRecorderWindowPool.add(wnd);
 					
+					wnd.contentWindow.setNowRecording = setNowRecording;
 					wnd.contentWindow.outerWindowGetWidth = windowGetWidth;
 					wnd.contentWindow.outerWindowGetHeight = windowGetHeight;
 					wnd.contentWindow.outerRequestMapRender = requestMapRender;
@@ -124,8 +125,12 @@
 	
 	function windowGetWidth() {return window.outerWidth;}
 	function windowGetHeight() {return window.outerHeight;}
-	function requestMapRender(requestId, dTime) {
-		sendInnerMessage('requestRender', {time_delta: dTime, req_id: requestId});
+	function requestMapRender(requestId, dTime, frameIndex) {
+		sendInnerMessage('requestRender', {time_delta: dTime, req_id: requestId, frameIndex: frameIndex});
+	}
+	
+	function setNowRecording(enabled) {
+		sendInnerMessage('setNowRecording', {enabled: enabled});
 	}
 	
 	var MovieRecorderWindowPool = {
