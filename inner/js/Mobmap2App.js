@@ -20,6 +20,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.annotationRemoveDialog = new mobmap.AnnotationRemoveDialog();
 		this.valueFillDialog = new mobmap.FillValueDialog();
 		this.exportSelectionDialog = new mobmap.ExportSelectionDialog();
+		this.resetDialog = new mobmap.ResetDialog();
 
 		this.remoteCSVDialog = new mobmap.RemoteSourceDialog(this);
 		this.remoteCSVDialog.okCallback = this.onRemoteCSVDialogOK.bind(this);
@@ -710,7 +711,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		reset: function() {
-			Mobmap2App.sendOuterMessage('resetApp', {});
+			this.resetDialog.open(function() {
+				Mobmap2App.sendOuterMessage('resetApp', {});
+			});
 		}
 	};
 

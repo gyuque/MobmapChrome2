@@ -622,7 +622,7 @@ if (!window.mobmap) { window.mobmap={}; }
 							          : ( (new Date()) - 0 );
 						} else {
 							marker_data.connectionAnimationT = 
-							 rec_mode ? Math.min(1,  (rec_findex - marker_data.connectionAnimationOriginTime) * 0.2    )
+							 rec_mode ? Math.min(1,  (rec_findex - marker_data.connectionAnimationOriginTime) * 0.125    )
 							          : Math.min(1,  (new Date() - marker_data.connectionAnimationOriginTime) * 0.004  );
 							if (marker_data.connectionAnimationT < 0) { marker_data.connectionAnimationT = 0; }
 						}
