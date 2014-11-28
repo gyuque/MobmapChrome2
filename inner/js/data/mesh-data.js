@@ -30,6 +30,7 @@ if (!window.mobmap) window.mobmap={};
 		register: function(tSeconds, latIndex, lngIndex, value) {
 			var cell = this.ensureCell(lngIndex, latIndex);
 			cell.addRecord(tSeconds, value);
+			return cell;
 		},
 		
 		isTimeRangeLengthValid: function() {
@@ -46,6 +47,14 @@ if (!window.mobmap) window.mobmap={};
 				return cell.pickAtTime(tSeconds);
 			} else {
 				return null;
+			}
+		},
+		
+		forEachCell: function(proc) {
+			var m = this.meshMap;
+			
+			for (var k in m) {
+				proc(k, m[k]);
 			}
 		},
 
@@ -183,6 +192,14 @@ if (!window.mobmap) window.mobmap={};
 		setDynStatFunctionType: function(t) {
 			var ds = this.ensureDynStat();
 			ds.setFunctionType(t);
+		},
+		
+		hasValidDynStatTarget: function() {
+			if (!this.dynStatProvider) {
+				return false;
+			}
+
+			return this.dynStatProvider.hasValidTarget();
 		}
 	};
 
@@ -193,6 +210,7 @@ if (!window.mobmap) window.mobmap={};
 		this.timedList = [];
 		this.lastStatValue = 0;
 		this.lastStatCount = 0;
+		this.name = null;
 	}
 	
 	MeshCell.prototype = {
@@ -271,6 +289,10 @@ if (!window.mobmap) window.mobmap={};
 	}
 	
 	MeshDynStatProvider.prototype = {
+		hasValidTarget: function() {
+			return !!(this.targetMovingData);
+		},
+		
 		setTargetMovingData: function(d) {
 			this.targetMovingData = d;
 		},

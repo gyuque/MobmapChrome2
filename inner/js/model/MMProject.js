@@ -5,7 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MMProject() {
 		var eventElement = createEventDummyElement();
 		this.jElement = $( eventElement );
-		this.layerList = new LayerList(this.jElement[0]);
+		this.layerList = new LayerList(this.jElement[0], this);
 		this.currentDateTime = new mobmap.DateTime();
 		this.timeRangeSelection = new mobmap.TimeRangeSelection();
 
@@ -161,10 +161,11 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	// ---------------------------
-	function LayerList(parentEventElement) {
+	function LayerList(parentEventElement, ownerProject) {
 		// From bottom to top
 		this.array = [];
 		this.parentEventElement = parentEventElement;
+		this.ownerProject = ownerProject;
 	}
 	
 	LayerList.prototype = {

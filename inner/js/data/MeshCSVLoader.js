@@ -16,6 +16,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			stepLat: 0.01,
 			stepLng: 0.01
 		};
+		
+		this.rawMetadataLines = [];
 	}
 
 	MeshCSVLoader.RMODE_META = 0;
@@ -55,7 +57,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		// Metadata lines - - - - - - - -
 		readMetaFields: function(fields) {
 			if (fields.length < 1) { return; }
-			
+
+			this.rawMetadataLines.push(fields.join(','));
+
 			var firstCol = fields[0];
 			if (firstCol.indexOf('@') === 0) {
 				if (this.isMetaUseMeshCode(firstCol)) {
@@ -155,7 +159,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				++valueCol;
 			}
 			
-			var latI, lngI;
+			var latI, lngI, cellName = null;
 			if (!this.usingMeshCode) {
 				latI = parseInt( fields[latIndexCol] , 10);
 				lngI = parseInt( fields[lngIndexCol] , 10);
@@ -165,6 +169,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				latI = this.calcLatIndexFromMeshCode(meshCode);
 				lngI = this.calcLngIndexFromMeshCode(meshCode);
 				--valueCol;
+				
+				cellName = meshCode;
 			}
 			var val  = parseFloat( fields[valueCol] );
 			
@@ -173,7 +179,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				this.
 				 meshDataListener.
-				 meshloaderNewRecordLoaded(seconds, latI, lngI, val);
+				 meshloaderNewRecordLoaded(seconds, latI, lngI, val, cellName);
 			}
 		},
 

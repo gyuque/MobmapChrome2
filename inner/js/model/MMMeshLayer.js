@@ -24,6 +24,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.localSelectionPool = new mobmap.SelectionPool();
 		
 		this.meshData = null;
+		this.rawMetadataLines = null;
 		this.colorRule = new MMMeshLayer.ColorRule( this.eventDispatcher() );
 		this.renderValueRange = {
 			min: 0,
@@ -55,6 +56,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	MMMeshLayer.prototype = {
 		setMeshData: function(md) {
 			this.meshData = md;
+		},
+		
+		setRawMetadataLines: function(linesArray) {
+			this.rawMetadataLines = linesArray.slice(0);
 		},
 
 		hasTimeRange: function() {

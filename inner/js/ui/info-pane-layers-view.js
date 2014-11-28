@@ -413,7 +413,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				var layer = ls.getLayerAt(i);
 				if (!layer.hasPrimaryView()) {
 					
-					var lv = new LayerItemView(layer);
+					var lv = new LayerItemView(layer, this.ownerApp);
 					layer.primaryView = lv;
 					this.appendLayerItemView(layer.primaryView,
 						nextInView ? nextInView.primaryView : null);
@@ -532,8 +532,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 	// Layer item view
-	function LayerItemView(layer) {
+	function LayerItemView(layer, ownerApp) {
 		this.boundLayer = layer;
+		this.ownerApp = ownerApp;
 		
 		this.progressBar = null;
 		this.progressLabel = null;

@@ -43,6 +43,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.meshData.dynamic = this.meshLoader.isDynamic();
 			
 			if (this.meshLoader.isValidType()) {
+				if (this.meshLoader.rawMetadataLines) {
+					this.meshLayer.setRawMetadataLines(this.meshLoader.rawMetadataLines);
+				}
+				
 				this.meshLoader.readRestContentAsync(this);
 			} else {
 				this.reportError(1);
@@ -63,8 +67,11 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		// Content loader callbacks
 		
-		meshloaderNewRecordLoaded: function(tSeconds, latIndex, lngIndex, value) {
-			this.meshData.register(tSeconds, latIndex, lngIndex, value);
+		meshloaderNewRecordLoaded: function(tSeconds, latIndex, lngIndex, value, cellName) {
+			var cell = this.meshData.register(tSeconds, latIndex, lngIndex, value);
+			if (cellName || cellName === 0) {
+				cell.name = cellName;
+			}
 			//console.log("New Record:", latIndex, lngIndex, "=>", value, "at", tSeconds);
 		},
 		

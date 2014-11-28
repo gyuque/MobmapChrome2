@@ -11,6 +11,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.funcSelector = null;
 		this.circleChartCheckbox = null;
 		this.useForColorCheckbox = null;
+		this.csvDownloadLink = null;
 
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
@@ -56,6 +57,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			containerElement.appendChild(pair_color_chk.label);
 			this.useForColorCheckbox = pair_color_chk.input;
 			$(pair_color_chk.input).click(this.onUseForColorCheckClick.bind(this));
+			
+			this.buildExportForm(containerElement);
+		},
+		
+		buildExportForm: function(containerElement) {
+			containerElement.appendChild( mobmap.LayersView.generateOptionHeading('Export') );
+
+			var btn = document.createElement('button');
+			btn.innerHTML = "Generate CSV";
+			containerElement.appendChild(btn);
+
+			this.csvDownloadLink = document.createElement('a');
+			this.csvDownloadLink.innerHTML = 'Save';
+			containerElement.appendChild(this.csvDownloadLink);
+
+			$(btn).click(this.onGenerateCSVButtonClick.bind(this));
 		},
 		
 		initializeFormNames: function() {
@@ -194,6 +211,65 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!this.useForColorCheckbox) { return false; }
 			
 			return !!(this.useForColorCheckbox.checked);
+		},
+		
+		
+		onGenerateCSVButtonClick: function() {
+			var prj = this.getLayerOwnerProject();
+			
+			var meshData = null;
+			if (this.boundLayer) {
+				meshData = this.boundLayer.meshData;
+			}
+			console.log(meshData, meshData.hasValidDynStatTarget())
+			if (!meshData || !meshData.hasValidDynStatTarget()) {
+				return false;
+			}
+
+			var curTime = prj.getCurrentTimeInSeconds();
+			meshData.updateDynStat(curTime);
+
+			var outLines = [];
+			this.fillExportableMetaLines(this.boundLayer, outLines);
+			meshData.forEachCell( this.makeExportableCellRecord.bind(this, curTime, outLines) );
+
+			var dl_url = this.buildExportFile(outLines);
+			this.csvDownloadLink.target = '_blank';
+			this.csvDownloadLink.setAttribute('download', 'mesh-exported.csv');
+			this.csvDownloadLink.href = dl_url;
+
+			return true;
+		},
+		
+		fillExportableMetaLines: function(sourceLayer, outLines) {
+			var a = sourceLayer.rawMetadataLines;
+			if (a) {
+				for (var i in a ){
+					outLines.push(a[i] + "\n");
+				}
+			}
+		},
+
+		makeExportableCellRecord: function(pickTime, outLines, cellKey, cell) {
+			var cellRec = cell.pickAtTime(pickTime);
+			if (cellRec) {
+				var cellTitle = cell.name;
+				outLines.push(cellTitle +','+ cellRec.statVal + "\n");
+			}
+		},
+
+		buildExportFile: function(inLines) {
+			var blob = new Blob(inLines);
+			console.log(blob)
+			return window.URL.createObjectURL(blob);
+		},
+
+
+		getLayerOwnerProject: function() {
+			if (!this.boundLayer) { return null; }
+			if (!this.boundLayer.ownerList) { return null; }
+			
+			return this.boundLayer.ownerList.ownerProject || null;
 		},
 
 		show: function() { this.expandablePanel.show(); },
