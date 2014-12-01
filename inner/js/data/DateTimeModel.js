@@ -48,9 +48,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		makeCurrentPrettyTime: function() {
-			var d = new Date(this.currentTime * 1000.0);
-			return padding_02(d.getHours()) +':' + padding_02(d.getMinutes()) +':' + padding_02(d.getSeconds());
+			return DateTime.makePrettyTimeFromSeconds(this.currentTime);
 		}
+	};
+	
+	DateTime.makePrettyTimeFromSeconds = function(t) {
+		var d = new Date(t * 1000.0);
+		return padding_02(d.getHours()) +':' + padding_02(d.getMinutes()) +':' + padding_02(d.getSeconds());
 	};
 	
 	aGlobal.mobmap.DateTime = DateTime;

@@ -57,6 +57,46 @@ if (!window.mobmap) window.mobmap={};
 				proc(k, m[k]);
 			}
 		},
+		
+		calcAverageOfAllCells: function(useDynStat) {
+			var s = 0;
+			var n = 0;
+			function calc_sum(key, cell) {
+				var val = useDynStat ? cell.lastStatValue : cell.lastPickedValue;
+				if (isFinite(val)) {
+					s += val;
+					++n;
+				}
+			}
+			
+			this.forEachCell(calc_sum);
+			
+//console.log("##", s, n);
+			return (n===0) ? 0 : (s / n);
+		},
+		
+		calcCorrelation: function(meshAvg, dynsAvg) {
+			var sum_m2 = 0;
+			var sum_d2 = 0;
+			var sum_md = 0;
+			
+			function cell_proc(key, cell) {
+				var mval = cell.lastPickedValue;
+				var dval = cell.lastStatValue;
+				if (isFinite(mval) && isFinite(dval)) {
+					var d_m = mval - meshAvg;
+					var d_d = dval - dynsAvg;
+					
+					sum_m2 += d_m * d_m;
+					sum_d2 += d_d * d_d;
+
+					sum_md += d_m * d_d;
+				}
+			}
+			
+			this.forEachCell(cell_proc);
+			return sum_md / Math.sqrt(sum_m2 * sum_d2);
+		},
 
 		// DynStat
 		isDynStatEnabled: function() {
@@ -66,7 +106,14 @@ if (!window.mobmap) window.mobmap={};
 			
 			return false;
 		},
-		
+
+		updateMeshValueCache: function(tSeconds) {
+			this.forEachCell(function(key, cell) {
+				var rec = cell.pickAtTime(tSeconds);
+				cell.lastPickedValue = rec.val;
+			});
+		},
+
 		updateDynStat: function(tSeconds) {
 			this.resetStatValue();
 			if (this.dynStatProvider) {
@@ -208,6 +255,7 @@ if (!window.mobmap) window.mobmap={};
 		this.cellIndexX = cx;
 		this.cellIndexY = cy;
 		this.timedList = [];
+		this.lastPickedValue = 0;
 		this.lastStatValue = 0;
 		this.lastStatCount = 0;
 		this.name = null;

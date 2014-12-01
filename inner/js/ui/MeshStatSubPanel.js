@@ -12,6 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.circleChartCheckbox = null;
 		this.useForColorCheckbox = null;
 		this.csvDownloadLink = null;
+		this.crr_csvDownloadLink = null;
 
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
@@ -59,8 +60,28 @@ if (!window.mobmap) { window.mobmap={}; }
 			$(pair_color_chk.input).click(this.onUseForColorCheckClick.bind(this));
 			
 			this.buildExportForm(containerElement);
+			this.buildCorrelationForm(containerElement);
 		},
 		
+		buildCorrelationForm: function(containerElement) {
+			containerElement.appendChild( mobmap.LayersView.generateOptionHeading('Correlation') );
+			
+			var btn = document.createElement('button');
+			btn.innerHTML = "Calc correlation";
+			containerElement.appendChild(btn);
+
+			var btnCSV = document.createElement('button');
+			btnCSV.innerHTML = "Generate time series CSV";
+			containerElement.appendChild(btnCSV);
+			
+			this.crr_csvDownloadLink = document.createElement('a');
+			this.crr_csvDownloadLink.innerHTML = 'Save';
+			containerElement.appendChild(this.crr_csvDownloadLink);
+			
+			$(btn).click(this.onCalcCorrelationButtonClick.bind(this));
+			$(btnCSV).click(this.onGenerateCorrelationTimeSeriesButtonClick.bind(this));
+		},
+
 		buildExportForm: function(containerElement) {
 			containerElement.appendChild( mobmap.LayersView.generateOptionHeading('Export') );
 
@@ -216,15 +237,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onGenerateCSVButtonClick: function() {
 			var prj = this.getLayerOwnerProject();
-			
-			var meshData = null;
-			if (this.boundLayer) {
-				meshData = this.boundLayer.meshData;
-			}
-			console.log(meshData, meshData.hasValidDynStatTarget())
-			if (!meshData || !meshData.hasValidDynStatTarget()) {
-				return false;
-			}
+			var meshData = this.getMeshDataWithValidDynStat();
+			if (!meshData) { return false; }
 
 			var curTime = prj.getCurrentTimeInSeconds();
 			meshData.updateDynStat(curTime);
@@ -240,7 +254,66 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			return true;
 		},
+
+		onCalcCorrelationButtonClick: function() {
+			var prj = this.getLayerOwnerProject();
+			var meshData = this.getMeshDataWithValidDynStat();
+			if (!meshData) { return false; }
+
+			var curTime = prj.getCurrentTimeInSeconds();
+			meshData.updateMeshValueCache(curTime);
+			meshData.updateDynStat(curTime);
+
+			var mAvg = meshData.calcAverageOfAllCells(false);
+			var dAvg = meshData.calcAverageOfAllCells(true);
+			
+			var R = meshData.calcCorrelation(mAvg, dAvg);
+			console.log(mAvg, dAvg, R)
+		},
 		
+		onGenerateCorrelationTimeSeriesButtonClick: function() {
+			var prj = this.getLayerOwnerProject();
+			var meshData = this.getMeshDataWithValidDynStat();
+			if (!meshData) { return false; }
+
+			var stepSec = 60*5;
+			var range = prj.getAllLayersTimeRange();
+			var lines = [];
+			
+			var t = prj.getCurrentTimeInSeconds();
+			for (var i = 0;i < 9999;++i) {
+				meshData.updateMeshValueCache(t);
+				meshData.updateDynStat(t);
+				var mAvg = meshData.calcAverageOfAllCells(false);
+				var dAvg = meshData.calcAverageOfAllCells(true);
+				var R = meshData.calcCorrelation(mAvg, dAvg);
+
+				var disp_t = mobmap.DateTime.makePrettyTimeFromSeconds(t);
+				//console.log(t, mAvg, dAvg, R);
+				lines.push(t +',' +disp_t+ ','+ mAvg +','+ dAvg +','+ R +"\n");
+
+				t += stepSec;
+				if (t > range.end) {break;}
+			}
+			
+			var dl_url = this.buildExportFile(lines);
+			this.crr_csvDownloadLink.target = '_blank';
+			this.crr_csvDownloadLink.setAttribute('download', 'correlations.csv');
+			this.crr_csvDownloadLink.href = dl_url;
+		},
+
+		getMeshDataWithValidDynStat: function() {
+			if (!this.boundLayer) {
+				return null;
+			}
+
+			var d = this.boundLayer.meshData;
+			if (!d) { return null; }
+			if (!d.hasValidDynStatTarget()) { return null; }
+			
+			return d;
+		},
+
 		fillExportableMetaLines: function(sourceLayer, outLines) {
 			var a = sourceLayer.rawMetadataLines;
 			if (a) {
