@@ -63,8 +63,8 @@
 			this.generateDurationBox(containerElement);
 			 this.generateSpacer(containerElement);
 			this.generateSecPerFrame(containerElement);
-			 this.generateSpacer(containerElement);
-			this.generateClockCheck(containerElement);
+			 //this.generateSpacer(containerElement);
+			//this.generateClockCheck(containerElement);
 			 this.generateSpacer(containerElement);
 			
 			var adjustPositionButton = this.generateSimpleButton('images/mvbtn-pos.png', 'Auto adjust position', 
@@ -281,6 +281,7 @@
 		},
 		
 		getClockCheckValue: function() {
+			if (!this.inputClockCheck) { return false; }
 			return this.inputClockCheck.checked;
 		},
 		

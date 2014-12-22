@@ -36,10 +36,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!suppress_event) { this.fire(); }
 		},
 		
-		removeId: function(objId) {
+		removeId: function(objId, suppress_event) {
 			if (this.idmap[objId]) {
 				delete this.idmap[objId];
-				this.fire();
+
+				if (!suppress_event) { this.fire(); }
 			}
 		},
 		

@@ -385,6 +385,31 @@ label.label-limit-num-input, .marker-label-invert-check,
 	box-shadow: 0 1px 4px rgba(0,0,0,0.5) inset;
 }
 
+.dynstat-csv-download-form {
+	padding-top: 3px;
+	padding-bottom: 4px;
+}
+
+.dynstat-csv-download-form label {
+	display: block;
+}
+
+.dynstat-csv-download-link {
+	display: none;
+	text-decoration: none;
+	padding: 2px;
+	color: #fff;
+	border: 1px solid #999;
+	background: #bbb;
+	margin-left: 0.5em;
+}
+
+.dynstat-csv-download-link[href] {
+	border: 1px solid #4a3;
+	background: linear-gradient(to bottom, #7e6, #5b2) #5b2;
+	display: inline;
+}
+.dynstat-csv-download-link:hover:active {background: none #5b2;}
 
 /* Connection panel*/
 .marker-connection-check, .connconf-width { display:block; }

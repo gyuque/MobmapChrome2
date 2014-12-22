@@ -68,7 +68,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			return false;
 		},
 
-		makeIDCollection: function(targetProject) {
+		makeIDCollection: function(targetProject, useAndOp) {
 			var pickTime = targetProject.getCurrentTimeInSeconds();
 
 			var ls = targetProject.getLayerList();
@@ -81,21 +81,30 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 				
 				var selp = lyr.localSelectionPool;
-				selp.clear(true);
+				/*
+				if (useAndOp && !selp.isAnySelected()) {
+					// AND mode: Create new selection when nothing is selected
+					useAndOp = false;
+				}
+				*/
+				
+				if (!useAndOp) {
+					selp.clear(true);
+				}
 
 				if (lyr.capabilities & mobmap.LayerCapability.SpatialSelectable) {
 					var pool = lyr.movingData.createPickPool();
 					pool.clear();
 
 					lyr.movingData.pickAt(pool, pickTime);
-					this.filterRect(pool, selp);
+					this.filterRect(pool, selp, useAndOp);
 				}
 				
 				selp.fire();
 			}
 		},
 		
-		filterRect: function(sourcePickPool, targetSelPool) {
+		filterRect: function(sourcePickPool, targetSelPool, useAndOp) {
 			var xmin = Math.min(this.startPos.lng, this.endPos.lng);
 			var xmax = Math.max(this.startPos.lng, this.endPos.lng);
 			var ymin = Math.min(this.startPos.lat, this.endPos.lat);
@@ -107,10 +116,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				var sourceRecord = src_array[i];
 				var objId = sourceRecord._id;
 				
+				
 				var ox = sourceRecord.x;
 				var oy = sourceRecord.y;
 				if (ox >= xmin && oy >= ymin && ox <= xmax && oy <= ymax) {
-					targetSelPool.addId(objId, true);
+					// AND mode: Don't select new objects.
+					// Other   : Add new
+					if (!useAndOp) {
+						targetSelPool.addId(objId, true);
+					}
+				} else {
+					// AND mode: remove if the id is out of new selection
+					if (useAndOp) {
+						targetSelPool.removeId(objId, true);
+					}
 				}
 			}
 		}

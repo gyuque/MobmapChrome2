@@ -131,14 +131,14 @@ div[data-itemname=data_detail] {
 .mm-export-result-link {
 	display: block;
 	margin-top: 3px;
-	border: 1px solid #4a3;
 	padding: 2px;
 	font-size: 14px;
 	width: 30%;
 	margin-left: auto;
 	margin-right: auto;
-	color: #fff;
 	text-align: center;
+	color: #fff;
+	border: 1px solid #4a3;
 	background: linear-gradient(to bottom, #7e6, #5b2) #5b2;
 	text-decoration: none;
 }

@@ -18,9 +18,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.groupColumnMap = {};
 		this.addPresetColumns();
 		this.selectionButtonNameMap = this.addSelectionButtons('sel');
+		this.selectionBoolButtonNameMap = this.addSelectionBoolButtons('sel');
 		this.gateButtonNameMap = this.addGateButtons('gate');
 		this.annButtonNameMap = this.addAnnotationButtons('ann');
 		this.movButtonNameMap = this.addMovieButtons('mov');
+		this.clockButtonNameMap = this.addClockButtons('clk');
 		this.resetButtonNameMap = this.addResetButtons('reset');
 		this.allButtonNameMap = this.makeAllButtonNameMap(this.selectionButtonNameMap, this.gateButtonNameMap);
 	}
@@ -28,6 +30,13 @@ if (!window.mobmap) { window.mobmap={}; }
 	MobmapEditToolBar.prototype = {
 		setApp: function(a) {
 			this.ownerApp = a;
+			if (a) {
+				a.eventDispatcher().
+				 bind(mobmap.Mobmap2App.CLOCK_VISIBILITY_CHANGE_EVENT, this.onClockVisibilityChange.bind(this)).
+				 bind(mobmap.Mobmap2App.SELECTION_BOOL_CHANGE_EVENT,   this.onSelectionBoolOpChange.bind(this));
+				
+				this.syncWithAppState(a);
+			}
 		},
 
 		addPresetColumns: function() {
@@ -37,6 +46,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				["gate",      "Gate"     ],
 				["ann",       "Location Annotation"],
 				["mov",       "Movie"],
+				["clk",       "Clock"],
 				["reset",     "Reset",             true]
 			];
 			
@@ -52,6 +62,16 @@ if (!window.mobmap) { window.mobmap={}; }
 					['sel_poly', 10]
 				],
 				this.observeSelectionButton.bind(this)
+			);
+		},
+		
+		addSelectionBoolButtons: function(colName) {
+			return this.addButtons(colName, [
+					['selb_or', 15],
+					['selb_and', 16]
+				],
+				this.observeSelectionBoolButton.bind(this),
+				'mm-sel-bool-button'
 			);
 		},
 
@@ -86,8 +106,16 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.observeResetButton.bind(this)
 			);
 		},
+		
+		addClockButtons: function(colName) {
+			return this.addButtons(colName, [
+					['show_clock', 14]
+				],
+				this.observeClockButton.bind(this)
+			);
+		},
 			
-		addButtons: function(colName, buttonList, callback) {
+		addButtons: function(colName, buttonList, callback, additinalClassName) {
 			var generatedButtonMap = {};
 			var targetCol = this.groupColumnMap[colName];
 			var ls = buttonList;
@@ -98,6 +126,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				var sp_index = buttonData[1];
 				
 				var btnObj = new mobmap.ToolButton(bname, 25, 18);
+				if (additinalClassName) {
+					btnObj.addClass(additinalClassName);
+				}
+
 				btnObj.configureStyleSheet(editbuttonsSpriteManager, sp_index);
 				generatedButtonMap[bname] = btnObj;
 				
@@ -126,6 +158,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			 // mousedown(this.onSelectionButtonMousedown.bind(this, btnObj));
 		},
 		
+		observeSelectionBoolButton: function (btnObj) {
+			btnObj.eventDispatcher().
+			 click(this.onSelectionBoolButtonClick.bind(this, btnObj));
+		},
+		
 		observeGateButton: function(btnObj) {
 			btnObj.eventDispatcher().
 			 click(this.onGateButtonClick.bind(this, btnObj));
@@ -144,6 +181,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeResetButton: function(btnObj) {
 			btnObj.eventDispatcher().
 			 click(this.onResetButtonClick.bind(this, btnObj));
+		},
+		
+		observeClockButton: function(btnObj) {
+			btnObj.eventDispatcher().
+			 click(this.onClockButtonClick.bind(this, btnObj));
 		},
 		
 		addGroupColumn: function(name, initialText, spacing) {
@@ -184,6 +226,21 @@ if (!window.mobmap) { window.mobmap={}; }
 				break;
 			}
 		},
+		
+		onSelectionBoolButtonClick: function(btnObj, e) {
+			if (!this.ownerApp) {
+				return;
+			}
+			
+			switch(btnObj.name) {
+			case 'selb_or':
+				this.ownerApp.setSelectionBooleanOperation(mobmap.SelectionController.BoolOpOr);
+				break;
+			case 'selb_and':
+				this.ownerApp.setSelectionBooleanOperation(mobmap.SelectionController.BoolOpAnd);
+				break;
+			}
+		},
 
 		onGateButtonClick: function(btnObj, e) {
 			switch(btnObj.name) {
@@ -214,6 +271,34 @@ if (!window.mobmap) { window.mobmap={}; }
 		onResetButtonClick: function(btnObj, e) {
 			if (this.ownerApp) {
 				this.ownerApp.reset();
+			}
+		},
+		
+		onClockButtonClick: function(btnObj) {
+			if (this.ownerApp) {
+				this.ownerApp.toggleShowClock();
+			}
+		},
+		
+		onClockVisibilityChange: function(e, f) {
+			this.clockButtonNameMap['show_clock'].setSelectedStyle(f);
+		},
+		
+		onSelectionBoolOpChange: function(e, newValue) {
+			var is_or = (newValue === mobmap.SelectionController.BoolOpOr);
+			
+			this.selectionBoolButtonNameMap['selb_or'].setSelectedStyle(is_or);
+			this.selectionBoolButtonNameMap['selb_and'].setSelectedStyle(!is_or);
+		},
+		
+		syncWithAppState: function(app) {
+			if (!app) {
+				return;
+			}
+
+			var s = app.getSelectionController();
+			if (s) {
+				this.onSelectionBoolOpChange(null, s.boolOp);
 			}
 		},
 		

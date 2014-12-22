@@ -12,7 +12,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.circleChartCheckbox = null;
 		this.useForColorCheckbox = null;
 		this.csvDownloadLink = null;
+		this.crrsnapshot_reportArea = null;
 		this.crr_csvDownloadLink = null;
+		this.cts_intervalInput = null;
+		this.cts_reportArea = null;
 
 		this.expandablePanel = new mobmap.ExpandablePanel();
 		this.element = this.expandablePanel.element;
@@ -23,6 +26,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.observeLayerEvents();
 		this.observeSelectorEvents();
 //		this.syncFromModel();
+		this.toggleFormVisibility();
 
 //		this.updateClosedPanelContent();
 	}
@@ -59,41 +63,84 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.useForColorCheckbox = pair_color_chk.input;
 			$(pair_color_chk.input).click(this.onUseForColorCheckClick.bind(this));
 			
-			this.buildExportForm(containerElement);
-			this.buildCorrelationForm(containerElement);
+			var export_tool_box = document.createElement('div');
+			export_tool_box.setAttribute('class', 'dynstat-active-only-area');
+			containerElement.appendChild(export_tool_box);
+			this.buildExportForm(export_tool_box);
+			this.buildCorrelationForm(export_tool_box);
+		},
+		
+		generateDownloadAElement: function(labelText) {
+			var a = document.createElement('a');
+			a.appendChild(document.createTextNode(labelText || 'Save'));
+			a.setAttribute('class', 'dynstat-csv-download-link');
+			a.target = '_blank';
+
+			return a;
+		},
+		
+		buildCSVGeneratorForm: function(containerElement, titleText, enable_report_area) {
+			var box = document.createElement('div');
+			box.setAttribute('class', 'dynstat-csv-download-form');
+			
+			var btn = document.createElement('button');
+			btn.innerHTML = "Calculate";
+			box.appendChild(btn);
+
+			var lk= this.generateDownloadAElement();
+			box.appendChild(lk);
+
+			var report = null;
+			if (enable_report_area) {
+				report = document.createElement('div');
+				box.appendChild(report);
+			}
+
+			containerElement.appendChild( mobmap.LayersView.generateOptionHeading(titleText) );
+			containerElement.appendChild(box);
+			return {
+				outer: box,
+				button: btn,
+				download_link: lk,
+				report: report
+			};
 		},
 		
 		buildCorrelationForm: function(containerElement) {
-			containerElement.appendChild( mobmap.LayersView.generateOptionHeading('Correlation') );
-			
-			var btn = document.createElement('button');
-			btn.innerHTML = "Calc correlation";
-			containerElement.appendChild(btn);
+			var snapshot_generators = this.buildCSVGeneratorForm(containerElement, 'Correlation snapshot', true);
+			this.crrsnapshot_reportArea = snapshot_generators.report;
 
-			var btnCSV = document.createElement('button');
-			btnCSV.innerHTML = "Generate time series CSV";
-			containerElement.appendChild(btnCSV);
+			var ts_generators = this.buildCSVGeneratorForm(containerElement, 'Time series correlation', true);
+			this.cts_reportArea = ts_generators.report;
+			this.crr_csvDownloadLink = ts_generators.download_link;
+
+			this.cts_intervalInput = this.addTimeSeriesIntervalForm(ts_generators.outer);
+
+			$(snapshot_generators.button).click(this.onCalcCorrelationButtonClick.bind(this));
+			$(ts_generators.button).click(this.onGenerateCorrelationTimeSeriesButtonClick.bind(this));
+		},
+		
+		addTimeSeriesIntervalForm: function(containerElement) {
+			var label = document.createElement('label');
 			
-			this.crr_csvDownloadLink = document.createElement('a');
-			this.crr_csvDownloadLink.innerHTML = 'Save';
-			containerElement.appendChild(this.crr_csvDownloadLink);
+			var num = document.createElement('input');
+			num.type = 'number';
+			num.value = 300;
+			num.setAttribute('min', 1);
+			num.setAttribute('max', 3600*24);
 			
-			$(btn).click(this.onCalcCorrelationButtonClick.bind(this));
-			$(btnCSV).click(this.onGenerateCorrelationTimeSeriesButtonClick.bind(this));
+			label.appendChild( document.createTextNode('Every ') );
+			label.appendChild(num);
+			label.appendChild( document.createTextNode('sec.') );
+			containerElement.insertBefore(label, containerElement.firstChild);
+			
+			return num;
 		},
 
 		buildExportForm: function(containerElement) {
-			containerElement.appendChild( mobmap.LayersView.generateOptionHeading('Export') );
-
-			var btn = document.createElement('button');
-			btn.innerHTML = "Generate CSV";
-			containerElement.appendChild(btn);
-
-			this.csvDownloadLink = document.createElement('a');
-			this.csvDownloadLink.innerHTML = 'Save';
-			containerElement.appendChild(this.csvDownloadLink);
-
-			$(btn).click(this.onGenerateCSVButtonClick.bind(this));
+			var generators = this.buildCSVGeneratorForm(containerElement, 'Export as mesh layer');
+			this.csvDownloadLink = generators.download_link;
+			$(generators.button).click(this.onGenerateCSVButtonClick.bind(this));
 		},
 		
 		initializeFormNames: function() {
@@ -121,12 +168,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeLayerEvents: function() {
 			if (!this.boundLayer) { return; }
 
-			this.boundLayer.eventDispatcher().bind(mobmap.MMMeshLayer.STAT_TARGET_LAYER_CHANGE, this.onStatTargetLayerChange.bind(this));
+			this.boundLayer.eventDispatcher().
+			 bind(mobmap.MMMeshLayer.STAT_TARGET_LAYER_CHANGE, this.onStatTargetLayerChange.bind(this));
 		},
 
 		onStatTargetLayerChange: function() {
 			this.updateAttributeList();
 			this.sendStatTargetAttributeName();
+			this.toggleFormVisibility();
 		},
 
 		updateAttributeList: function() {
@@ -216,6 +265,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 		
+		toggleFormVisibility: function() {
+			var show = this.getCurrentStatTargetId() >= 0;
+			var j = this.jElement.find('.dynstat-active-only-area');
+			
+			if (show) {
+				j.show();
+			} else {
+				j.hide();
+			}
+		},
+		
 		// color check
 		onUseForColorCheckClick: function() {
 			this.sendUseForColorCheckValue();
@@ -248,7 +308,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			meshData.forEachCell( this.makeExportableCellRecord.bind(this, curTime, outLines) );
 
 			var dl_url = this.buildExportFile(outLines);
-			this.csvDownloadLink.target = '_blank';
 			this.csvDownloadLink.setAttribute('download', 'mesh-exported.csv');
 			this.csvDownloadLink.href = dl_url;
 
@@ -261,26 +320,52 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!meshData) { return false; }
 
 			var curTime = prj.getCurrentTimeInSeconds();
+			var disp_d = mobmap.DateTime.makePrettyDateFromSeconds(curTime);
+			var disp_t = mobmap.DateTime.makePrettyTimeFromSeconds(curTime);
 			meshData.updateMeshValueCache(curTime);
 			meshData.updateDynStat(curTime);
 
 			var mAvg = meshData.calcAverageOfAllCells(false);
 			var dAvg = meshData.calcAverageOfAllCells(true);
 			
-			var R = meshData.calcCorrelation(mAvg, dAvg);
-			console.log(mAvg, dAvg, R)
+			var detailOut = {};
+			var R = meshData.calcCorrelation(mAvg, dAvg, detailOut);
+//			console.log(mAvg, dAvg, R)
+			
+			this.crrsnapshot_reportArea.innerHTML = "";
+
+			var strong = document.createElement('strong');
+			strong.appendChild( document.createTextNode('R=' + R) );
+			
+			this.crrsnapshot_reportArea.appendChild( strong );
+			this.crrsnapshot_reportArea.appendChild( document.createElement('br') );
+			this.crrsnapshot_reportArea.appendChild( document.createTextNode('n=' + detailOut.n) );
+			this.crrsnapshot_reportArea.appendChild( document.createElement('br') );
+			this.crrsnapshot_reportArea.appendChild( document.createTextNode('t=' + detailOut.t) );
+			this.crrsnapshot_reportArea.appendChild( document.createElement('br') );
+			this.crrsnapshot_reportArea.appendChild( document.createTextNode('as of ' + disp_d + ' ' +disp_t) );
 		},
 		
 		onGenerateCorrelationTimeSeriesButtonClick: function() {
+			this.crr_csvDownloadLink.innerHTML = 'Wait...';
+			this.crr_csvDownloadLink.removeAttribute('href');
+			this.crr_csvDownloadLink.style.display = 'inline';
+			
+			setTimeout(this.generateCorrelationTimeSeries.bind(this), 100);
+		},
+		
+		generateCorrelationTimeSeries: function() {
 			var prj = this.getLayerOwnerProject();
 			var meshData = this.getMeshDataWithValidDynStat();
 			if (!meshData) { return false; }
 
-			var stepSec = 60*5;
+			var stepSec = this.cts_intervalInput.value | 0;
 			var range = prj.getAllLayersTimeRange();
-			var lines = [];
+			var lines = ["unixtime,Date,Time,Average(mesh value),Average(dynstat value),correlation R\n"];
 			
 			var t = prj.getCurrentTimeInSeconds();
+			var beginT = t;
+			var lastT = t;
 			for (var i = 0;i < 9999;++i) {
 				meshData.updateMeshValueCache(t);
 				meshData.updateDynStat(t);
@@ -288,18 +373,36 @@ if (!window.mobmap) { window.mobmap={}; }
 				var dAvg = meshData.calcAverageOfAllCells(true);
 				var R = meshData.calcCorrelation(mAvg, dAvg);
 
+				var disp_d = mobmap.DateTime.makePrettyDateFromSeconds(t);
 				var disp_t = mobmap.DateTime.makePrettyTimeFromSeconds(t);
+				lastT = t;
 				//console.log(t, mAvg, dAvg, R);
-				lines.push(t +',' +disp_t+ ','+ mAvg +','+ dAvg +','+ R +"\n");
+				lines.push(t +',' +disp_d+ ',' +disp_t+ ','+ mAvg +','+ dAvg +','+ R +"\n");
 
 				t += stepSec;
 				if (t > range.end) {break;}
 			}
 			
 			var dl_url = this.buildExportFile(lines);
-			this.crr_csvDownloadLink.target = '_blank';
+			this.crr_csvDownloadLink.innerHTML = 'Save';
 			this.crr_csvDownloadLink.setAttribute('download', 'correlations.csv');
 			this.crr_csvDownloadLink.href = dl_url;
+			this.crr_csvDownloadLink.style.display = '';
+			
+			this.makeTimeSeriesExportReport(this.cts_reportArea, beginT, lastT, stepSec);
+		},
+		
+		makeTimeSeriesExportReport: function(outElement, t1, t2, stepSec) {
+			outElement.innerHTML = '';
+			
+			var p1 = 'from ' + mobmap.DateTime.makePrettyDateFromSeconds(t1) + ' ' + mobmap.DateTime.makePrettyTimeFromSeconds(t1);
+			var p2 = 'to ' + mobmap.DateTime.makePrettyDateFromSeconds(t2) + ' ' + mobmap.DateTime.makePrettyTimeFromSeconds(t2);
+
+			outElement.appendChild( document.createTextNode(p1) );
+			outElement.appendChild( document.createElement('br') );
+			outElement.appendChild( document.createTextNode(p2) );
+			outElement.appendChild( document.createElement('br') );
+			outElement.appendChild( document.createTextNode('every ' +stepSec +'sec.') );
 		},
 
 		getMeshDataWithValidDynStat: function() {

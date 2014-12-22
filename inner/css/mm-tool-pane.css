@@ -88,6 +88,15 @@
 	margin: 0 1px;
 }
 
+.editbarcol-body-sel .mm-sel-bool-button {
+	margin-left: 6px;
+	margin-right: 0;
+}
+
+.editbarcol-body-sel .mm-sel-bool-button:last-child {
+	margin-left: 0;
+}
+
 .mm-tl-buttons-container {
 	text-align: center;
 }

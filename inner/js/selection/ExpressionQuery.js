@@ -160,7 +160,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			return null;
 		},
 		
-		run: function(sourceData, outList, lengthOverride) {
+		run: function(sourceData, outList, lengthOverride, not_outList) {
 			if (!this.rootNode) {
 				return -1;
 			}
@@ -180,6 +180,10 @@ if (!window.mobmap) { window.mobmap={}; }
 					}
 					
 					++nFounds;
+				} else {
+					if (not_outList) {
+						not_outList.push(record);
+					}
 				}
 			}
 			

@@ -20,6 +20,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		return this.j;
 	};
 
+	ToolButton.prototype.addClass = function(c) {
+		this.j.addClass(c);
+	};
+
 	ToolButton.prototype.configureStyleSheet = function(spriteManager, col) {
 		spriteManager.addButton(this.elementId, col);
 	};

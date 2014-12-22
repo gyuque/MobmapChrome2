@@ -30,6 +30,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.nowRecordingMode = false;
 		this.recordingFrameIndex = 0;
+		this.clockVisible = false;
 		this.appScreen = appScreen;
 		this.setupScreen();
 		this.connectWithViews();
@@ -42,6 +43,8 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	Mobmap2App.PROJECT_SET_EVENT = 'mm-app-project-set';
+	Mobmap2App.CLOCK_VISIBILITY_CHANGE_EVENT = 'mm-clock-visibility-changed';
+	Mobmap2App.SELECTION_BOOL_CHANGE_EVENT = 'mm-selection-bool-changed';
 	Mobmap2App.sendOuterMessage = function(command, params) {
 		var msg = JSON.stringify({
 			command: command,
@@ -81,6 +84,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		openMovieWindow: function() {
 			Mobmap2App.sendOuterMessage('openMovieRecorderWindow', null);
+		},
+		
+		toggleShowClock: function() {
+			this.clockVisible = !this.clockVisible;
+			this.getMapPane().setClockVisibility(this.clockVisible);
+			this.eventDispatcher().trigger(Mobmap2App.CLOCK_VISIBILITY_CHANGE_EVENT, this.clockVisible);
+		},
+		
+		setSelectionBooleanOperation: function(t) {
+			if (this.selectionController) {
+				var changed = this.selectionController.setBoolOp(t);
+				
+				if (changed) {
+					this.eventDispatcher().trigger(Mobmap2App.SELECTION_BOOL_CHANGE_EVENT, this.selectionController.boolOp);
+				}
+			}
 		},
 
 

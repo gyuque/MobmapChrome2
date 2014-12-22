@@ -40,11 +40,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		// ----------------------------------------------------------
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
+		this.outerOverlay = null;
 		
 		this.setupGoogleMaps();
 		this.setupCaptureEvents();
 		this.setupAimingMarker();
 		this.setupSelectionViews();
+		this.setupOuterOverlay();
 	}
 	
 	MapPane.NEED_OVERLAYS_RENDER_EVENT = "mappane-needs-overalys-render";
@@ -64,6 +66,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		panTo: function(lat, lng) {
 			this.getGoogleMaps().panTo(new google.maps.LatLng(lat, lng));
+		},
+		
+		setClockVisibility: function(v) {
+			if (this.outerOverlay && this.outerOverlay.setVisibility(v)) {
+				this.outerOverlay.redrawWithProject(this.ownerApp.getCurrentProject());
+			}
 		},
 		
 		observeContainerEvents: function(app3PanesView) {
@@ -159,9 +167,18 @@ if (!window.mobmap) { window.mobmap={}; }
 				TONERMAP_ID
 			];
 		},
+		
+		setupOuterOverlay: function() {
+			this.outerOverlay = new OuterMapClockOverlay();
+			this.containerElement.appendChild(this.outerOverlay.element);
+		},
 
 		onCurrentDateTimeChange: function(e, sender) {
 			this.hideAimingMarker();
+			if (this.outerOverlay && this.outerOverlay.visible) {
+				this.outerOverlay.redrawWithProject(this.ownerApp.getCurrentProject());
+			}
+			
 			this.redraw();
 		},
 
@@ -591,6 +608,82 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return new google.maps.ImageMapType(options);
 	}
+	
+	// Outer-map overlay
+	function OuterMapClockOverlay() {
+		this.clockSize = {
+			width: 140,
+			height: 176
+		};
+		
+		this.renderer = new mobmap.ClockRenderer(this.clockSize.width, this.clockSize.height);
+		
+		this.element = document.createElement('canvas');
+		this.configureCanvasSize(this.clockSize);
+		this.configureStyle(this.element.style);
+		this.g = this.element.getContext('2d');
+		
+		this.setDate( new Date("1970-01-01 00:00:00") );
+		this.clear();
+		this.renderer.render(this.g);
+
+		this.visible = true;
+		this.setVisibility(false);
+	}
+	
+	OuterMapClockOverlay.prototype = {
+		setVisibility: function(b) {
+			if (this.visible !== b) {
+				this.visible = b;
+				this.element.style.display = b ? '' : 'none';
+				return true;
+			}
+			
+			return false;
+		},
+		
+		redrawWithProject: function(prj) {
+			if (!prj) { return; }
+			
+			var t = prj.currentDateTime.getCurrentTime();
+			this.redrawWithTime(t);
+		},
+		
+		clear: function() {
+			this.g.clearRect(0, 0, this.element.width - 0, this.element.height - 0);
+		},
+		
+		redrawWithTime: function(ut) {
+			var d = new Date(ut * 1000.0);
+			this.setDate(d);
+
+			this.clear();
+			this.renderer.render(this.g);
+		},
+		
+		setDate: function(d) {
+			var hr = d.getHours();
+			var mn = d.getMinutes();
+			var sc = d.getSeconds();
+
+			this.renderer.hour = hr;
+			this.renderer.min  = mn;
+			this.renderer.sec  = sc;
+			this.renderer.makeTopLabelFromDate(d);
+		},
+		
+		configureCanvasSize: function(size) {
+			this.element.width = size.width;
+			this.element.height = size.height;
+		},
+		
+		configureStyle: function(s) {
+			s.position = "absolute";
+			s.bottom = "20px";
+			s.right = "8px";
+			s.zIndex = 999;
+		}
+	};
 	
 	// +++ Export +++
 	aGlobal.mobmap.MapPane = MapPane;

@@ -41,15 +41,19 @@ if (!window.mobmap) { window.mobmap={}; }
 		getCurrentTimeAsInt: function() {
 			return this.currentTime | 0;
 		},
-		
+
 		makeCurrentPrettyDate: function() {
-			var d = new Date(this.currentTime * 1000.0);
-			return d.getFullYear() + '-' + padding_02(d.getMonth()+1) + '-' + padding_02(d.getDate());
+			return DateTime.makePrettyDateFromSeconds(this.currentTime);
 		},
-		
+
 		makeCurrentPrettyTime: function() {
 			return DateTime.makePrettyTimeFromSeconds(this.currentTime);
 		}
+	};
+
+	DateTime.makePrettyDateFromSeconds = function(t) {
+		var d = new Date(t * 1000.0);
+		return d.getFullYear() + '-' + padding_02(d.getMonth()+1) + '-' + padding_02(d.getDate());
 	};
 	
 	DateTime.makePrettyTimeFromSeconds = function(t) {

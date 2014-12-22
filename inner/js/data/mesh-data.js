@@ -75,10 +75,12 @@ if (!window.mobmap) window.mobmap={};
 			return (n===0) ? 0 : (s / n);
 		},
 		
-		calcCorrelation: function(meshAvg, dynsAvg) {
+		calcCorrelation: function(meshAvg, dynsAvg, detailOut) {
 			var sum_m2 = 0;
 			var sum_d2 = 0;
 			var sum_md = 0;
+			
+			var n = 0;
 			
 			function cell_proc(key, cell) {
 				var mval = cell.lastPickedValue;
@@ -91,11 +93,20 @@ if (!window.mobmap) window.mobmap={};
 					sum_d2 += d_d * d_d;
 
 					sum_md += d_m * d_d;
+					
+					++n;
 				}
 			}
 			
 			this.forEachCell(cell_proc);
-			return sum_md / Math.sqrt(sum_m2 * sum_d2);
+			var R = sum_md / Math.sqrt(sum_m2 * sum_d2);
+			
+			if (detailOut) {
+				detailOut.n = n;
+				detailOut.t = (R * Math.sqrt(n - 2)) / Math.sqrt(1 - R*R);
+			}
+			
+			return R;
 		},
 
 		// DynStat

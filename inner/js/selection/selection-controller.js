@@ -7,9 +7,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.ownerApp = ownerApp;
 		this.currentSelectionSession = null;
 		this.responders = [];
+		this.boolOp = SelectionController.BoolOpOr;
 	}
 	
+	SelectionController.BoolOpOr = 'or';
+	SelectionController.BoolOpAnd = 'and';
+	
 	SelectionController.prototype = {
+		setBoolOp: function(t) {
+			if (this.boolOp !== t) {
+				this.boolOp = t;
+				return true;
+			}
+			
+			return false;
+		},
+		
 		getCurrentSession: function() {
 			return this.currentSelectionSession;
 		},
@@ -141,7 +154,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				var prj = this.ownerApp.getCurrentProject();
 				
 				this.fireBeforeCommitSession(this.currentSelectionSession);
-				this.currentSelectionSession.makeIDCollection(prj);
+				var and_op = (this.boolOp === SelectionController.BoolOpAnd);
+				this.currentSelectionSession.makeIDCollection(prj, and_op);
 				
 				if (this.currentSelectionSession.doAfterCommit) {
 					this.currentSelectionSession.doAfterCommit(this.ownerApp);
@@ -191,6 +205,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var job = new GateSelectionJob(this,
 				lat1, lng1, lat2, lng2, direction);
 			
+			job.configureBooleanOperation(this.boolOp);
 			job.setLineConditionExpressionQuery(conditionExp || null);
 			job.run();
 		},
@@ -199,6 +214,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var job = new GateSelectionJob(this,
 				0, 0, 0, 0, GateDirection.Bidirectional, testProvider);
 			
+			job.configureBooleanOperation(this.boolOp);
 			job.chunkSize = 1000;
 			job.run();
 		},
@@ -230,12 +246,27 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 
 			var evalOutList = [];
-			var nFounds = expq.run(pickPool.getArray(), evalOutList, pickPool.pickedCount);
+			var evalNOTOutList = [];
+			var nFounds = expq.run(pickPool.getArray(), evalOutList, pickPool.pickedCount, evalNOTOutList);
+			var and_op = (this.boolOp === SelectionController.BoolOpAnd);
 			
+			var i;
 			var selp = layer.localSelectionPool;
-			for (var i = 0;i < nFounds;++i) {
-				var foundRecord = evalOutList[i];
-				selp.addId(foundRecord._id, true);
+
+			if (!and_op) {
+				for (i = 0;i < nFounds;++i) {
+					var foundRecord = evalOutList[i];
+					selp.addId(foundRecord._id, true);
+				}
+			}
+			
+			// remove complement
+			if (and_op) {
+				var nn = evalNOTOutList.length;
+				for (i = 0;i < nn;++i) {
+					var droppedRecord = evalNOTOutList[i];
+					selp.removeId(droppedRecord._id, true);
+				}
 			}
 
 			selp.fire();
@@ -271,9 +302,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		this.tickClosure = this.tick.bind(this);
 		this.testFunctionProvider = alternativeTestProvider || null;
+		
+		this.useAndOp = false;
 	}
 	
 	GateSelectionJob.prototype = {
+		configureBooleanOperation: function(boolOp) {
+			this.useAndOp = (boolOp === SelectionController.BoolOpAnd);
+		},
+		
 		setLineConditionExpressionQuery: function(q) {
 			this.lineConditionExpressionQuery = q;
 		},
@@ -326,6 +363,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				var tl = mdat.getTimeListOfId(oid);
 				if (this.runGateOnTimedList(targetLayer, tl, selectedTimeRange, oid)) {
 					anySelected = true;
+				} else {
+					if (this.onIDNotHit(targetLayer.localSelectionPool, oid)) {
+						anySelected = true;
+					}
 				}
 				//console.log(oid, tl.getRecordList().length)
 
@@ -396,7 +437,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (recMaxTime <= minT) {
 				if (this.testFunctionProvider) {
 					if (this.testFunctionProvider.testSingleRecord(lastRecord)) {
-						selp.addId(objectID, true);
+						this.onIDHit(selp, objectID);
+						return true;
 					}
 				}
 			}
@@ -404,7 +446,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (recMinTime >= maxT) {
 				if (this.testFunctionProvider) {
 					if (this.testFunctionProvider.testSingleRecord(firstRecord)) {
-						selp.addId(objectID, true);
+						this.onIDHit(selp, objectID);
+						return true;
 					}
 				}
 			}
@@ -437,8 +480,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (;;) {
 				if (currentRecord && segmentPrevRecord) {
 					if (this.doCrossTestBetweenRecords(segmentPrevRecord, currentRecord)) {
-						selp.addId(objectID, true);
 						//console.log("SEL")
+						this.onIDHit(selp, objectID);
 						return true;
 					}
 				//	console.log("    "+ segmentPrevRecord.y +","+ segmentPrevRecord.x+"  "+segmentPrevRecord._time+
@@ -464,6 +507,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return false;
 		},
+
+		onIDHit: function(selp, objectID) {
+			if (!this.useAndOp) {
+				selp.addId(objectID, true);
+			}
+		},
+		
+		onIDNotHit: function(selp, objectID) {
+			if (this.useAndOp && selp.isIDSelected(objectID)) {
+				selp.removeId(objectID, true);
+				return true;
+			}
+			
+			return false;
+		},
 		
 		runGateOnSingleRecord: function(layer, timedList, objectID) {
 			if (!this.testFunctionProvider) {
@@ -474,7 +532,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (records.length > 0) {
 				if (this.testFunctionProvider.testSingleRecord(records[0])) {
 					//console.log("SINGLE")
-					layer.localSelectionPool.addId(objectID, true);
+					this.onIDHit(layer.localSelectionPool, objectID);
 					return true;
 				}
 			}
