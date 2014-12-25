@@ -5,8 +5,10 @@ if (!window.mobmap) window.mobmap={};
 	
 	function MeshData() {
 		this.meshMap = {};
+		this.cellFlattenList = [];
 		this.dynamic = false;
 		this.dynStatProvider = null;
+		this.prefetchedNextCell = null;
 		
 		// + for pick optimization +
 		//   Use this hash to skip empty row.
@@ -39,11 +41,22 @@ if (!window.mobmap) window.mobmap={};
 		},
 		
 		pick: function(latIndex, lngIndex, tSeconds) {
+			var pfcell = this.prefetchedNextCell;
+			if (pfcell && pfcell.cellIndexX === lngIndex && pfcell.cellIndexY === latIndex) {
+				// prefetch hit!
+				// fast-pass
+
+				this.prefetchedNextCell = pfcell.nextColumnCell;
+				return pfcell.pickAtTime(tSeconds);
+			}
+			
+			// normal pass
 			var k = makeMeshKey(lngIndex, latIndex);
 			var m = this.meshMap;
 			
 			if (m.hasOwnProperty(k)) {
 				var cell = m[k];
+				this.prefetchedNextCell = cell.nextColumnCell;
 				return cell.pickAtTime(tSeconds);
 			} else {
 				return null;
@@ -136,10 +149,13 @@ if (!window.mobmap) window.mobmap={};
 		},
 		
 		resetStatValue: function() {
-			var m = this.meshMap;
-			for (var i in m) {
-				m[i].lastStatValue = 0;
-				m[i].lastStatCount = 0;
+			var cls = this.cellFlattenList;
+			var len = cls.length;
+			var cell;
+			for (var i = 0;i < len;++i) {
+				cell = cls[i];
+				cell.lastStatValue = 0;
+				cell.lastStatCount = 0;
 			}
 		},
 		
@@ -155,6 +171,7 @@ if (!window.mobmap) window.mobmap={};
 			var m = this.meshMap;
 			if (!m.hasOwnProperty(k)) {
 				m[k] = new MeshCell(x, y);
+				this.cellFlattenList.push(m[k]);
 			}
 
 			return m[k];
@@ -172,6 +189,24 @@ if (!window.mobmap) window.mobmap={};
 
 			this.buildRowMap();
 			this.checkRange();
+			this.linkForeignCells();
+		},
+		
+		linkForeignCells: function() {
+			var cls = this.cellFlattenList;
+			var len = cls.length;
+			var cell, fcell;
+			for (var i = 0;i < len;++i) {
+				cell = cls[i];
+
+				var fx = cell.cellIndexX + 1;
+				var fy = cell.cellIndexY;
+				fcell = this.getCell(fx, fy);
+				
+				if (fcell) {
+					cell.nextColumnCell = fcell;
+				}
+			}
 		},
 		
 		checkRange: function() {
@@ -270,6 +305,8 @@ if (!window.mobmap) window.mobmap={};
 		this.lastStatValue = 0;
 		this.lastStatCount = 0;
 		this.name = null;
+		
+		this.nextColumnCell = null;
 	}
 	
 	MeshCell.prototype = {

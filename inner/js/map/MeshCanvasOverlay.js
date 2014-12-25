@@ -44,6 +44,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 
 		MeshCanvasOverlay.prototype.setPickTime = function(t) {
+			this.resetRenderedRegion();
 			this.pickTime = t;
 		};
 		
@@ -95,7 +96,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			mobmap.GLMobLayer.adjustOverlayCanvasPosition(this, this.canvasOffset);
-			this.render();
+			if (this.isRenderedRegionChanged()) {
+				this.render();
+				this.updateRenderedRegion();
+			}
 		};
 		
 		MeshCanvasOverlay.prototype.render = function() {
