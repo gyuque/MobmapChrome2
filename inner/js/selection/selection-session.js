@@ -68,7 +68,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			return false;
 		},
 
-		makeIDCollection: function(targetProject, useAndOp) {
+		makeIDCollection: function(targetProject, useAndOp, renew) {
 			var pickTime = targetProject.getCurrentTimeInSeconds();
 
 			var ls = targetProject.getLayerList();
@@ -88,7 +88,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 				*/
 				
-				if (!useAndOp) {
+				if (renew) {
 					selp.clear(true);
 				}
 

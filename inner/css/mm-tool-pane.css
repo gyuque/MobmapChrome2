@@ -93,7 +93,8 @@
 	margin-right: 0;
 }
 
-.editbarcol-body-sel .mm-sel-bool-button:last-child {
+.editbarcol-body-sel .mm-sel-bool-button:last-child,
+.editbarcol-body-sel .mm-sel-bool-button:nth-child(odd) {
 	margin-left: 0;
 }
 

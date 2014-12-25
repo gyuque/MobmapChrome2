@@ -57,9 +57,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		addSelectionButtons: function(colName) {
 			return this.addButtons(colName, [
-					['sel_clear', 0],
-					['sel_rect', 1],
-					['sel_poly', 10]
+					['sel_clear', 0 , 'Clear selection'],
+					['sel_rect' , 1 , 'Rectangle selection'],
+					['sel_poly' , 10, 'Select a polygon']
 				],
 				this.observeSelectionButton.bind(this)
 			);
@@ -67,8 +67,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		addSelectionBoolButtons: function(colName) {
 			return this.addButtons(colName, [
-					['selb_or', 15],
-					['selb_and', 16]
+					['selb_new', 15, 'NEW'],
+					['selb_or' , 16, 'OR'],
+					['selb_and', 17, 'AND']
 				],
 				this.observeSelectionBoolButton.bind(this),
 				'mm-sel-bool-button'
@@ -122,12 +123,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			for (var i in ls) {
 				var buttonData = ls[i];
-				var bname = buttonData[0];
+				var bname    = buttonData[0];
 				var sp_index = buttonData[1];
+				var title    = buttonData[2] || null;
 				
 				var btnObj = new mobmap.ToolButton(bname, 25, 18);
 				if (additinalClassName) {
 					btnObj.addClass(additinalClassName);
+				}
+				
+				if (title) {
+					btnObj.setTitle(title);
 				}
 
 				btnObj.configureStyleSheet(editbuttonsSpriteManager, sp_index);
@@ -233,6 +239,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			switch(btnObj.name) {
+			case 'selb_new':
+				this.ownerApp.setSelectionBooleanOperation(mobmap.SelectionController.BoolOpNew);
+				break;
 			case 'selb_or':
 				this.ownerApp.setSelectionBooleanOperation(mobmap.SelectionController.BoolOpOr);
 				break;
@@ -285,10 +294,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onSelectionBoolOpChange: function(e, newValue) {
-			var is_or = (newValue === mobmap.SelectionController.BoolOpOr);
-			
-			this.selectionBoolButtonNameMap['selb_or'].setSelectedStyle(is_or);
-			this.selectionBoolButtonNameMap['selb_and'].setSelectedStyle(!is_or);
+			var ops = mobmap.SelectionController;
+			this.selectionBoolButtonNameMap['selb_new'].setSelectedStyle(newValue === ops.BoolOpNew);
+			this.selectionBoolButtonNameMap['selb_or'].setSelectedStyle(newValue === ops.BoolOpOr);
+			this.selectionBoolButtonNameMap['selb_and'].setSelectedStyle(newValue === ops.BoolOpAnd);
 		},
 		
 		syncWithAppState: function(app) {

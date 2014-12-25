@@ -40,6 +40,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	ToolButton.prototype.addClass = function(c) {
 		this.j.addClass(c);
 	};
+
+	ToolButton.prototype.setTitle = function(t) {
+		this.j.attr('title', t);
+	};
 	
 	ToolButton.prototype.setSelectedStyle = function(b) {
 		var cls = "selected";

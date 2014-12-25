@@ -7,10 +7,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.ownerApp = ownerApp;
 		this.currentSelectionSession = null;
 		this.responders = [];
-		this.boolOp = SelectionController.BoolOpOr;
+		this.boolOp = SelectionController.BoolOpNew;
 	}
 	
-	SelectionController.BoolOpOr = 'or';
+	SelectionController.BoolOpNew = 'new';
+	SelectionController.BoolOpOr  = 'or';
 	SelectionController.BoolOpAnd = 'and';
 	
 	SelectionController.prototype = {
@@ -155,7 +156,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				this.fireBeforeCommitSession(this.currentSelectionSession);
 				var and_op = (this.boolOp === SelectionController.BoolOpAnd);
-				this.currentSelectionSession.makeIDCollection(prj, and_op);
+				var new_op = (this.boolOp === SelectionController.BoolOpNew);
+				this.currentSelectionSession.makeIDCollection(prj, and_op, new_op);
 				
 				if (this.currentSelectionSession.doAfterCommit) {
 					this.currentSelectionSession.doAfterCommit(this.ownerApp);
@@ -218,6 +220,24 @@ if (!window.mobmap) { window.mobmap={}; }
 			job.chunkSize = 1000;
 			job.run();
 		},
+		
+		renewLayerSelectionIfNeeded: function(targetLayer) {
+			if (this.boolOp !== SelectionController.BoolOpNew) { return; }
+
+			var selp = targetLayer.localSelectionPool;
+			if (selp) {
+				selp.clear(true);
+			}
+		},
+		
+		fireEmptySelectionIfNeeded: function(targetLayer) {
+			if (this.boolOp !== SelectionController.BoolOpNew) { return; }
+
+			var selp = targetLayer.localSelectionPool;
+			if (selp && !selp.isAnySelected()) {
+				selp.fire();
+			}
+		},
 
 		notifyGateJobProgress: function(rate) {
 			this.ownerApp.updateGateBusyDialog(rate);
@@ -244,6 +264,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (expq.hasError) {
 				return -1;
 			}
+
+			this.renewLayerSelectionIfNeeded(layer);
 
 			var evalOutList = [];
 			var evalNOTOutList = [];
@@ -325,6 +347,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 
 				this.objectIndex = 0;
+				this.owner.renewLayerSelectionIfNeeded(nextLayer);
 				this.makeObjectIDList(nextLayer);
 			}
 			
@@ -380,6 +403,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			if (this.owner.notifyGateJobProgress) {
 				this.owner.notifyGateJobProgress(this.objectIndex / idCount);
+			}
+			
+			if (!shouldContinue) {
+				this.owner.fireEmptySelectionIfNeeded(targetLayer);
 			}
 			
 			return shouldContinue;

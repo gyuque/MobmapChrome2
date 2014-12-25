@@ -187,7 +187,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!this.boundData) {
 				return;
 			}
-			
+
+			this.updateDisplayTexts();
+
 			var vStart = this.longSpanBar.viewportStartTime;
 			var vEnd = this.longSpanBar.viewportEndTime;
 			
@@ -204,15 +206,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!suppressRedraw) {
 				this.redrawBar();
 			}
-			
-			this.updateDisplayTexts();
 		},
 		
 		updateDisplayTexts: function() {
 			if (this.suppressUpdatingText) {
 				return;
 			}
-			
+
 			if (this.jDateDisplayElement && this.boundData) {
 				var tx = this.boundData.makeCurrentPrettyDate();
 				this.jDateDisplayElement.text(tx);
