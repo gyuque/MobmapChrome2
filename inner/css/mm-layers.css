@@ -365,25 +365,37 @@ label.label-limit-num-input, .marker-label-invert-check,
 	display: block;
 }
 
-.remote-refresh-button {
+/* Remote refresh area */
+.remote-refresh-button-container {
+	text-align: right;
+	padding-right: 2px;
+	padding-bottom: 1px;
+}
+
+.remote-refresh-button-container button {
 	border: 1px solid #888;
 	box-shadow: 0 1px 1px rgba(255,255,255,0.5) inset, 0 -1px 1px rgba(0,0,0,0.25) inset;
-	background: #eee url(../images/remote-refresh.png) no-repeat left center;
+	background: #eee no-repeat left center;
 	color: #000;
 	padding-left: 24px;
 	padding-top: 5px;
 	padding-bottom: 5px;
 	min-height: 20px;
+	margin-left: 1px;
 }
 
-.remote-refresh-button-container {
-	text-align: right;
-	padding-right: 2px;
-}
-
-.remote-refresh-button:hover:active {
+.remote-refresh-button-container button:hover:active {
 	box-shadow: 0 1px 4px rgba(0,0,0,0.5) inset;
 }
+
+button.remote-refresh-button {
+	background-image: url(../images/remote-refresh.png);
+}
+
+button.open-3dview-button {
+	background-image: url(../images/threed-view-button.png);
+}
+
 
 .dynstat-csv-download-form {
 	padding-top: 3px;

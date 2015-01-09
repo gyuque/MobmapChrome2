@@ -602,6 +602,33 @@ if (!window.mobmap) { window.mobmap={}; }
 			console.log("Recording mode:", enabled);
 		},
 		
+		onMessage_request3DViewTargetData: function(params) {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+			
+			var layer = prj.getLayerById(params.layerId);
+			if (layer) {
+				var sendData = this.generate3DViewTargetData(layer);
+				console.log(sendData);
+			}
+		},
+		
+		generate3DViewTargetData: function(movingObjectsLayer) {
+			var selp = movingObjectsLayer.localSelectionPool;
+			var mdat = movingObjectsLayer.movingData;
+			if (!mdat || !selp) {
+				return null;
+			}
+			
+			var nSelected = selp.count();
+			if (nSelected !== 1) {
+				return null;
+			}
+			
+			return {nSelected: nSelected};
+			//mdat.
+		},
+		
 		saveRemoteDownloaderURL: function(url) {
 			Mobmap2App.sendOuterMessage('saveRemoteDownloaderURL', {url: url});
 		},
@@ -733,6 +760,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.resetDialog.open(function() {
 				Mobmap2App.sendOuterMessage('resetApp', {});
 			});
+		},
+		
+		openLayer3DView: function(targetLayer) {
+			Mobmap2App.sendOuterMessage('openLayer3DView', {
+				layerId: targetLayer.layerId,
+				mapViewport: this.fetchMapViewportInfo()
+			});
+		},
+		
+		fetchMapViewportInfo: function() {
+			var m = this.getMapPane();
+			if (!m) { return null; }
+			
+			return m.getViewportInfo();
 		}
 	};
 

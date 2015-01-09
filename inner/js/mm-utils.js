@@ -453,3 +453,46 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 	
 })(window);
+
+(function(upperPackage) {
+	function bround(v, min, max) {
+		if (v>max) return max;
+		if (v<min) return min;
+		return v;
+	}
+
+	var GoogleMapsCalc = {
+		TILE_SIZE: 256,
+
+		LatLngToXY: function(lat, lng) {
+			var DPI = Math.PI * 2;
+			var HPI = Math.PI / 2;
+
+			var x = lng/DPI + 0.5;
+
+			var s = Math.sin(lat);
+			var c = Math.cos(lat);
+			var y = Math.log((1+c+s)/(1+c-s)) / -DPI + 0.5;
+			return [x, y];
+		},
+
+		XYtoLatLng: function(x, y) {
+			var PI = Math.PI;
+			var DPI = PI * 2;
+			var HPI = PI / 2;
+
+			var lng = bround((x-0.5) * DPI, -PI, PI);
+
+			var g = (y-0.5) * -DPI;
+			var lat = 2.0 * Math.atan( Math.exp(g) ) - HPI;
+
+			return [lat, lng];
+		},
+		
+		calcWorldMapSize: function(zoomLevel) {
+			return Math.pow(2, zoomLevel + 8);
+		}
+	};
+
+	upperPackage.GoogleMapsCalc = GoogleMapsCalc;
+})(window.mobmap);

@@ -114,6 +114,22 @@
 		
 		resetApp: function() {
 			chrome.runtime.reload();
+		},
+		
+		openLayer3DView: function(params) {
+			chrome.app.window.create('3dview.html', {
+				 minWidth: 512,
+				 minHeight: 384,
+				 width: 512,
+
+				}, function(wnd){
+					wnd.contentWindow.sendRequest3DViewTargetData = sendRequest3DViewTargetData;
+					wnd.contentWindow.mobmapInitData = {
+						layerId: params.layerId,
+						mapViewport: params.mapViewport
+					};
+				});
+			console.log(params);
 		}
 	};
 	
@@ -121,6 +137,10 @@
 		chrome.storage.local.get('remoteDownloaderURL', function(o) {
 			sendInnerMessage('restoreRemoteDownloaderURL', {url: o['remoteDownloaderURL']});
 		});
+	}
+	
+	function sendRequest3DViewTargetData(layerId) {
+		sendInnerMessage('request3DViewTargetData', {layerId: layerId});
 	}
 	
 	function windowGetWidth() {return window.outerWidth;}

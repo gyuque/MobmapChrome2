@@ -15,7 +15,7 @@
   "version": "2.1.11",
   "description": "Visualization and analytics tools for moving data",
   "permissions": [
-     "desktopCapture", "clipboardWrite", {"fileSystem": ["write"]} ,"storage", "http://*/*.csv","https://*/*.csv", "http://agora.ex.nii.ac.jp/*"
+     "desktopCapture", "clipboardWrite", {"fileSystem": ["write"]} ,"storage", "http://*/*.csv","https://*/*.csv", "http://agora.ex.nii.ac.jp/*", "http://maps.googleapis.com/*"
   ],
 
   "sandbox": {

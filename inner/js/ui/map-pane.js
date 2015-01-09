@@ -564,6 +564,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			return null;
 		},
 		
+		getViewportInfo: function() {
+			var gmap = this.getGoogleMaps();
+			if (!gmap) {return null;}
+			
+			var c = gmap.getCenter();
+			return {
+				center: {
+					lat: c.lat(),
+					lng: c.lng()
+				},
+				zoom: gmap.getZoom()
+			};
+		} ,
+		
 		// Utility functions
 		elementX: function(e){ return e.pageX - this.jContainerElement.offset().left; },
 		elementY: function(e){ return e.pageY - this.jContainerElement.offset().top;  },

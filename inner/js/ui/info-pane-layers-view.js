@@ -550,6 +550,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.visibilityButton = null;
 		this.jSelCountIndicator = null;
 		this.jSelCountIndicatorText = null;
+		this.reloadButtonContainer = null;
 		this.element = $H('div', 'mm-layer-view-item-box');
 		this.jElement = $(this.element);
 		this.build();
@@ -596,6 +597,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.buildDataOptions();
 				this.buildMarkerConfigurationPanel();
 				this.buildMarkerConnectionPanel();
+				
+this.add3DViewButton(this.element); // - - - - - 
 			}
 			
 			if (use_mesh) {
@@ -670,19 +673,49 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		addReloadButton: function(containerElement) {
-			var buttonContainer = document.createElement('div');
-			buttonContainer.setAttribute("class", "remote-refresh-button-container");
-			
-			var btn = document.createElement('button');
-			buttonContainer.appendChild(btn);
-			containerElement.appendChild(buttonContainer);
-			btn.setAttribute("class", "remote-refresh-button");
-			$(btn).text("Refresh").click( this.requestRemoteSourceRefresh.bind(this) );
+			return this.generateReloadAreaButton(
+				containerElement,
+				'remote-refresh-button',
+				'Refresh',
+				this.requestRemoteSourceRefresh.bind(this));
 		},
 		
+		add3DViewButton: function(containerElement) {
+			return this.generateReloadAreaButton(
+				containerElement,
+				'open-3dview-button',
+				'3D View',
+				this.requestOpen3DView.bind(this));
+		},
+		
+		ensureReloadButtonContainer: function(containerElement) {
+			if (!this.reloadButtonContainer) {
+				this.reloadButtonContainer = document.createElement('div');
+				this.reloadButtonContainer.setAttribute("class", "remote-refresh-button-container");
+				containerElement.appendChild(this.reloadButtonContainer);
+			}
+			
+			return this.reloadButtonContainer;
+		},
+		
+		generateReloadAreaButton: function(containerElement, className, label, callback) {
+			var buttonContainer = this.ensureReloadButtonContainer(containerElement);
+			var btn = document.createElement('button');
+			buttonContainer.appendChild(btn);
+			btn.setAttribute("class", className);
+
+			return $(btn).text(label).click(callback);
+		},
+
 		requestRemoteSourceRefresh: function() {
 			if (this.boundLayer.requestRemoteRefresh) {
 				this.boundLayer.requestRemoteRefresh();
+			}
+		},
+		
+		requestOpen3DView: function() {
+			if (this.ownerApp) {
+				this.ownerApp.openLayer3DView(this.boundLayer);
 			}
 		},
 
