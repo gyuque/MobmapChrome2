@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		DownloadError: 'mm-layer-model-event-download-error',
 		DownloadProgress: 'mm-layer-model-event-download-progress',
 		DataChange: 'mm-layer-model-event-data-change',
+		DataSchemaChange: 'mm-layer-model-event-data-schema-change',
 		DataOptionChange: 'mm-layer-model-event-data-option-change',
 		VisibilityChange: 'mm-layer-model-event-visibility-change',
 		RequestDelete: 'mm-layer-model-event-request-delete',
@@ -178,6 +179,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		newMovingData: function() {
 			this.movingData = new mobmap.MovingData();
 			return this.movingData;
+		},
+		
+		addAttribute: function(name, valType) {
+			if (!this.movingData) { return false;}
+			
+			if (this.movingData.addAttributeAfterLoad(name, (valType === AttributeType.CFLOAT), 0 )) {
+				this.eventDispatcher().trigger(LayerEvent.DataSchemaChange, [this, name]);
+			}
+	
+			return true;
 		},
 		
 		setRemainSides: function(newValue) {

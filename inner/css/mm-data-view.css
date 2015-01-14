@@ -166,3 +166,17 @@ div[data-itemname=data_detail] {
 	margin-top: 3px;
 	text-align: center;
 }
+
+.mm-addattrform-label {
+	display: block;
+}
+
+.mm-addattrform-button-container {
+	padding: 1px;
+	text-align: right;
+}
+
+.mm-addattrform-button-container button {
+	padding-left: 1em;
+	padding-right: 1em;
+}

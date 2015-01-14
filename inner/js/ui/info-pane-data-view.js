@@ -21,9 +21,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		// -----------------
 		this.exsearchExpandablePanel = new mobmap.ExpandablePanel();
 		this.valfillExpandablePanel = new mobmap.ExpandablePanel();
+		this.a_addExpandablePanel = new mobmap.ExpandablePanel();
 		this.jValFillButton = null;
+		this.jAddAttributeButton = null;
 		this.valfillInputElement = null;
 		this.valfillSelectElement = null;
+		this.a_addNameInputElement = null;
 		this.dataSourceArray = [];
 		this.containerElement = containerElement;
 		this.jContainerElement = $(containerElement);
@@ -79,6 +82,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.addTargetSelector( this.containerElement );
 			this.setupExpressionSearchPanel( this.containerElement );
 			this.setupValueFillPanel( this.containerElement );
+			this.setupAddAttributePanel( this.containerElement );
 			this.addTableTitle( this.containerElement );
 			
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
@@ -93,7 +97,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		setupExpressionSearchPanel: function(containerElement) {
-			this.exsearchExpandablePanel.setTitle("Expression");
+			this.exsearchExpandablePanel.setTitle("Query by expression");
 			containerElement.appendChild(this.exsearchExpandablePanel.element);
 			
 			this.exsearchExpandablePanel.closedContentElement.innerHTML = '';
@@ -113,7 +117,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		setupValueFillPanel: function(containerElement) {
-			this.valfillExpandablePanel.setTitle("Value Fill");
+			this.valfillExpandablePanel.setTitle("Value fill");
 			containerElement.appendChild(this.valfillExpandablePanel.element);
 			this.valfillExpandablePanel.closedContentElement.innerHTML = '';
 			
@@ -133,6 +137,44 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jValFillButton = $(btn).text('fill').click( this.onValueFillButtonClick.bind(this) );
 			this.valfillSelectElement = selAttr;
 			this.valfillInputElement = valInput;
+		},
+		
+		setupAddAttributePanel: function(containerElement) {
+			var xp = this.a_addExpandablePanel;
+			xp.setTitle("Add attribute");
+			containerElement.appendChild(xp.element);
+			xp.closedContentElement.innerHTML = '';
+			
+			var ec = xp.expandedContentElement;
+			ec.innerHTML = '';
+			
+			var attrNameInput = $H('input', 'mm-addattrform-name');
+			attrNameInput.type = 'text';
+			var lab = $H('label', 'mm-addattrform-label');
+			lab.innerHTML = 'Name ';
+			lab.appendChild(attrNameInput);
+			ec.appendChild(lab);
+			this.a_addNameInputElement = attrNameInput;
+
+
+			var labInitialValue = $H('label', 'mm-addattrform-label');
+			labInitialValue.innerHTML = 'Initial value';
+			ec.appendChild(labInitialValue);
+			this.generateAttributeInitialValueForm(ec);
+			
+			var buttonContainer = $H('div', 'mm-addattrform-button-container');
+			var trigger = document.createElement('button');
+			trigger.innerHTML = 'Add';
+			buttonContainer.appendChild(trigger);
+			ec.appendChild(buttonContainer);
+			
+			this.jAddAttributeButton = $(trigger).click(this.onAddAttributeButtonClick.bind(this));
+		},
+		
+		generateAttributeInitialValueForm: function(containerElement) {
+			var pair_z = generateRadioInLabel('Zero or Empty', 'mm-addattrform-inittype', 'mm-addattrform-inittype'); 
+			
+			containerElement.appendChild(pair_z.label);
 		},
 		
 		onRunExpressionQueryButtonClick: function() {
@@ -713,6 +755,19 @@ if (!window.mobmap) { window.mobmap={}; }
 					sel.appendChild(opt);
 				}
 			});
+		},
+		
+		onAddAttributeButtonClick: function() {
+			var lyr = this.getCurrentSourceLayer();
+			var aname = this.a_addNameInputElement.value;
+			if (lyr && lyr.addAttribute && aname && aname.length) {
+				
+				if (kRequiredAttributes.hasOwnProperty(aname)) {
+					// Bad name
+				} else {
+					lyr.addAttribute(aname, AttributeType.INTEGER);
+				}
+			}
 		},
 		
 		onValueFillButtonClick: function() {
