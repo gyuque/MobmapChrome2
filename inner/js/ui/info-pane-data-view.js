@@ -56,12 +56,21 @@ if (!window.mobmap) { window.mobmap={}; }
 				var ed = prj.eventDispatcher();
 				ed.
 				 bind(mobmap.MMProject.LAYERLIST_CHANGE, this.onLayerListChange.bind(this)).
-				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this));
+				 bind(mobmap.LayerEvent.LoadFinish, this.onAnyLayerLoadFinish.bind(this)).
+				 bind(mobmap.LayerEvent.DataSchemaChange, this.onLayerDataSchemaChange.bind(this));
 			}
 		},
 
 		onAnyLayerLoadFinish: function() {
 			this.onLayerListChange();
+		},
+		
+		onLayerDataSchemaChange: function(e, layer, newAttributeName) {
+			if (layer === this.getCurrentSourceLayer()) {
+				this.requestRedraw();
+				this.rebuildGridView();
+				this.hideInternalAttributes();
+			}
 		},
 
 		onLayerListChange: function() {
@@ -88,14 +97,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.gridOuterElement = $H('div', 'mm-data-grid-outer');
 			this.jGridOuterElement = $(this.gridOuterElement).click( this.onClickInsideGrid.bind(this) );
 			this.containerElement.appendChild(this.gridOuterElement);
+
+			this.rebuildGridView();
+		},
+		
+		rebuildGridView: function() {
+			this.gridOuterElement.innerHTML = '';
 			this.jGridOuterElement.kendoGrid({
 				detailTemplate: this.generateRowDetailBox.bind(this)
 			});
-			
+
 			var gr = this.getDataGridObject();
 			gr.setDataSource(this.dataSourceForGrid);
 		},
-		
+
 		setupExpressionSearchPanel: function(containerElement) {
 			this.exsearchExpandablePanel.setTitle("Query by expression");
 			containerElement.appendChild(this.exsearchExpandablePanel.element);
@@ -173,8 +188,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		generateAttributeInitialValueForm: function(containerElement) {
 			var pair_z = generateRadioInLabel('Zero or Empty', 'mm-addattrform-inittype', 'mm-addattrform-inittype'); 
+			var pair_v = generateRadioInLabel('Velocity(m/s)', 'mm-addattrform-inittype', 'mm-addattrform-inittype'); 
 			
+			pair_z.input.value = kInitialValueTypeEmpty;
+			pair_v.input.value = kInitialValueTypeVelocityMS;
+
 			containerElement.appendChild(pair_z.label);
+			containerElement.appendChild(pair_v.label);
+		},
+		
+		getAttributeInitialRadioValue: function() {
+			return this.jContainerElement.find('.mm-addattrform-inittype input:checked').val() | 0;
 		},
 		
 		onRunExpressionQueryButtonClick: function() {
@@ -484,6 +508,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.updateTableTitle(any_selected, sel_count);
 			this.dataSourceForGrid.read();
 			
+//			console.log("renew", count)
+			this.hideInternalAttributes();
+		},
+		
+		hideInternalAttributes: function() {
 			var gr = this.getDataGridObject();
 			gr.hideColumn("_pickIndex");
 			gr.hideColumn("_pickTime");
@@ -493,7 +522,6 @@ if (!window.mobmap) { window.mobmap={}; }
 			gr.showColumn("x");
 			gr.showColumn("y");
 			gr.showColumn("_time");
-//			console.log("renew", count)
 		},
 		
 		updateStaticLayerDataView: function() {
@@ -761,11 +789,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			var lyr = this.getCurrentSourceLayer();
 			var aname = this.a_addNameInputElement.value;
 			if (lyr && lyr.addAttribute && aname && aname.length) {
+				var initType = this.getAttributeInitialRadioValue();
 				
 				if (kRequiredAttributes.hasOwnProperty(aname)) {
 					// Bad name
 				} else {
-					lyr.addAttribute(aname, AttributeType.INTEGER);
+					lyr.addAttribute(aname, AttributeType.INTEGER, initType);
 				}
 			}
 		},

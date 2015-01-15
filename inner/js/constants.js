@@ -10,6 +10,9 @@ var kDarkMapStyle = [
 
 var kRequiredAttributes = ['id', 'time', 'x', 'y'];
 
+var kInitialValueTypeEmpty      = 0;
+var kInitialValueTypeVelocityMS = 1;
+
 var kDateRegExp = /([0-9]+)[-\/]([0-9]+)[-\/]([0-9]+)/ ;
 var kTimeRegExp = /([0-9]+):([0-9]+)(:([0-9]+))?/ ;
 var kDefaultDayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];

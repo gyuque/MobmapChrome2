@@ -180,3 +180,7 @@ div[data-itemname=data_detail] {
 	padding-left: 1em;
 	padding-right: 1em;
 }
+
+.mm-addattrform-inittype {
+	margin-left: 1em;
+}

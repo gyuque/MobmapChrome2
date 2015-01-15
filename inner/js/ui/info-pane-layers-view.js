@@ -435,6 +435,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					 bind(LE.LoadWillStart, this.willStartLayerLoad.bind(this)).
 					 bind(LE.BodyLoadStarted, this.onBodyLoadStarted.bind(this)).
 					 bind(LE.LoadProgressChange, this.onLayerLoadProgressChange.bind(this, layer)).
+					 bind(LE.DataSchemaChange, this.onLayerDataSchemaChange.bind(this)).
 					 bind(LE.LoadFinish, this.onLayerLoadFinish.bind(this)).
 					 bind(LE.DataOptionChange, this.onLayerDataOptionChange.bind(this)).
 					 bind(LE.DownloadError, this.onLayerDownloadError.bind(this)).
@@ -480,6 +481,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerLoadProgressChange: function(layer, e, progressRatio) {
 			if (layer.hasPrimaryView()) {
 				layer.primaryView.showProgress(progressRatio);
+			}
+		},
+		
+		onLayerDataSchemaChange: function(e, layer, newAttributeName) {
+			if (layer.hasPrimaryView()) {
+				var lv = layer.primaryView;
+				lv.updateAdditionalPropertyList();
 			}
 		},
 		
@@ -924,6 +932,7 @@ this.add3DViewButton(this.element); // - - - - -
 				if (cp) { cp.addAdditionalPropertyName(attrName); }
 			});
 			
+			mp.restoreComboSelection();
 			mp.sendAttrNameToBind();
 		},
 		

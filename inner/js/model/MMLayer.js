@@ -181,10 +181,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.movingData;
 		},
 		
-		addAttribute: function(name, valType) {
+		addAttribute: function(name, valType, initType) {
 			if (!this.movingData) { return false;}
 			
-			if (this.movingData.addAttributeAfterLoad(name, (valType === AttributeType.CFLOAT), 0 )) {
+			if (this.movingData.addAttributeAfterLoad(name, (valType === AttributeType.CFLOAT), initType, 0 )) {
 				this.eventDispatcher().trigger(LayerEvent.DataSchemaChange, [this, name]);
 			}
 	

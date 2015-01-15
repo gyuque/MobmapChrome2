@@ -41,11 +41,10 @@ if (!window.mobmap) window.mobmap={};
 			this.extraProps[name] = flags;
 		},
 		
-		addAttributeAfterLoad: function(name, enableInterpolate, initialValue) {
-			if ( MovingData.isInvalidProp(this.extraProps, name) ) { return false; }
+		addAttributeAfterLoad: function(name, enableInterpolate, initType, initialValue) {
+			if ( !MovingData.isInvalidProp(this.extraProps, name) ) { return false; }
 			
 			this.addExtraProperty(name, enableInterpolate);
-			
 			var len = this.tlList.length;
 			for (var i = 0;i < len;++i) {
 				this.tlList[i].fillValue(name, initialValue);

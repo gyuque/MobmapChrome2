@@ -14,7 +14,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			mobmap.MarkerGenerator.CHANGE_EVENT,
 			this.onMarkerGeneratorConfigurationChange.bind(this)
 		);
-		
+
+		this.attrComboValueBeforeClear = {marker: null, label: null};
+
 		this.markerGradient = null;
 		this.markerGradientEditor = null;
 		this.gradientEventElement = null;
@@ -770,6 +772,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		// Additional properties
 		clearAdditionalPropertyList: function() {
+			this.attrComboValueBeforeClear.marker = this.getAttrNameToBind();
+			this.attrComboValueBeforeClear.label = this.getAttrNameToShowLabel();
+			
 			if (this.attrBindComboElement) {
 				this.attrBindComboElement.innerHTML = '';
 			}
@@ -777,6 +782,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.attrLabelComboElement) {
 				this.attrLabelComboElement.innerHTML = '';
 			}
+		},
+		
+		restoreComboSelection: function() {
+			selectComboValueIfExists(this.attrBindComboElement, this.attrComboValueBeforeClear.marker);
+			selectComboValueIfExists(this.attrLabelComboElement, this.attrComboValueBeforeClear.label);
 		},
 		
 		addPresetProperties: function() {
@@ -1002,6 +1012,17 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		target.appendChild(opt);
 		return true;
+	}
+	
+	function selectComboValueIfExists(combo, val) {
+		var ls = combo.childNodes;
+		for (var i = 0;i < ls.length;++i) {
+			var item = ls[i];
+			if (item.value === val) {
+				combo.value = val;
+				return;
+			}
+		}
 	}
 	
 	MarkerConfigurationPanel.makeComboWithLabel = makeComboWithLabel;
