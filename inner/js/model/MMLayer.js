@@ -184,7 +184,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		addAttribute: function(name, valType, initType) {
 			if (!this.movingData) { return false;}
 			
-			if (this.movingData.addAttributeAfterLoad(name, (valType === AttributeType.CFLOAT), initType, 0 )) {
+			var emptyVal = 0;
+			if (valType ===  AttributeType.STRING) {
+				emptyVal = '';
+			}
+			
+			if (this.movingData.addAttributeAfterLoad(name, (valType === AttributeType.CFLOAT), initType, emptyVal, valType )) {
+				if (this.attributeMapping) {
+					this.attributeMapping.addAttributeAfterLoad(name, valType);
+				}
+
 				this.eventDispatcher().trigger(LayerEvent.DataSchemaChange, [this, name]);
 			}
 	
@@ -412,7 +421,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (markerIndex < 0) { markerIndex = 0; }
 				else if (markerIndex >= baseColorList.length) { markerIndex = baseColorList.length-1; }
 			}
-			
+
 			return baseColorList[markerIndex] || null;
 		},
 	

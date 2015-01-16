@@ -181,6 +181,6 @@ div[data-itemname=data_detail] {
 	padding-right: 1em;
 }
 
-.mm-addattrform-inittype {
-	margin-left: 1em;
+.mm-addattrform-inittype, .mm-addattrform-valtype {
+	margin-left: 0.4em;
 }

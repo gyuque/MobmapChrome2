@@ -17,6 +17,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			return a;
 		},
 		
+		addAttributeAfterLoad: function(name, dataType) {
+			var a_metadata = this.addAttribute(name);
+			a_metadata.dataType = dataType;
+			a_metadata.csvColumnIndex = this.getMaxColumnIndex() + 1;
+
+			this.generateColIndexMap();
+		},
+		
+		getMaxColumnIndex: function() {
+			var maxVal = -1;
+			for (var i in this.nameMap) {
+				maxVal = Math.max(maxVal, this.nameMap[i].csvColumnIndex);
+			}
+			
+			return maxVal;
+		},
+
 		getAttributeMetadata: function(name) {
 			return this.nameMap[name] || null;
 		},
@@ -98,19 +115,25 @@ if (!window.mobmap) { window.mobmap={}; }
 		convertToColumnType: function(colIndex, rawStr) {
 			var meta = this.colIndexMap[colIndex] || null;
 			if (meta) {
-				switch(meta.dataType) {
-				case AttributeType.INTEGER:
-					return parseInt(rawStr, 10); break;
-
-				case AttributeType.FLOAT:
-				case AttributeType.CFLOAT:
-					return parseFloat(rawStr); break;
-				}
+				return convertFromStringToColumnType(rawStr, meta.dataType);
 			}
 			
 			return rawStr;
 		}
 	};
+	
+	function convertFromStringToColumnType(rawStr, dataType) {
+		switch(dataType) {
+		case AttributeType.INTEGER:
+			return parseInt(rawStr, 10); break;
+
+		case AttributeType.FLOAT:
+		case AttributeType.CFLOAT:
+			return parseFloat(rawStr); break;
+		}
+		
+		return rawStr;
+	}
 
 
 	function RecordAttributeMeta(name) {
@@ -120,5 +143,6 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 	
 	// +++ Export +++
+	AttributeMapping.convertFromStringToColumnType = convertFromStringToColumnType;
 	aGlobal.mobmap.AttributeMapping = AttributeMapping;
 })(window);

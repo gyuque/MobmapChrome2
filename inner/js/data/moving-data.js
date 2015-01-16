@@ -41,13 +41,21 @@ if (!window.mobmap) window.mobmap={};
 			this.extraProps[name] = flags;
 		},
 		
-		addAttributeAfterLoad: function(name, enableInterpolate, initType, initialValue) {
+		addAttributeAfterLoad: function(name, enableInterpolate, initType, initialValue, dataType) {
 			if ( !MovingData.isInvalidProp(this.extraProps, name) ) { return false; }
-			
+
 			this.addExtraProperty(name, enableInterpolate);
+
 			var len = this.tlList.length;
-			for (var i = 0;i < len;++i) {
-				this.tlList[i].fillValue(name, initialValue);
+			var i;
+			if (initType === kInitialValueTypeEmpty) {
+				for (i = 0;i < len;++i) {
+					this.tlList[i].fillValue(name, initialValue);
+				}
+			} else {
+				for (i = 0;i < len;++i) {
+					this.tlList[i].fillVelocity(name, dataType);
+				}
 			}
 			
 			return true;
@@ -329,6 +337,26 @@ if (!window.mobmap) window.mobmap={};
 			for (var i = 0;i < len;++i) {
 				ls[i][attrName] = newValue;
 			}
+		},
+		
+		fillVelocity: function(attrName, dataType) {
+			var ls = this.recordList;
+			var n = ls.length - 1;
+			for (var i = 0;i < n;++i) {
+				var rec1 = ls[i];
+				var rec2 = ls[i+1];
+
+				var distance = calcDistanceFromLatLng(rec1.x, rec1.y, rec2.x, rec2.y);
+				var dt = rec2._time - rec1._time;
+				var v = 0;
+				if (Math.abs(distance) >= 0.01) {
+					v = distance / dt;
+				}
+
+				rec1[attrName] = mobmap.AttributeMapping.convertFromStringToColumnType(v, dataType);
+			}
+			
+			ls[n][attrName] = 0;
 		},
 
 		hasMoreTwoEnds: function() {

@@ -622,7 +622,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					}
 					
 					vcount = 0;
-					g.strokeStyle = newColor.toHTMLRGB();
+					g.strokeStyle = newColor ? newColor.toHTMLRGB() : 'transparent';
 				}
 
 

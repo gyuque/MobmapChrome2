@@ -71,6 +71,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.rebuildGridView();
 				this.hideInternalAttributes();
 			}
+			
+			this.updateValFillAttrSelection();
 		},
 
 		onLayerListChange: function() {
@@ -171,6 +173,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			ec.appendChild(lab);
 			this.a_addNameInputElement = attrNameInput;
 
+			var labType = $H('label', 'mm-addattrform-label');
+			labType.innerHTML = 'Data type';
+			ec.appendChild(labType);
+			this.generateAdditionalAttributeTypeForm(ec);
 
 			var labInitialValue = $H('label', 'mm-addattrform-label');
 			labInitialValue.innerHTML = 'Initial value';
@@ -186,10 +192,29 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jAddAttributeButton = $(trigger).click(this.onAddAttributeButtonClick.bind(this));
 		},
 		
+		generateAdditionalAttributeTypeForm: function(containerElement) {
+			var pair_s = generateRadioInLabel('string', 'mm-addattrform-valtype', 'mm-addattrform-valtype'); 
+			var pair_i = generateRadioInLabel('int'   , 'mm-addattrform-valtype', 'mm-addattrform-valtype'); 
+			var pair_f = generateRadioInLabel('float' , 'mm-addattrform-valtype', 'mm-addattrform-valtype'); 
+			var pair_c = generateRadioInLabel('cfloat', 'mm-addattrform-valtype', 'mm-addattrform-valtype'); 
+			pair_i.input.checked = true;
+
+			pair_s.input.value = AttributeType.STRING;
+			pair_i.input.value = AttributeType.INTEGER;
+			pair_f.input.value = AttributeType.FLOAT;
+			pair_c.input.value = AttributeType.CFLOAT;
+			
+			containerElement.appendChild(pair_s.label);
+			containerElement.appendChild(pair_i.label);
+			containerElement.appendChild(pair_f.label);
+			containerElement.appendChild(pair_c.label);
+		},
+		
 		generateAttributeInitialValueForm: function(containerElement) {
 			var pair_z = generateRadioInLabel('Zero or Empty', 'mm-addattrform-inittype', 'mm-addattrform-inittype'); 
 			var pair_v = generateRadioInLabel('Velocity(m/s)', 'mm-addattrform-inittype', 'mm-addattrform-inittype'); 
 			
+			pair_z.input.checked = true;
 			pair_z.input.value = kInitialValueTypeEmpty;
 			pair_v.input.value = kInitialValueTypeVelocityMS;
 
@@ -199,6 +224,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getAttributeInitialRadioValue: function() {
 			return this.jContainerElement.find('.mm-addattrform-inittype input:checked').val() | 0;
+		},
+		
+		getAttributeTypeRadioValue: function() {
+			return this.jContainerElement.find('.mm-addattrform-valtype input:checked').val() | 0;
 		},
 		
 		onRunExpressionQueryButtonClick: function() {
