@@ -819,11 +819,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			var aname = this.a_addNameInputElement.value;
 			if (lyr && lyr.addAttribute && aname && aname.length) {
 				var initType = this.getAttributeInitialRadioValue();
+				var valType = this.getAttributeTypeRadioValue();
 				
 				if (kRequiredAttributes.hasOwnProperty(aname)) {
 					// Bad name
 				} else {
-					lyr.addAttribute(aname, AttributeType.INTEGER, initType);
+					lyr.addAttribute(aname, valType, initType);
 				}
 			}
 		},
