@@ -130,6 +130,15 @@
 					};
 				});
 			console.log(params);
+		},
+		
+		send3DViewTargetData: function(params) {
+			var wls = chrome.app.window.getAll();
+			for (var i in wls) {
+				if (wls[i].contentWindow && wls[i].contentWindow.receive3DViewTargetData) {
+					wls[i].contentWindow.receive3DViewTargetData(params);
+				}
+			}
 		}
 	};
 	

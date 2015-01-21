@@ -609,7 +609,10 @@ if (!window.mobmap) { window.mobmap={}; }
 			var layer = prj.getLayerById(params.layerId);
 			if (layer) {
 				var sendData = this.generate3DViewTargetData(layer);
-				console.log(sendData);
+				Mobmap2App.sendOuterMessage('send3DViewTargetData', {
+					content: sendData,
+					layerId: params.layerId
+				});
 			}
 		},
 		
@@ -625,9 +628,24 @@ if (!window.mobmap) { window.mobmap={}; }
 				return null;
 			}
 			
-			return {nSelected: nSelected};
-			//mdat.
+			var retObj = {
+				record_list_array: null,
+				nSelected: nSelected
+			};
+			
+			selp.eachSelected(function(objId) {
+				var tl = mdat.getTimeListOfId(objId);
+				if (tl) {
+					if (!retObj.record_list_array) { retObj.record_list_array=[]; }
+					
+					retObj.record_list_array.push( tl.recordList );
+				}
+			});
+			
+			return retObj;
 		},
+		
+		
 		
 		saveRemoteDownloaderURL: function(url) {
 			Mobmap2App.sendOuterMessage('saveRemoteDownloaderURL', {url: url});

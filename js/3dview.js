@@ -18,7 +18,7 @@
 	
 	function afterInitialDataOK(init_data) {
 		theController = new ThreeDViewController(kMainScreenCanvasId, init_data);
-		
+		window.receive3DViewTargetData = theController.receive3DViewTargetData.bind(theController);
 	}
 	
 	// Global APIs
@@ -54,6 +54,7 @@
 		this.imgStaticMap = null;
 		
 		this.downloadStaticMap( this.afterMapDownloaded.bind(this) , this.mapViewport);
+		this.content = null;
 	}
 	
 	ThreeDViewController.prototype = {
@@ -90,6 +91,12 @@
 			resizeFunc();
 			
 			window.sendRequest3DViewTargetData(this.targetLayerId);
+		},
+		
+		receive3DViewTargetData: function(params) {
+			if (params.layerId === this.targetLayerId) {
+				
+			}
 		},
 		
 		initializeCanvas: function() {
@@ -369,6 +376,16 @@
 			gl.uniformMatrix4fv(uloc, false, m);
 		}
 	};
+
+
+	function ThreeDViewTrajectoryContent() {
+		
+	}
 	
+	ThreeDViewTrajectoryContent.prototype = {
+		
+	};
+
+
 	var _tempVecEyePos = [0,0,0];
 })();

@@ -94,6 +94,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (var i in m) {
 				outArray.push(i);
 			}
+		},
+		
+		eachSelected: function(proc) {
+			var m = this.idmap;
+			for (var i in m) {
+				proc(i);
+			}
 		}
 	};
 
