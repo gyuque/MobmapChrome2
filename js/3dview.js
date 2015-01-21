@@ -84,6 +84,7 @@
 			this.initializeCanvas();
 			this.baseMapPanel = new ThreeDViewMapPanel(this.gl);
 			this.normalShader = new NormalShader(this.gl, 'vs-src', 'fs-src');
+			this.colorShader  = new ColorShader(this.gl, 'color-vs-src', 'color-fs-src');
 			this.mapTexture = this.initializeMapTexture(loadedImage);
 			var resizeFunc = this.observeResize();
 			this.observeUserInput();
@@ -95,8 +96,15 @@
 		
 		receive3DViewTargetData: function(params) {
 			if (params.layerId === this.targetLayerId) {
-				
+				this.newTrajectoryContent(params.content);
 			}
+		},
+		
+		newTrajectoryContent: function(contentSource) {
+			this.content = new ThreeDViewTrajectoryContent(this.gl, contentSource);
+
+			this.viewDirty = true;
+			this.render();
 		},
 		
 		initializeCanvas: function() {
@@ -169,7 +177,7 @@
 			this.viewDirty = false;
 			var gl = this.gl
 			this.normalShader.use(gl);
-			this.updateViewMatrix();
+			this.updateViewMatrix(this.normalShader);
 			this.clearView();
 			
 			// Use texture
@@ -182,6 +190,11 @@
 			}
 			
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+			
+			if (this.content) {
+				this.content.render(this);
+			}
+			
 			gl.flush();
 		},
 		
@@ -189,10 +202,14 @@
 			var m = this.matProj;
 
 			mat4.perspective(m, Math.PI * 0.3, this.calcAspect(), 0.1, 20.0);
+			this.normalShader.use(this.gl);
 			this.normalShader.setProjectionMatrixUniformValue(this.gl, m);
+			
+			this.colorShader.use(this.gl);
+			this.colorShader.setProjectionMatrixUniformValue(this.gl, m);
 		},
 		
-		updateViewMatrix: function() {
+		updateViewMatrix: function(targetShader) {
 			var m = this.matView;
 
 			var eyePos = _tempVecEyePos;
@@ -201,7 +218,7 @@
 			mat4.identity(m);
 			mat4.lookAt(m, eyePos, [0, 0, 0], [0,1,0]); 
 			
-			this.normalShader.setViewMatrixUniformValue(this.gl, m);
+			targetShader.setViewMatrixUniformValue(this.gl, m);
 		},
 		
 		calcEyePos: function(outVec) {
@@ -302,20 +319,25 @@
 		
 		return tex;
 	};
-	
-	function NormalShader(gl, vs_src_id, fs_src_id) {
-		this.program = null;
-		this.params = {};
-		var vsSource = NormalShader.fetchShaderSource(vs_src_id);
-		var fsSource = NormalShader.fetchShaderSource(fs_src_id);
 
-		this.setupShader(gl, vsSource, fsSource, this.params);
+
+	function NormalShader(gl, vs_src_id, fs_src_id) {
+		shader_obj_init(this, gl, vs_src_id, fs_src_id);
 	}
 
 	NormalShader.fetchShaderSource = function(element_id) {
 		var el = document.getElementById(element_id);
 		return el.innerHTML;
 	};
+
+	function shader_obj_init(that, gl, vs_src_id, fs_src_id) {
+		that.program = null;
+		that.params = {};
+		var vsSource = NormalShader.fetchShaderSource(vs_src_id);
+		var fsSource = NormalShader.fetchShaderSource(fs_src_id);
+		
+		that.setupShader(gl, vsSource, fsSource, that.params);
+	}
 
 	NormalShader.prototype = {
 		use: function(gl) {
@@ -355,15 +377,19 @@
 
 			// Pick params
 			gl.useProgram(program);
+			this.pickShaderParams(gl, outParams, program);
+
+			this.program = program;
+			return true;
+		},
+		
+		pickShaderParams: function(gl, outParams, program) {
 			outParams.aPosition = gl.getAttribLocation(program, 'aPosition');
 			outParams.aColor    = gl.getAttribLocation(program, 'aColor');
 			outParams.aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
 			outParams.uTexture       = gl.getUniformLocation(program, 'uTexture');
 			outParams.uViewTransform = gl.getUniformLocation(program, 'uViewTransform');
 			outParams.uProjTransform = gl.getUniformLocation(program, 'uProjTransform');
-
-			this.program = program;
-			return true;
 		},
 		
 		setViewMatrixUniformValue: function(gl, m) {
@@ -378,12 +404,50 @@
 	};
 
 
-	function ThreeDViewTrajectoryContent() {
-		
+	function ColorShader(gl, vs_src_id, fs_src_id) {
+		shader_obj_init(this, gl, vs_src_id, fs_src_id);
+	}
+	
+	ColorShader.prototype.use = NormalShader.prototype.use;
+	ColorShader.prototype.setupShader = NormalShader.prototype.setupShader;
+	ColorShader.prototype.setProjectionMatrixUniformValue = NormalShader.prototype.setProjectionMatrixUniformValue;
+	ColorShader.prototype.setViewMatrixUniformValue = NormalShader.prototype.setViewMatrixUniformValue;
+	ColorShader.prototype.pickShaderParams = function(gl, outParams, program) {
+		outParams.aPosition = gl.getAttribLocation(program, 'aPosition');
+		outParams.aColor    = gl.getAttribLocation(program, 'aColor');
+		outParams.uViewTransform = gl.getUniformLocation(program, 'uViewTransform');
+		outParams.uProjTransform = gl.getUniformLocation(program, 'uProjTransform');
+	};
+
+
+	function ThreeDViewTrajectoryContent(gl, contentSource) {
+		this.vbPoss = null;
+		this.possSrcArray = null;
+
+		this.recordListArray = contentSource.record_list_array;
+		console.log('*',this.recordListArray)
 	}
 	
 	ThreeDViewTrajectoryContent.prototype = {
+		render: function(controller) {
+			var gl = controller.gl;
+			var shader = controller.colorShader;
+			shader.use(gl);
+			controller.updateViewMatrix(shader);
+			
+			var nObjects = this.recordListArray.length;
+			for (var i = 0;i < nObjects;++i) {
+				this.renderRecordList(this.recordListArray[i].recordList);
+			}
+		},
 		
+		renderRecordList: function(recordList) {
+			console.log(recordList)
+		},
+		
+		generateVertexBuffer: function(gl) {
+			
+		}
 	};
 
 

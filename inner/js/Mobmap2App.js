@@ -638,7 +638,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				if (tl) {
 					if (!retObj.record_list_array) { retObj.record_list_array=[]; }
 					
-					retObj.record_list_array.push( tl.recordList );
+					retObj.record_list_array.push({
+						id: objId,
+						recordList: tl.recordList
+					});
 				}
 			});
 			
