@@ -91,6 +91,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			a.screenX = v0.sx * _tx  +  v1.sx * tx + this.offsetX;
 			a.screenY = v0.sy * _ty  +  v2.sy * ty + this.offsetY;
+		},
+		
+		exportConfiguration: function() {
+			return {
+				vertices: this.vertices,
+				size: this.size,
+				latSpan: this.latSpan,
+				lngSpan: this.lngSpan,
+				latCell: this.latCell,
+				lngCell: this.lngCell
+			};
 		}
 	};
 

@@ -5,6 +5,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	
 	function Mobmap2App(appScreen) {
 		this.toolPane = this.mapPane = this.infoPane = this.layersView = this.dataView = this.annView = this.currentProject = null;
+		this.projectionGridForOuter = null;
 		this.layerController = new mobmap.LayerController(this);
 		this.selectionController = new mobmap.SelectionController(this);
 		this.playController = new mobmap.PlayController(this);
@@ -612,6 +613,33 @@ if (!window.mobmap) { window.mobmap={}; }
 				Mobmap2App.sendOuterMessage('send3DViewTargetData', {
 					content: sendData,
 					layerId: params.layerId
+				});
+			}
+		},
+		
+		onMessage_sendRequestProjectionData: function(params) {
+			if (!this.projectionGridForOuter) {
+				this.projectionGridForOuter = new mobmap.FastProjectionGrid(9);
+			}
+			
+			var pj = null;
+			var lyr = this.getCurrentProject().getLayerById(params.layerId);
+			if (lyr) {
+				var overlay = this.layerController.findMapOverlayFor(lyr);
+				if (overlay) {
+					pj = overlay.getProjection();
+				}
+			}
+			
+			if (pj) {
+				var b = params.viewport;
+				this.projectionGridForOuter.update(pj, b.southLat, b.westLng, b.northLat, b.eastLng);
+				
+				var gconf = this.projectionGridForOuter.exportConfiguration();
+				console.log('sendRequestProjectionData',  gconf)
+				Mobmap2App.sendOuterMessage('sendProjectionGridConfiguration', {
+					gridConfiguration: gconf,
+					originalViewport: params.viewport
 				});
 			}
 		},

@@ -124,6 +124,7 @@
 
 				}, function(wnd){
 					wnd.contentWindow.sendRequest3DViewTargetData = sendRequest3DViewTargetData;
+					wnd.contentWindow.sendRequestProjectionData = sendRequestProjectionData;
 					wnd.contentWindow.mobmapInitData = {
 						layerId: params.layerId,
 						mapViewport: params.mapViewport
@@ -133,14 +134,22 @@
 		},
 		
 		send3DViewTargetData: function(params) {
-			var wls = chrome.app.window.getAll();
-			for (var i in wls) {
-				if (wls[i].contentWindow && wls[i].contentWindow.receive3DViewTargetData) {
-					wls[i].contentWindow.receive3DViewTargetData(params);
-				}
-			}
+			sendParamsTo3DViewWindow('receive3DViewTargetData', params);
+		},
+		
+		sendProjectionGridConfiguration: function(params) {
+			sendParamsTo3DViewWindow('receiveProjectionGridConfiguration', params);
 		}
 	};
+	
+	function sendParamsTo3DViewWindow(methodName, params) {
+		var wls = chrome.app.window.getAll();
+		for (var i in wls) {
+			if (wls[i].contentWindow && wls[i].contentWindow[methodName]) {
+				wls[i].contentWindow[methodName](params);
+			}
+		}
+	}
 	
 	function sendSavedRemoteDownloaderURL() {
 		chrome.storage.local.get('remoteDownloaderURL', function(o) {
@@ -150,6 +159,10 @@
 	
 	function sendRequest3DViewTargetData(layerId) {
 		sendInnerMessage('request3DViewTargetData', {layerId: layerId});
+	}
+	
+	function sendRequestProjectionData(layerId, viewport) {
+		sendInnerMessage('sendRequestProjectionData', {layerId: layerId, viewport: viewport});
 	}
 	
 	function windowGetWidth() {return window.outerWidth;}

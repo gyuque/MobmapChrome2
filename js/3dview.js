@@ -19,6 +19,7 @@
 	function afterInitialDataOK(init_data) {
 		theController = new ThreeDViewController(kMainScreenCanvasId, init_data);
 		window.receive3DViewTargetData = theController.receive3DViewTargetData.bind(theController);
+		window.receiveProjectionGridConfiguration = theController.receiveProjectionGridConfiguration.bind(theController);
 	}
 	
 	// Global APIs
@@ -51,6 +52,7 @@
 		
 		this.targetLayerId = init_data.layerId;
 		this.mapViewport = init_data.mapViewport;
+		this.mapTextureViewport = null;
 		this.imgStaticMap = null;
 		
 		this.downloadStaticMap( this.afterMapDownloaded.bind(this) , this.mapViewport);
@@ -63,6 +65,8 @@
 			var tileSize = 512;
 			var mapCt = mapViewport.center;
 			var src = ThreeDViewController.generateStaticMapURL(mapCt.lat, mapCt.lng, tileSize, mapViewport.zoom);
+			this.mapTextureViewport = ThreeDViewController.generateStaticMapViewport(mapCt.lat, mapCt.lng, tileSize, mapViewport.zoom);
+			
 
 			var xhr = new XMLHttpRequest();
 			xhr.open('GET', src, true);
@@ -91,15 +95,29 @@
 			
 			resizeFunc();
 			
+			window.sendRequestProjectionData(this.targetLayerId, this.mapTextureViewport);
 			window.sendRequest3DViewTargetData(this.targetLayerId);
 		},
 		
 		receive3DViewTargetData: function(params) {
-			if (params.layerId === this.targetLayerId) {
+			if (params.layerId === this.targetLayerId && params.content) {
 				this.newTrajectoryContent(params.content);
 			}
 		},
+
+		receiveProjectionGridConfiguration: function(params) {
+			if (this.mapTextureViewport) {
+				console.log("++", params)
+				this.isViewportSame(this.mapTextureViewport, params.originalViewport);
+			}
+		},
 		
+		isViewportSame: function(v1, v2) {
+			function is_near(a,b) { return Math.abs(a-b) < 0.00001; }
+			
+			console.log(is_near(v1.eastLng, v2.eastLng));
+		},
+
 		newTrajectoryContent: function(contentSource) {
 			this.content = new ThreeDViewTrajectoryContent(this.gl, contentSource);
 
@@ -282,7 +300,6 @@
 
 		var base = "http://maps.googleapis.com/maps/api/staticmap?center=" +centerString+ "&zoom=" +zoom+ "&size=" +sizeString+ "&maptype=roadmap&sensor=false";
 		
-		ThreeDViewController.generateStaticMapViewport(centerLat, centerLng, tileSize, zoom);
 		return base;
 	};
 	
@@ -303,6 +320,8 @@
 
 		console.log(southEast);
 		return {
+			northLat: northWest[0],
+			westLng: northWest[1],
 			southLat: southEast[0],
 			eastLng: southEast[1]
 		};
@@ -421,11 +440,14 @@
 
 
 	function ThreeDViewTrajectoryContent(gl, contentSource) {
+		this.dimension = 3;
 		this.vbPoss = null;
 		this.possSrcArray = null;
 
 		this.recordListArray = contentSource.record_list_array;
 		console.log('*',this.recordListArray)
+
+		this.generateVertexBuffer(gl);
 	}
 	
 	ThreeDViewTrajectoryContent.prototype = {
@@ -444,12 +466,47 @@
 		renderRecordList: function(recordList) {
 			console.log(recordList)
 		},
-		
-		generateVertexBuffer: function(gl) {
+
+		countAllVertices: function() {
+			var sum = 0;
 			
+			var nObjects = this.recordListArray.length;
+			for (var i = 0;i < nObjects;++i) {
+				sum += this.recordListArray[i].recordList.length;
+			}
+
+			return sum;
+		},
+
+		generateVertexBuffer: function(gl) {
+			var nVertices = this.countAllVertices();
+
+			this.possSrcArray = new Float32Array( nVertices * this.dimension );
+			var writePos = 0;
+
+			var nObjects = this.recordListArray.length;
+			for (var i = 0;i < nObjects;++i) {
+				var rlist = this.recordListArray[i].recordList;
+				writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist);
+			}
+		},
+		
+		fillPositionsArray: function(dest, startVertexIndex, recordList) {
+			var i;
+			var vi = 0;
+			var len = recordList.length;
+			
+			for (i = 0;i < len;++i) {
+				++vi;
+				
+				++vi;
+				
+				++vi;
+			}
+			
+			return vi;
 		}
 	};
-
 
 	var _tempVecEyePos = [0,0,0];
 })();
