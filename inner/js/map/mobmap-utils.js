@@ -102,6 +102,49 @@ if (!window.mobmap) { window.mobmap={}; }
 				latCell: this.latCell,
 				lngCell: this.lngCell
 			};
+		},
+		
+		importConfiguration: function(src) {
+			this.size = src.size;
+			this.vertices = src.vertices;
+
+			this.latSpan = src.latSpan;
+			this.lngSpan = src.lngSpan;
+
+			this.latCell = src.latCell;
+			this.lngCell = src.lngCell;
+		},
+		
+		relocateOrigin: function() {
+			var ls = this.vertices;
+			if (ls.length < 1) {
+				return;
+			}
+			
+			var oi = (this.size+1) * this.size;
+			var o = ls[oi];
+			for (var i = 0;i < ls.length;++i) {
+				if (i === oi) { continue; }
+				
+				var v = ls[i];
+				v.sx -= o.sx;
+				v.sy -= o.sy;
+			}
+			
+			o.sx = 0;
+			o.sy = 0;
+		},
+		
+		getEntireScreenWidth: function() {
+			var ls = this.vertices;
+			var n = this.size;
+			return ls[n].sx - ls[0].sx;
+		},
+		
+		getEntireScreenHeight: function() {
+			var ls = this.vertices;
+			var n = this.size;
+			return ls[0].sy - ls[(n+1)*n].sy;
 		}
 	};
 

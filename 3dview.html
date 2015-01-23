@@ -7,6 +7,7 @@
 	<script type="text/javascript" src="./js/3dview.js"></script>
 	<script type="text/javascript" src="./js/3dview-panel.js"></script>
 	<script type="text/javascript" src="./inner/js/mm-utils.js"></script>
+	<script type="text/javascript" src="./inner/js/map/mobmap-utils.js"></script>
 	<script src="./inner/js/math/gl-matrix.js" type="text/javascript"></script>
 
 	<style type="text/css">
@@ -39,7 +40,8 @@ body,html {
 
 	void main()
 	{
-		gl_FragColor = vColor;
+		vec4 tmp = vColor;
+		gl_FragColor = vec4(1,0,0,1);
 	}
 	</script>
 

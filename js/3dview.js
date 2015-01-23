@@ -33,6 +33,7 @@
 		
 		this.gl = null;
 		this.viewDirty = true;
+		this.projectionGird = new mobmap.FastProjectionGrid(2);
 		this.normalShader = null;
 		this.baseMapPanel = null;
 		this.mapTexture = null;
@@ -107,15 +108,25 @@
 
 		receiveProjectionGridConfiguration: function(params) {
 			if (this.mapTextureViewport) {
-				console.log("++", params)
-				this.isViewportSame(this.mapTextureViewport, params.originalViewport);
+				if (this.isViewportSame(this.mapTextureViewport, params.originalViewport)) {
+					this.projectionGird.importConfiguration(params.gridConfiguration);
+					this.projectionGird.relocateOrigin();
+				}
 			}
+			
+			this.viewDirty = true;
+			this.render();
 		},
 		
 		isViewportSame: function(v1, v2) {
 			function is_near(a,b) { return Math.abs(a-b) < 0.00001; }
 			
-			console.log(is_near(v1.eastLng, v2.eastLng));
+			return (
+				 is_near(v1.eastLng , v2.eastLng) &&
+				 is_near(v1.westLng , v2.westLng) &&
+				 is_near(v1.northLat, v2.northLat) &&
+				 is_near(v1.southLat, v2.southLat)
+			);
 		},
 
 		newTrajectoryContent: function(contentSource) {
@@ -209,6 +220,7 @@
 			
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 			
+			// Draw content
 			if (this.content) {
 				this.content.render(this);
 			}
@@ -443,6 +455,7 @@
 		this.dimension = 3;
 		this.vbPoss = null;
 		this.possSrcArray = null;
+		this.startPositionList = [];
 
 		this.recordListArray = contentSource.record_list_array;
 		console.log('*',this.recordListArray)
@@ -454,17 +467,31 @@
 		render: function(controller) {
 			var gl = controller.gl;
 			var shader = controller.colorShader;
+			var pj = controller.projectionGird;
 			shader.use(gl);
 			controller.updateViewMatrix(shader);
 			
+			this.fillVertexSource(pj);
+			this.sendBufferData(gl);
+			this.enableBuffers(gl, shader);
+			
 			var nObjects = this.recordListArray.length;
 			for (var i = 0;i < nObjects;++i) {
-				this.renderRecordList(this.recordListArray[i].recordList);
+				this.renderRecordList(gl, i);
 			}
 		},
 		
-		renderRecordList: function(recordList) {
-			console.log(recordList)
+		renderRecordList: function(gl, groupIndex) {
+			//console.log(recordList)
+			var start = this.startPositionList[groupIndex];
+			var nextStart = Math.floor(this.possSrcArray.length / this.dimension);
+			if (groupIndex < (this.recordListArray.length-1)) {
+				nextStart = this.startPositionList[groupIndex + 1];
+			}
+
+//			console.log(start, nextStart - start);
+//			console.log(start, nextStart - start, this.possSrcArray.length)
+			gl.drawArrays(gl.LINE_STRIP, start, nextStart - start);
 		},
 
 		countAllVertices: function() {
@@ -479,34 +506,76 @@
 		},
 
 		generateVertexBuffer: function(gl) {
+			// Vertex Buffer Object
+			var vb = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+			
+			// Source Array
 			var nVertices = this.countAllVertices();
-
 			this.possSrcArray = new Float32Array( nVertices * this.dimension );
+			this.vbPoss = vb;
+
+			gl.bufferData(gl.ARRAY_BUFFER, this.possSrcArray, gl.DYNAMIC_DRAW);
+		},
+		
+		fillVertexSource: function(projectionProvider) {
 			var writePos = 0;
+			this.startPositionList.length = 0;
 
 			var nObjects = this.recordListArray.length;
 			for (var i = 0;i < nObjects;++i) {
 				var rlist = this.recordListArray[i].recordList;
-				writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist);
+				this.startPositionList.push( Math.floor(writePos / this.dimension) );
+				writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider);
 			}
 		},
 		
-		fillPositionsArray: function(dest, startVertexIndex, recordList) {
+		sendBufferData: function(gl) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbPoss);
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.possSrcArray);
+		},
+		
+		fillPositionsArray: function(dest, startVertexIndex, recordList, projectionProvider) {
 			var i;
 			var vi = 0;
 			var len = recordList.length;
+			var a = _tempAntData;
 			
+			var tw2 = projectionProvider.getEntireScreenWidth() * 0.5;
+			var th2 = projectionProvider.getEntireScreenHeight() * 0.5;
+			
+			var oT = (len < 1) ? 0 : recordList[0]._time;
 			for (i = 0;i < len;++i) {
+				var rec = recordList[i];
+				a.lat = rec.y;
+				a.lng = rec.x;
+				projectionProvider.calc(a);
+				
+				dest[startVertexIndex + vi] = a.screenX / tw2 - 1.0;
 				++vi;
 				
+				dest[startVertexIndex + vi] = (rec._time - oT) * 0.00001;
 				++vi;
 				
+				dest[startVertexIndex + vi] = a.screenY / th2 - 1.0;
 				++vi;
 			}
 			
 			return vi;
+		},
+		
+		enableBuffers: function(gl, shader) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbPoss);
+			gl.vertexAttribPointer(shader.params.aPosition, this.dimension, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shader.params.aPosition);
+			
+			gl.disableVertexAttribArray(shader.params.aColor);
 		}
 	};
 
 	var _tempVecEyePos = [0,0,0];
+	var _tempAntData = {
+		lat:0, lng:0,
+		screenX:0, screenY:0
+	};
 })();
