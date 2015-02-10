@@ -139,7 +139,11 @@
 		
 		sendProjectionGridConfiguration: function(params) {
 			sendParamsTo3DViewWindow('receiveProjectionGridConfiguration', params);
-		}
+		},
+		
+		notifyCurrentTimeChanged: function(params) {
+			sendParamsTo3DViewWindow('receiveCurrentTime', params.time);
+		},
 	};
 	
 	function sendParamsTo3DViewWindow(methodName, params) {

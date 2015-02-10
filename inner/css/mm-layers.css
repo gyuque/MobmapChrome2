@@ -41,9 +41,10 @@
 }
 
 .mm-welcome-box-action {
+	font-size: 14px;
 	background: #eee left center no-repeat;
-	min-height: 30px;
-	padding: 2px 2px 2px 33px;
+	min-height: 27px;
+	padding: 4px 2px 1px 33px;
 	border: 1px solid #999;
 	border-radius: 4px;
 	box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 -1px 3px rgba(0,0,0,0.3) inset;

@@ -574,6 +574,6 @@ if (!window.mobmap) window.mobmap={};
 		}
 	}
 
-
+	MovingData.TimeList = TimeList;
 	pkg.MovingData = MovingData;
 })(mobmap);

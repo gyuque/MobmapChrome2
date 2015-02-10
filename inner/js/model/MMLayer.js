@@ -354,7 +354,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return ls[markerIndex] || null;
 		},
-		
+
+		exportMarkerColoringInfo: function() {
+			var retObj = {
+				baseColorList: this.markerGenerator.lastBaseColorList,
+				boundAttribute: this._markerOptions.boundAttributeName,
+				varyingType: this._markerOptions.varyingType
+			};
+			
+			return retObj;
+		},
+
 		// Polyline datasource API
 		
 		tpCountPolylines: function() {

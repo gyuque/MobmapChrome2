@@ -8,6 +8,8 @@
 	<script type="text/javascript" src="./js/3dview-panel.js"></script>
 	<script type="text/javascript" src="./inner/js/mm-utils.js"></script>
 	<script type="text/javascript" src="./inner/js/map/mobmap-utils.js"></script>
+	<script type="text/javascript" src="./inner/js/data/moving-data.js"></script>
+	<script type="text/javascript" src="./inner/js/marker/LayerMarkerOptions.js"></script>
 	<script src="./inner/js/math/gl-matrix.js" type="text/javascript"></script>
 
 	<style type="text/css">
@@ -20,11 +22,13 @@ body,html {
 	<script type="text/plain" id="color-vs-src">
 	uniform mat4 uProjTransform;
 	uniform mat4 uViewTransform;
+	uniform float uPointSize;
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
 	varying lowp vec4 vColor;
 	void main() {
 		vColor = aColor;
+		gl_PointSize = uPointSize;
 		gl_Position = uProjTransform * uViewTransform * aPosition;
 	}
 	</script>
@@ -40,8 +44,14 @@ body,html {
 
 	void main()
 	{
-		vec4 tmp = vColor;
-		gl_FragColor = vec4(1,0,0,1);
+		vec4 clr = vColor;
+		if (clr.a > 1.5) {
+			float d = distance(vec2(0.5,0.5), gl_PointCoord);
+			clr.a *= (1.0 - d*2.0);
+			if (clr.a < 0.01) {discard;}
+		}
+
+		gl_FragColor = clr;
 	}
 	</script>
 
@@ -77,7 +87,10 @@ body,html {
 
 	void main()
 	{
-		gl_FragColor = texture2D(uTexture, vTexCoord);
+		vec4 tx = texture2D(uTexture, vTexCoord);
+		float avg = (tx.r + tx.g + tx.b) / 3.0;
+		float a2 = avg * avg / 1.2;
+		gl_FragColor = vec4(a2,a2,a2, tx.a);
 	}
 	</script>
 

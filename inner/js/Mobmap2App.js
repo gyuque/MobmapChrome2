@@ -176,6 +176,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		onCurrentDateTimeChange: function(e, sender) {
 			this.updateFloatingTimeSelectionIfNeeded();
+			this.sendChangedTimeToOtherViewWindow();
 		},
 
 		// -----------------------------------------------------
@@ -612,7 +613,8 @@ if (!window.mobmap) { window.mobmap={}; }
 				var sendData = this.generate3DViewTargetData(layer);
 				Mobmap2App.sendOuterMessage('send3DViewTargetData', {
 					content: sendData,
-					layerId: params.layerId
+					layerId: params.layerId,
+					time: prj.getCurrentTimeInSeconds()
 				});
 			}
 		},
@@ -652,14 +654,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			var nSelected = selp.count();
-			if (nSelected !== 1) {
+			if (nSelected > 1000) {
 				return null;
 			}
 			
 			var retObj = {
+				coloringInfo: movingObjectsLayer.exportMarkerColoringInfo(),
 				record_list_array: null,
 				nSelected: nSelected
 			};
+			
 			
 			selp.eachSelected(function(objId) {
 				var tl = mdat.getTimeListOfId(objId);
@@ -673,6 +677,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			});
 			
+			//console.log("SEND:", retObj);
 			return retObj;
 		},
 		
@@ -815,6 +820,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			Mobmap2App.sendOuterMessage('openLayer3DView', {
 				layerId: targetLayer.layerId,
 				mapViewport: this.fetchMapViewportInfo()
+			});
+		},
+		
+		sendChangedTimeToOtherViewWindow: function() {
+			var prj = this.getCurrentProject();
+			if (!prj) { return; }
+
+			var t = prj.getCurrentTimeInSeconds();
+			Mobmap2App.sendOuterMessage('notifyCurrentTimeChanged', {
+				time: t
 			});
 		},
 		
