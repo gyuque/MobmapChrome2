@@ -267,6 +267,27 @@ if (!window.mobmap) { window.mobmap={}; }
 			components[3] = a;
 			return "rgba(" + components.join(',') + ")";
 		};
+		
+		MeshCanvasOverlay.prototype.dumpColorLegend = function() {
+			var results = [];
+			
+			var n = 100;
+			var step = this.renderValueMax / n;
+			for (var i = 0;i <= n;++i) {
+				var val = step * i;
+				var clr = this.mapValueToCellColor(val);
+				
+				results.push({
+					value: val,
+					color: clr
+				});
+				
+			}
+			
+			console.log( JSON.stringify(results) );
+			
+			return results;
+		};
 
 		MeshCanvasOverlay.prototype.getJQDiv = mobmap.GLMobLayer.overlaybase_getCechedJQueryDiv;
 		MeshCanvasOverlay.prototype.changeCanvasSize = mobmap.GLMobLayer.overlaybase_changeCanvasSize;

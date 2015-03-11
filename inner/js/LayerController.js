@@ -477,6 +477,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					overlay.setValueLabelEnabled(layer.otherRenderingOptions.labeled);
 					overlay.setCellSpacing(layer.otherRenderingOptions.spacing);
 					overlay.render();
+					
+//overlay.dumpColorLegend();
 				}
 			}
 		},

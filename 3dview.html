@@ -6,6 +6,7 @@
 	<script type="text/javascript" src="./inner/js/jquery-1.10.2.js"></script>
 	<script type="text/javascript" src="./js/3dview.js"></script>
 	<script type="text/javascript" src="./js/3dview-panel.js"></script>
+	<script type="text/javascript" src="./js/date-label-texture.js"></script>
 	<script type="text/javascript" src="./inner/js/mm-utils.js"></script>
 	<script type="text/javascript" src="./inner/js/map/mobmap-utils.js"></script>
 	<script type="text/javascript" src="./inner/js/data/moving-data.js"></script>
@@ -90,7 +91,7 @@ body,html {
 		vec4 tx = texture2D(uTexture, vTexCoord);
 		float avg = (tx.r + tx.g + tx.b) / 3.0;
 		float a2 = avg * avg / 1.2;
-		gl_FragColor = vec4(a2,a2,a2, tx.a);
+		gl_FragColor = vec4(a2,a2,a2, vColor.a * tx.a);
 	}
 	</script>
 

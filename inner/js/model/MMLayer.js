@@ -343,7 +343,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			if (i >= n) { i = n - 1; }
-			if (i < 0) { i = 0; }
+			else if (i < 0) { i = 0; }
 
 			return i;
 		},

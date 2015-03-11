@@ -538,10 +538,16 @@
 		this.dimension = 3;
 		this.vbPoss = null;
 		this.vbColors = null;
+		this.vbTexCoords = null;
 		this.possSrcArray = null;
+		this.possSrcArrayShort = null;
 		this.colorSrcArray = null;
+		this.colorSrcArrayShort = null;
+		this.tcSrcArrayShort = null;
 		this.startPositionList = [];
 		this.pickTempRecord = mobmap.MovingData.createEmptyRecord();
+		this.labelTexMan = new ThreeDViewDateLabelTexture(256);
+		this.labelTextureObject = null;
 
 		this.timeYScale = 0.00001;
 		this.timeOrigin = 0;
@@ -555,7 +561,21 @@
 		this.generateVertexBuffer(gl);
 	}
 	
+	function makeColorIndexForAttribute(nColors, record, boundAttrName) {
+		var rawVal = record[boundAttrName] | 0;
+		if (rawVal < 0) { rawVal = 0; }
+		else if (rawVal >= nColors) { rawVal = nColors - 1; }
+		
+		return rawVal;
+	}
+	
 	ThreeDViewTrajectoryContent.prototype = {
+		shouldUseColorIndexedAttribute: function() {
+			if (!this.coloringInfo) { return false; }
+			
+			return this.coloringInfo.varyingType === mobmap.LayerMarkerOptions.MV_ATTR;
+		},
+		
 		generateTimeLists: function(recordListArray) {
 			var tls = [];
 			
@@ -602,7 +622,7 @@
 			
 			if (currentTime || currentTime === 0) {
 				//this.renderTimeCursor(gl, currentTime);
-				this.renderTimeGuages(gl, currentTime);
+				this.renderTimeGuages(gl, currentTime, controller);
 				this.renderTimeCursor(gl, currentTime, 1.4, false, true);
 				shader.setPointSize(gl, 6);
 				this.renderCurrentPositions(gl, currentTime, pj);
@@ -610,7 +630,10 @@
 			}
 		},
 		
-		renderTimeGuages: function(gl, centerTime) {
+		renderTimeGuages: function(gl, centerTime, controller) {
+			var colorShader = controller.colorShader;
+			var normalShader = controller.normalShader;
+
 			var centerTimeObj = new Date(centerTime * 1000);
 
 			var curS = centerTimeObj.getMinutes() * 60 + centerTimeObj.getSeconds();
@@ -629,6 +652,8 @@
 				return a;
 			}
 			
+			var firstNormalShaderUse = true;
+
 			for (var i = 0;i < 60;++i) {
 				var laterS   = nextOrigin + 3600 * i;
 				var earlierS = prevOrigin - 3600 * i;
@@ -636,27 +661,153 @@
 				var lh = nextH + i;
 				var eh = prevH - i;
 				var emphColor = false;
+				var galpha;
 
 				if ((lh % 6) === 0) {
 					emphColor = (lh % 24) === 0;
-					this.renderTimeCursor(gl, laterS, calcGuageAlpha(laterS), emphColor);
+					galpha = calcGuageAlpha(laterS);
+					this.renderTimeCursor(gl, laterS, galpha, emphColor);
+					
+					if (emphColor) {
+						// Draw Date Label
+						normalShader.use(gl);
+						this.enableBuffers(gl, normalShader);
+						this.enableTextureCoordsBuffer(gl, normalShader);
+						if (firstNormalShaderUse) {
+							controller.updateViewMatrix(normalShader);
+							firstNormalShaderUse = false;
+						}
+						
+						this.renderDateLabel(gl, laterS, galpha, normalShader);
+						colorShader.use(gl);
+						this.enableBuffers(gl, colorShader);
+					}
 				}
 				
 				if ((eh % 6) === 0) {
 					emphColor = (eh % 24) === 0;
-					this.renderTimeCursor(gl, earlierS, calcGuageAlpha(earlierS), emphColor);
+					galpha = calcGuageAlpha(earlierS);
+					this.renderTimeCursor(gl, earlierS, galpha, emphColor);
+
+					if (emphColor) {
+						// Draw Date Label
+						normalShader.use(gl);
+						this.enableBuffers(gl, normalShader);
+						this.enableTextureCoordsBuffer(gl, normalShader);
+						if (firstNormalShaderUse) {
+							controller.updateViewMatrix(normalShader);
+							firstNormalShaderUse = false;
+						}
+
+						this.renderDateLabel(gl, earlierS, galpha, normalShader);
+						colorShader.use(gl);
+						this.enableBuffers(gl, colorShader);
+					}
 				}
 			}
 		},
 		
+		renderDateLabel: function(gl, timeInSeconds, alpha, normalShader) {
+			if (!this.labelTextureObject) {
+				this.labelTextureObject = ThreeDViewController.createTextureObject(gl, this.labelTexMan.canvas);
+			}
+
+			var containerSize = 1.0;
+			var baseY = (timeInSeconds - this.timeOrigin) * this.timeYScale;
+			var dateObj = new Date(timeInSeconds * 1000);
+			
+			var foundCellInfo = this.labelTexMan.findCellByDateObject(dateObj, true);
+			if (!foundCellInfo) {
+				foundCellInfo = this.labelTexMan.allocate(dateObj);
+			}
+			
+			if (!foundCellInfo) {
+				// cannot allocate
+				return;
+			}
+
+
+			//  Use and update texture
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, this.labelTextureObject);
+			gl.uniform1i(normalShader.params.uTexture, 0);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.labelTexMan.canvas);
+			gl.generateMipmap(gl.TEXTURE_2D);
+
+
+			var cellIndex = foundCellInfo.cell;
+			var u1 = this.labelTexMan.calcTexUBase(cellIndex);
+			var v1 = this.labelTexMan.calcTexVBase(cellIndex);
+			var u2 = u1 + this.labelTexMan.calcTexUSpan();
+			var v2 = v1 + this.labelTexMan.calcTexVSpan();
+			
+			var vpos = 0;
+			var cpos = 0;
+			var tpos = 0;
+			var vs = this.possSrcArrayShort;
+			var clrs = this.colorSrcArrayShort;
+			var tcs = this.tcSrcArrayShort;
+			
+			var x1 = -containerSize;
+			var y1 = baseY + containerSize * 0.1;
+			
+			var x2 = x1 + containerSize * 0.4;
+			var y2 = baseY - containerSize * 0.1;
+			
+			var z = -containerSize;
+			
+			vs[vpos++] = x1;
+			vs[vpos++] = y1;
+			vs[vpos++] = z;
+			
+			tcs[tpos++] = u1;
+			tcs[tpos++] = v1;
+
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = alpha;
+
+
+			vs[vpos++] = x2;
+			vs[vpos++] = y1;
+			vs[vpos++] = z;
+			
+			tcs[tpos++] = u2;
+			tcs[tpos++] = v1;
+
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = alpha;
+
+
+			vs[vpos++] = x1;
+			vs[vpos++] = y2;
+			vs[vpos++] = z;
+			
+			tcs[tpos++] = u1;
+			tcs[tpos++] = v2;
+
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = 1.0;
+			clrs[cpos++] = alpha;
+
+			this.sendBufferData(gl, true);
+			gl.depthMask(false);
+			gl.drawArrays(gl.TRIANGLES, 0, cpos/4);
+			gl.depthMask(true);
+		},
+
 		renderTimeCursor: function(gl, time, alpha, specialColor, completeBox) {
 			if (!alpha && alpha !== 0) {
 				alpha = 1;
 			}
 			
 			var cursorSize = 1.0;
-			var vs = this.possSrcArray;
-			var clrs = this.colorSrcArray;
+			var vs = this.possSrcArrayShort;
+			var clrs = this.colorSrcArrayShort;
 			var writePos = 0;
 			var cPos = 0;
 			for (var i = 0;i <= 4;++i) {
@@ -677,7 +828,7 @@
 				}
 			}
 
-			this.sendBufferData(gl);
+			this.sendBufferData(gl, true);
 			gl.drawArrays(gl.LINE_STRIP, 0, cPos/4);
 		},
 		
@@ -756,6 +907,7 @@
 			// Source Array
 			var nVertices = this.countAllVertices();
 			this.possSrcArray = new Float32Array( nVertices * this.dimension );
+			this.possSrcArrayShort = new Float32Array( 8 * this.dimension );
 			this.vbPoss = vb;
 
 			gl.bufferData(gl.ARRAY_BUFFER, this.possSrcArray, gl.DYNAMIC_DRAW);
@@ -766,9 +918,21 @@
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbc);
 			
 			this.colorSrcArray = new Float32Array( nVertices * 4 );
+			this.colorSrcArrayShort = new Float32Array( 8 * 4 );
 			this.vbColors = vbc;
 
 			gl.bufferData(gl.ARRAY_BUFFER, this.colorSrcArray, gl.DYNAMIC_DRAW);
+			
+			
+			// Texture Coordinates
+			// Vertex Buffer Object
+			var vbt = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, vbt);
+			
+			this.tcSrcArrayShort = new Float32Array( 8 * 2 );
+			this.vbTexCoords = vbt;
+			
+			gl.bufferData(gl.ARRAY_BUFFER, this.tcSrcArrayShort, gl.DYNAMIC_DRAW);
 		},
 		
 		fillVertexSource: function(projectionProvider) {
@@ -784,12 +948,17 @@
 			}
 		},
 		
-		sendBufferData: function(gl) {
+		sendBufferData: function(gl, useShortSource) {
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbColors);
-			gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.colorSrcArray);
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, useShortSource ? this.colorSrcArrayShort : this.colorSrcArray);
 			
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbPoss);
-			gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.possSrcArray);
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, useShortSource ? this.possSrcArrayShort : this.possSrcArray);
+			
+			if (useShortSource) {
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.vbTexCoords);
+				gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.tcSrcArrayShort);
+			}
 		},
 		
 		fillPositionsArray: function(dest, startVertexIndex, recordList, projectionProvider, colorDest) {
@@ -807,6 +976,8 @@
 			if (oT < this.timeOrigin) {
 				this.timeOrigin = oT;
 			}*/
+			
+			var use_color_index = this.shouldUseColorIndexedAttribute();
 
 			for (i = 0;i < len;++i) {
 				var rec = recordList[i];
@@ -822,11 +993,22 @@
 				
 				dest[startVertexIndex + vi] = a.screenY / th2 - 1.0;
 				++vi;
+				
+				if (use_color_index) {
+					var colorIndex = makeColorIndexForAttribute(this.coloringInfo.baseColorList.length, rec, this.coloringInfo.boundAttribute);
+					var markerBaseColor = this.coloringInfo.baseColorList[colorIndex];
+					
+					colorDest[cIndex++] = markerBaseColor.r / 255.0;
+					colorDest[cIndex++] = markerBaseColor.g / 255.0;
+					colorDest[cIndex++] = markerBaseColor.b / 255.0;
 
-				colorDest[cIndex++] = 0.1;
-				colorDest[cIndex++] = 0.2;
-				colorDest[cIndex++] = 1;
-				colorDest[cIndex++] = 1;
+					colorDest[cIndex++] = 1;
+				} else {
+					colorDest[cIndex++] = 0.1;
+					colorDest[cIndex++] = 0.2;
+					colorDest[cIndex++] = 1;
+					colorDest[cIndex++] = 1;
+				}
 			}
 			
 			this.colorBufferWrittenCount = cIndex;
@@ -843,6 +1025,17 @@
 				4, // components per vertex
 				gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(shader.params.aColor);
+		},
+		
+		enableTextureCoordsBuffer: function(gl, shader) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbTexCoords);
+			gl.vertexAttribPointer(shader.params.aTexCoord, 2, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shader.params.aTexCoord);
+		},
+		
+		disableTextureCoordsBuffer: function(gl, shader) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbTexCoords);
+			gl.disableVertexAttribArray(shader.params.aTexCoord);
 		}
 	};
 	
