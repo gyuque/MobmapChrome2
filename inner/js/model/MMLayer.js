@@ -356,7 +356,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		exportMarkerColoringInfo: function() {
+			var xmap = null;
+			if (this.movingData) {
+				xmap = this.movingData.cloneExtraProperties();
+			}
+			
 			var retObj = {
+				extraAttributesMap: xmap,
 				baseColorList: this.markerGenerator.lastBaseColorList,
 				boundAttribute: this._markerOptions.boundAttributeName,
 				varyingType: this._markerOptions.varyingType

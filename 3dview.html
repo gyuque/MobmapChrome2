@@ -15,8 +15,10 @@
 
 	<style type="text/css">
 body,html {
+	background-color: #777;
 	margin: 0;
 	padding: 0;
+	color: #fff;
 }
 	</style>
 
@@ -91,7 +93,7 @@ body,html {
 		vec4 tx = texture2D(uTexture, vTexCoord);
 		float avg = (tx.r + tx.g + tx.b) / 3.0;
 		float a2 = avg * avg / 1.2;
-		gl_FragColor = vec4(a2,a2,a2, vColor.a * tx.a);
+		gl_FragColor = vec4(vColor.r* a2, vColor.g* a2, vColor.b* a2, vColor.a * tx.a);
 	}
 	</script>
 

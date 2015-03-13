@@ -1,11 +1,13 @@
 (function(aGlobal) {
 	var kMonNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+	var kWDNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 	
 	function ThreeDViewDateLabelTexture(size) {
 		this.cols = 2;
 		this.rows = 4;
 		
 		this.dateFontSize = 20;
+		this.wdFontSize = 12;
 		
 		this.textureSize = size;
 		this.canvas = document.createElement('canvas');
@@ -123,6 +125,11 @@
 			g.font = this.makeDateFontName();
 			g.fillStyle = "#fff";
 			g.fillText(lab, ox+3, oy + this.dateFontSize+2);
+			var text_w = g.measureText(lab).width;
+			
+			var wd = dateObj.getDay();
+			g.font = this.makeWDFontName();
+			g.fillText(kWDNames[wd], ox+5+text_w, oy + this.wdFontSize+3);
 		},
 		
 		clearCell: function(g, cellIndex) {
@@ -140,6 +147,10 @@
 		
 		makeDateFontName: function() {
 			return 'normal normal ' + this.dateFontSize + 'px Arial'; 
+		},
+
+		makeWDFontName: function() {
+			return 'normal normal ' + this.wdFontSize + 'px Arial'; 
 		},
 		
 		calcCellWidth: function() {

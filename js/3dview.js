@@ -69,6 +69,8 @@
 		
 		this.downloadStaticMap( this.afterMapDownloaded.bind(this) , this.mapViewport);
 		this.content = null;
+		
+		this.timescaleInputElement = null;
 	}
 	
 	ThreeDViewController.prototype = {
@@ -110,6 +112,61 @@
 			
 			window.sendRequestProjectionData(this.targetLayerId, this.mapTextureViewport);
 			window.sendRequest3DViewTargetData(this.targetLayerId);
+			
+			this.putTimeScaleSlider();
+		},
+		
+		putTimeScaleSlider: function() {
+			var containerElement = document.body;
+			
+			var outer = document.createElement('label');
+			outer.innerHTML = "Time scale";
+			
+			var st = outer.style;
+			st.position = 'absolute';
+			st.bottom = "4px";
+			st.right = "4px";
+			
+			var range = document.createElement('input');
+			range.type = 'range';
+			range.style.width = '60px';
+			range.setAttribute('min', 0);
+			range.setAttribute('max', 59);
+			range.value = 20;
+			
+			outer.appendChild(document.createElement('br'));
+			outer.appendChild(range);
+			containerElement.appendChild(outer);
+			
+			range.addEventListener('mousedown', this.ignoreHandler, false);
+			range.addEventListener('mouseup', this.ignoreHandler, false);
+			
+			range.addEventListener('change'   , this.onTimeScaleInputChange.bind(this, range), false);
+			range.addEventListener('mousemove', this.onTimeScaleInputChange.bind(this, range), false);
+			
+			this.timescaleInputElement = range;
+		},
+		
+		ignoreHandler: function(e) {
+			e.stopPropagation();
+		},
+		
+		onTimeScaleInputChange: function(rangeElement) {
+			this.setTimeScaleByPresetIndex(rangeElement.value - 0);
+		},
+		
+		setTimeScaleByPresetIndex: function(val) {
+			var n = 60;
+			if (val < 0) { val = 0; }
+			else if (val >= n) { val = n-1; }
+			
+			var presetValue = Math.pow(2, (val/10) - 3);
+			if (this.content && this.content.scaleTimeYScale) {
+				if (this.content.scaleTimeYScale(presetValue)) {
+					this.viewDirty = true;
+					this.render();
+				}
+			}
 		},
 		
 		receive3DViewTargetData: function(params) {
@@ -152,6 +209,7 @@
 
 		newTrajectoryContent: function(contentSource) {
 			this.content = new ThreeDViewTrajectoryContent(this.gl, contentSource);
+			this.onTimeScaleInputChange(this.timescaleInputElement);
 
 			this.viewDirty = true;
 			this.render();
@@ -549,6 +607,7 @@
 		this.labelTexMan = new ThreeDViewDateLabelTexture(256);
 		this.labelTextureObject = null;
 
+		this.timeYScaleBase = 0.00001;
 		this.timeYScale = 0.00001;
 		this.timeOrigin = 0;
 		this.colorBufferWrittenCount = 0;
@@ -570,6 +629,17 @@
 	}
 	
 	ThreeDViewTrajectoryContent.prototype = {
+		scaleTimeYScale: function(s) {
+			var newVal = this.timeYScaleBase * s;
+			var d = Math.abs(newVal - this.timeYScale);
+			if (d < 0.00000001) {
+				return false;
+			}
+			
+			this.timeYScale = newVal;
+			return true;
+		},
+		
 		shouldUseColorIndexedAttribute: function() {
 			if (!this.coloringInfo) { return false; }
 			
@@ -646,7 +716,7 @@
 			var prevH = nextH - 1;
 			
 			function calcGuageAlpha(t) {
-				var a = 1.0 - Math.abs(t - centerTime) / 144000.0;
+				var a = 1.0 - Math.abs(t - centerTime) / 172800.0;
 				if (a < 0) {return 0;}
 				
 				return a;
@@ -699,7 +769,7 @@
 							firstNormalShaderUse = false;
 						}
 
-						this.renderDateLabel(gl, earlierS, galpha, normalShader);
+						this.renderDateLabel(gl, earlierS, galpha, normalShader, true);
 						colorShader.use(gl);
 						this.enableBuffers(gl, colorShader);
 					}
@@ -707,14 +777,22 @@
 			}
 		},
 		
-		renderDateLabel: function(gl, timeInSeconds, alpha, normalShader) {
+		renderDateLabel: function(gl, timeInSeconds, alpha, normalShader, enableSlide) {
 			if (!this.labelTextureObject) {
 				this.labelTextureObject = ThreeDViewController.createTextureObject(gl, this.labelTexMan.canvas);
 			}
 
 			var containerSize = 1.0;
+			var panel_h_h = containerSize * 0.1;
+			var oneday_height = (24*3600) * this.timeYScale;
 			var baseY = (timeInSeconds - this.timeOrigin) * this.timeYScale;
 			var dateObj = new Date(timeInSeconds * 1000);
+			var wd = dateObj.getDay();
+			
+			if (baseY < 0) {
+				var slide_y = Math.min(-baseY, (oneday_height - panel_h_h));
+				baseY += slide_y;
+			}
 			
 			var foundCellInfo = this.labelTexMan.findCellByDateObject(dateObj, true);
 			if (!foundCellInfo) {
@@ -749,12 +827,24 @@
 			var tcs = this.tcSrcArrayShort;
 			
 			var x1 = -containerSize;
-			var y1 = baseY + containerSize * 0.1;
+			var y1 = baseY + panel_h_h;
 			
 			var x2 = x1 + containerSize * 0.4;
-			var y2 = baseY - containerSize * 0.1;
+			var y2 = baseY - panel_h_h;
 			
 			var z = -containerSize;
+			
+			var clrR = 1;
+			var clrG = 1;
+			var clrB = 1;
+			
+			if (wd === 0) { //  sun
+				clrG = 0.6;
+				clrB = 0.6;
+			} else if (wd === 6) {
+				clrR = 0.6;
+				clrG = 0.7;
+			}
 			
 			vs[vpos++] = x1;
 			vs[vpos++] = y1;
@@ -763,9 +853,9 @@
 			tcs[tpos++] = u1;
 			tcs[tpos++] = v1;
 
-			clrs[cpos++] = 1.0;
-			clrs[cpos++] = 1.0;
-			clrs[cpos++] = 1.0;
+			clrs[cpos++] = clrR;
+			clrs[cpos++] = clrG;
+			clrs[cpos++] = clrB;
 			clrs[cpos++] = alpha;
 
 
@@ -776,9 +866,9 @@
 			tcs[tpos++] = u2;
 			tcs[tpos++] = v1;
 
-			clrs[cpos++] = 1.0;
-			clrs[cpos++] = 1.0;
-			clrs[cpos++] = 1.0;
+			clrs[cpos++] = clrR;
+			clrs[cpos++] = clrG;
+			clrs[cpos++] = clrB;
 			clrs[cpos++] = alpha;
 
 
@@ -789,9 +879,9 @@
 			tcs[tpos++] = u1;
 			tcs[tpos++] = v2;
 
-			clrs[cpos++] = 1.0;
-			clrs[cpos++] = 1.0;
-			clrs[cpos++] = 1.0;
+			clrs[cpos++] = clrR;
+			clrs[cpos++] = clrG;
+			clrs[cpos++] = clrB;
 			clrs[cpos++] = alpha;
 
 			this.sendBufferData(gl, true);
@@ -810,6 +900,65 @@
 			var clrs = this.colorSrcArrayShort;
 			var writePos = 0;
 			var cPos = 0;
+			var i, j;
+			
+			if (!completeBox) {
+				for (i = 0;i < 2;++i) {
+					var x = (i == 1) ? 1 : -1;
+					var z = -1;
+
+					vs[writePos++] = x * cursorSize;
+					vs[writePos++] = (time - this.timeOrigin) * this.timeYScale;
+					vs[writePos++] = z * cursorSize;
+
+					clrs[cPos++] = 0.8;
+					clrs[cPos++] = 0.8;
+					clrs[cPos++] = specialColor ? 0 : 0.8;
+					clrs[cPos++] = specialColor ? alpha : (alpha*0.5);
+				}
+			} else {
+				for (j = 0;j < 4;++j) {
+					var x, z;
+					
+					for (i = 0;i <= 2;++i) {
+						if (j < 2) { // X axis 
+							x = (i - 1) * 2;
+							z = -1 + (j*2);
+						} else {
+							x = -1 + ((j-2)*2);
+							z = (i - 1) * 2;
+						}
+						
+						vs[writePos++] = x * cursorSize;
+						vs[writePos++] = (time - this.timeOrigin) * this.timeYScale;
+						vs[writePos++] = z * cursorSize;
+
+						clrs[cPos++] = 0.8;
+						clrs[cPos++] = 0.8;
+						clrs[cPos++] = specialColor ? 0 : 0.8;
+						if (i == 1) {
+							clrs[cPos++] = specialColor ? alpha : (alpha*0.5);
+						} else {
+							clrs[cPos++] = 0;
+						}
+					
+						if (i === 1) { // dup
+							vs[writePos] = vs[writePos-3]; ++writePos;
+							vs[writePos] = vs[writePos-3]; ++writePos;
+							vs[writePos] = vs[writePos-3]; ++writePos;
+						
+							clrs[cPos] = clrs[cPos-4]; ++cPos;
+							clrs[cPos] = clrs[cPos-4]; ++cPos;
+							clrs[cPos] = clrs[cPos-4]; ++cPos;
+							clrs[cPos] = clrs[cPos-4]; ++cPos;
+						}
+					}
+
+				}
+				
+			}
+			
+			/*
 			for (var i = 0;i <= 4;++i) {
 				var x = (i == 1 || i == 2) ? 1 : -1;
 				var z = (i == 2 || i == 3) ? 1 : -1;
@@ -826,10 +975,10 @@
 				if (!completeBox && i > 0) {
 					break;
 				}
-			}
+			}*/
 
 			this.sendBufferData(gl, true);
-			gl.drawArrays(gl.LINE_STRIP, 0, cPos/4);
+			gl.drawArrays(gl.LINES, 0, cPos/4);
 		},
 		
 		renderCurrentPositions: function(gl, time, projectionProvider) {
@@ -841,6 +990,8 @@
 		},
 
 		fillCurrentPositionMarkers: function(gl, time, projectionProvider, vlist, clist) {
+			var use_color_index = this.shouldUseColorIndexedAttribute();
+
 			var a = _tempAntData;
 			var tw2 = projectionProvider.getEntireScreenWidth() * 0.5;
 			var th2 = projectionProvider.getEntireScreenHeight() * 0.5;
@@ -854,8 +1005,16 @@
 			var len = TLs.length;
 			for (var i = 0;i < len;++i) {
 				var tl = TLs[i];
-				tl.pickAt(null, pickedRec, time, null, 0);
-
+				var xmap = null;
+				var colorIndex = 0;
+				
+				// Set extra attributes (if needed)
+				if (use_color_index) {
+					xmap = this.coloringInfo.extraAttributesMap;
+				}
+				
+				tl.pickAt(null, pickedRec, time, xmap, 0);
+				
 				a.lat = pickedRec.y;
 				a.lng = pickedRec.x;
 				projectionProvider.calc(a);
@@ -863,10 +1022,21 @@
 				vlist[vpos++] = a.screenX / tw2 - 1.0;
 				vlist[vpos++] = 0.002;
 				vlist[vpos++] = a.screenY / th2 - 1.0;;
-				
-				clist[cpos++] = 0.4;
-				clist[cpos++] = 0.5;
-				clist[cpos++] = 1.0;
+
+				// Determine marker color (if needed)
+				if (use_color_index) {
+					colorIndex = makeColorIndexForAttribute(this.coloringInfo.baseColorList.length, pickedRec, this.coloringInfo.boundAttribute);
+					var markerBaseColor = this.coloringInfo.baseColorList[colorIndex];
+
+					clist[cpos++] = markerBaseColor.r / 255.0;
+					clist[cpos++] = markerBaseColor.g / 255.0;
+					clist[cpos++] = markerBaseColor.b / 255.0;
+				} else {
+					clist[cpos++] = 0.4;
+					clist[cpos++] = 0.5;
+					clist[cpos++] = 1.0;
+				}
+
 				clist[cpos++] = 2.0;
 				
 				++nWrittenVertices;
@@ -907,7 +1077,7 @@
 			// Source Array
 			var nVertices = this.countAllVertices();
 			this.possSrcArray = new Float32Array( nVertices * this.dimension );
-			this.possSrcArrayShort = new Float32Array( 8 * this.dimension );
+			this.possSrcArrayShort = new Float32Array( 16 * this.dimension );
 			this.vbPoss = vb;
 
 			gl.bufferData(gl.ARRAY_BUFFER, this.possSrcArray, gl.DYNAMIC_DRAW);
@@ -918,7 +1088,7 @@
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbc);
 			
 			this.colorSrcArray = new Float32Array( nVertices * 4 );
-			this.colorSrcArrayShort = new Float32Array( 8 * 4 );
+			this.colorSrcArrayShort = new Float32Array( 16 * 4 );
 			this.vbColors = vbc;
 
 			gl.bufferData(gl.ARRAY_BUFFER, this.colorSrcArray, gl.DYNAMIC_DRAW);
@@ -929,7 +1099,7 @@
 			var vbt = gl.createBuffer();
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbt);
 			
-			this.tcSrcArrayShort = new Float32Array( 8 * 2 );
+			this.tcSrcArrayShort = new Float32Array( 16 * 2 );
 			this.vbTexCoords = vbt;
 			
 			gl.bufferData(gl.ARRAY_BUFFER, this.tcSrcArrayShort, gl.DYNAMIC_DRAW);

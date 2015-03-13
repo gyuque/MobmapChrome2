@@ -186,6 +186,17 @@ if (!window.mobmap) window.mobmap={};
 			return tl.writePropertyOnAllTime(prop, newValue, this.extraProps);
 		},
 		
+		cloneExtraProperties: function() {
+			var cloned = createCleanHash();
+			
+			var m = this.extraProps;
+			for (var i in m) {
+				cloned[i] = m[i];
+			}
+			
+			return cloned;
+		},
+		
 		// Internal funcs -------------------------------
 		ensureId: function(objId) {
 			if (!this.idMap[objId]) {
