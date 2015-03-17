@@ -144,13 +144,21 @@
 		notifyCurrentTimeChanged: function(params) {
 			sendParamsTo3DViewWindow('receiveCurrentTime', params.time);
 		},
+		
+		notifyLayerLocalSelectionChange: function(params) {
+			sendParamsTo3DViewWindow('receiveSelectionChange', params.layerId);
+		},
+		
+		notifyLayerMarkerOptionsChange: function(params) {
+			sendParamsTo3DViewWindow('receiveMarkerOptionsChange', params.layerId, params.coloringInfo);
+		}
 	};
 	
-	function sendParamsTo3DViewWindow(methodName, params) {
+	function sendParamsTo3DViewWindow(methodName, params, params2) {
 		var wls = chrome.app.window.getAll();
 		for (var i in wls) {
 			if (wls[i].contentWindow && wls[i].contentWindow[methodName]) {
-				wls[i].contentWindow[methodName](params);
+				wls[i].contentWindow[methodName](params, params2);
 			}
 		}
 	}

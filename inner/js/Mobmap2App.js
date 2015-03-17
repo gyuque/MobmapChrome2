@@ -699,6 +699,23 @@ if (!window.mobmap) { window.mobmap={}; }
 				});
 		},
 		
+		sendSelectionChangeNotification: function(sourceLayer) {
+			Mobmap2App.sendOuterMessage('notifyLayerLocalSelectionChange', {
+				layerId: sourceLayer.layerId
+			});
+		},
+		
+		sendMarkerOptionsChangeNotification: function(sourceLayer) {
+			Mobmap2App.sendOuterMessage('notifyLayerMarkerOptionsChange', {
+				coloringInfo: sourceLayer.exportMarkerColoringInfo(),
+				layerId: sourceLayer.layerId
+			});
+		},
+		
+		sendMarkerGeneratorConfigurationChangeNotification: function(sourceLayer) {
+			this.sendMarkerOptionsChangeNotification(sourceLayer);
+		},
+		
 		// Annotation operations
 		
 		invokeAnnotationCommand: function(annotationId, commandName) {

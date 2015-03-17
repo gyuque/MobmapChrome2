@@ -27,6 +27,8 @@
 		window.receive3DViewTargetData = theController.receive3DViewTargetData.bind(theController);
 		window.receiveProjectionGridConfiguration = theController.receiveProjectionGridConfiguration.bind(theController);
 		window.receiveCurrentTime = theController.receiveCurrentTime.bind(theController);
+		window.receiveSelectionChange = theController.receiveSelectionChange.bind(theController);
+		window.receiveMarkerOptionsChange = theController.receiveMarkerOptionsChange.bind(theController);
 	}
 	
 	// Global APIs
@@ -196,6 +198,26 @@
 			this.render();
 		},
 		
+		receiveSelectionChange: function(senderLayerId) {
+			if (this.targetLayerId === senderLayerId) {
+				window.sendRequest3DViewTargetData(this.targetLayerId);
+			}
+		},
+		
+		receiveMarkerOptionsChange: function(senderLayerId, coloringInfo) {
+			
+			if (coloringInfo && this.targetLayerId === senderLayerId && this.content) {
+				
+				if (this.content.setColoringInfo) {
+					this.content.setColoringInfo(coloringInfo);
+
+					this.viewDirty = true;
+					this.render();
+				}
+				
+			}
+		},
+		
 		isViewportSame: function(v1, v2) {
 			function is_near(a,b) { return Math.abs(a-b) < 0.00001; }
 			
@@ -208,8 +230,15 @@
 		},
 
 		newTrajectoryContent: function(contentSource) {
-			this.content = new ThreeDViewTrajectoryContent(this.gl, contentSource);
-			this.onTimeScaleInputChange(this.timescaleInputElement);
+			if (!contentSource.record_list_array) {
+				this.content = null;
+			} else {
+				this.content = new ThreeDViewTrajectoryContent(this.gl, contentSource);
+			}
+			
+			if (this.content) {
+				this.onTimeScaleInputChange(this.timescaleInputElement);
+			}
 
 			this.viewDirty = true;
 			this.render();
@@ -301,6 +330,7 @@
 
 			this.viewDirty = false;
 			var gl = this.gl
+			gl.depthMask(true);
 			this.clearView();
 			
 			gl.enable(gl.BLEND);
@@ -308,7 +338,6 @@
 						
 			// Draw content
 			gl.enable(gl.DEPTH_TEST);
-			gl.depthMask(true);
 			gl.depthFunc(gl.ALWAYS);
 			if (this.content) {
 				this.content.render(this, this.currentInSeconds);
@@ -613,22 +642,46 @@
 		this.colorBufferWrittenCount = 0;
 
 		this.coloringInfo = contentSource.coloringInfo || null;
+		this.coloringIndexMap = new mobmap.LayerMarkerOptions.CustomIndexMapping();
 		this.recordListArray = contentSource.record_list_array;
 		this.timeListArray = this.generateTimeLists(this.recordListArray);
 //		console.log('*',this.recordListArray)
 
 		this.generateVertexBuffer(gl);
+		this.updateColoringIndexMap(this.coloringInfo);
 	}
 	
-	function makeColorIndexForAttribute(nColors, record, boundAttrName) {
+	function makeColorIndexForAttribute(nColors, record, boundAttrName, indexMap) {
 		var rawVal = record[boundAttrName] | 0;
+		
+		if (indexMap && indexMap.enabled) {
+			rawVal = indexMap.mapValue(rawVal);
+		}
+		
 		if (rawVal < 0) { rawVal = 0; }
 		else if (rawVal >= nColors) { rawVal = nColors - 1; }
-		
+
 		return rawVal;
 	}
 	
 	ThreeDViewTrajectoryContent.prototype = {
+		setColoringInfo: function(newVal) {
+			this.coloringInfo = newVal || null;
+			this.updateColoringIndexMap(this.coloringInfo);
+		},
+		
+		updateColoringIndexMap: function(coloringInfo) {
+			this.coloringIndexMap.clearMap();
+			
+			var enabled = false;
+			if (coloringInfo && coloringInfo.indexMap) {
+				enabled = true;
+				this.coloringIndexMap.importMap(coloringInfo.indexMap);
+			}
+			
+			this.coloringIndexMap.enabled = enabled;
+		},
+		
 		scaleTimeYScale: function(s) {
 			var newVal = this.timeYScaleBase * s;
 			var d = Math.abs(newVal - this.timeYScale);
@@ -1025,7 +1078,7 @@
 
 				// Determine marker color (if needed)
 				if (use_color_index) {
-					colorIndex = makeColorIndexForAttribute(this.coloringInfo.baseColorList.length, pickedRec, this.coloringInfo.boundAttribute);
+					colorIndex = makeColorIndexForAttribute(this.coloringInfo.baseColorList.length, pickedRec, this.coloringInfo.boundAttribute, this.coloringIndexMap);
 					var markerBaseColor = this.coloringInfo.baseColorList[colorIndex];
 
 					clist[cpos++] = markerBaseColor.r / 255.0;
@@ -1165,7 +1218,7 @@
 				++vi;
 				
 				if (use_color_index) {
-					var colorIndex = makeColorIndexForAttribute(this.coloringInfo.baseColorList.length, rec, this.coloringInfo.boundAttribute);
+					var colorIndex = makeColorIndexForAttribute(this.coloringInfo.baseColorList.length, rec, this.coloringInfo.boundAttribute, this.coloringIndexMap);
 					var markerBaseColor = this.coloringInfo.baseColorList[colorIndex];
 					
 					colorDest[cIndex++] = markerBaseColor.r / 255.0;

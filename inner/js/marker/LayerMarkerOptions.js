@@ -190,6 +190,19 @@ this.tailSpeedLimit = 0;
 	};
 	
 	LayerMarkerOptions.CustomIndexMapping.prototype = {
+		importMap: function(m) {
+			for (var i in m) if (m.hasOwnProperty(i)) {
+				this.rawToIndexMap[i] = m[i];
+			}
+		},
+		
+		clearMap: function() {
+			var m = this.rawToIndexMap;
+			for (var i in m) if (m.hasOwnProperty(i)) {
+				delete m[i];
+			}
+		},
+		
 		updateFromText: function(source) {
 			if (this.lastSource === source) {
 				return false;

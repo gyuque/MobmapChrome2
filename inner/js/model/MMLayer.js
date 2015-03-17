@@ -362,6 +362,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			var retObj = {
+				indexMap: this.getIndexMapHash(),
 				extraAttributesMap: xmap,
 				baseColorList: this.markerGenerator.lastBaseColorList,
 				boundAttribute: this._markerOptions.boundAttributeName,
@@ -369,6 +370,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			};
 			
 			return retObj;
+		},
+
+		getIndexMapHash: function() {
+			var mo = this._markerOptions;
+			if (mo && mo.indexMap && mo.indexMap.enabled) {
+				return mo.indexMap.rawToIndexMap || null;
+			}
+			
+			return null;
 		},
 
 		// Polyline datasource API

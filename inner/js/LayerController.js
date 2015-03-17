@@ -274,10 +274,12 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		onLayerMarkerOptionsChange: function(sourceLayer, e) {
 			this.redrawMap();
+			this.ownerApp.sendMarkerOptionsChangeNotification(sourceLayer);
 		},
 		
 		onLayerMarkerGeneratorConfigurationChange: function(sourceLayer, e) {
 			this.redrawMap();
+			this.ownerApp.sendMarkerGeneratorConfigurationChangeNotification(sourceLayer);
 		},
 		
 		onLayerRenderValueMaxChange: function() {
@@ -807,6 +809,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		onLocalSelectionChange: function(sourceLayer, e) {
+			this.ownerApp.sendSelectionChangeNotification(sourceLayer);
+			
 			this.redrawMap();
 			this.applySelectionViewIfNeeded(sourceLayer);
 			this.notifySelectionChangeToExploreLayer(sourceLayer);
