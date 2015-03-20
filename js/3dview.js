@@ -105,6 +105,7 @@
 			this.baseMapPanel = new ThreeDViewMapPanel(this.gl);
 			this.normalShader = new NormalShader(this.gl, 'vs-src', 'fs-src');
 			this.colorShader  = new ColorShader(this.gl, 'color-vs-src', 'color-fs-src');
+			this.annPointShader = new ColorShader(this.gl, 'color-vs-apoint', 'color-fs-apoint');
 			this.mapTexture = this.initializeMapTexture(loadedImage);
 			this.panelBaseTexture = this.initializePanelBaseTexture();
 			var resizeFunc = this.observeResize();
@@ -191,6 +192,11 @@
 			this.render();
 		},
 		
+		afterAnnotationChange: function() {
+			this.viewDirty = true;
+			this.render();
+		},
+
 		receiveCurrentTime: function(newTime) {
 			this.currentInSeconds = newTime;
 
@@ -267,6 +273,7 @@
 			var j = $('html');
 			
 			j.
+			 keydown(this.onKeyDown.bind(this)).
 			 mousedown(this.onMouseDown.bind(this)).
 			 mousemove(this.onMouseMove.bind(this)).
 			 mouseup(this.onMouseUp.bind(this));
@@ -389,6 +396,9 @@
 			
 			this.colorShader.use(this.gl);
 			this.colorShader.setProjectionMatrixUniformValue(this.gl, m);
+			
+			this.annPointShader.use(this.gl);
+			this.annPointShader.setProjectionMatrixUniformValue(this.gl, m);
 		},
 		
 		updateViewMatrix: function(targetShader) {
@@ -414,6 +424,18 @@
 			outVec[2] = z * this.viewState.distance;
 		},
 		
+		
+		onKeyDown: function(e) {
+			if (this.content && this.content.annotations) {
+				if (e.keyCode === 84) {
+					this.content.annotations.debug_addTestAnnotation();
+					this.afterAnnotationChange();
+				} else if (e.keyCode === 89) {
+					this.content.annotations.debug_addTestAnnotation2();
+					this.afterAnnotationChange();
+				}
+			}
+		},
 		
 		onMouseDown: function(e) {
 			var mx = e.clientX;
@@ -621,6 +643,7 @@
 	};
 
 
+
 	function ThreeDViewTrajectoryContent(gl, contentSource) {
 		this.dimension = 3;
 		this.vbPoss = null;
@@ -635,6 +658,8 @@
 		this.pickTempRecord = mobmap.MovingData.createEmptyRecord();
 		this.labelTexMan = new ThreeDViewDateLabelTexture(256);
 		this.labelTextureObject = null;
+
+		this.annotations = new SpatioTemporalAnnotationManager();
 
 		this.timeYScaleBase = 0.00001;
 		this.timeYScale = 0.00001;
@@ -738,10 +763,13 @@
 			this.enableBuffers(gl, shader);
 			this.sendBufferData(gl);
 			
-			var nObjects = this.recordListArray.length;
-			for (var i = 0;i < nObjects;++i) {
-				this.renderRecordList(gl, i);
-			}
+			// Send draw-call for line groups
+			this.renderLinesByGroupList(gl, this.startPositionList);
+			
+			this.renderAnnotations(gl, controller);
+			// Restore shader
+			controller.colorShader.use(gl);
+			this.enableBuffers(gl, controller.colorShader);
 			
 			if (currentTime || currentTime === 0) {
 				//this.renderTimeCursor(gl, currentTime);
@@ -1097,13 +1125,20 @@
 			
 			return nWrittenVertices;
 		},
-		
-		renderRecordList: function(gl, groupIndex) {
+
+		renderLinesByGroupList: function(gl, startPosList) {
+			var nLineGroups = startPosList.length - 1; // Last item is the terminator
+			for (var i = 0;i < nLineGroups;++i) {
+				this.renderLineGroup(gl, startPosList, i);
+			}
+		},
+
+		renderLineGroup: function(gl, startPosList, groupIndex) {
 			//console.log(recordList)
-			var start = this.startPositionList[groupIndex];
-			var nextStart = Math.floor(this.possSrcArray.length / this.dimension);
-			if (groupIndex < (this.recordListArray.length-1)) {
-				nextStart = this.startPositionList[groupIndex + 1];
+			var start = startPosList[groupIndex];
+			var nextStart = start;
+			if (groupIndex < (startPosList.length-1)) {
+				nextStart = startPosList[groupIndex + 1];
 			}
 
 //			console.log(start, nextStart - start);
@@ -1111,12 +1146,15 @@
 			gl.drawArrays(gl.LINE_STRIP, start, nextStart - start);
 		},
 
-		countAllVertices: function() {
+		countAllVertices: function(extra) {
 			var sum = 0;
 			
 			var nObjects = this.recordListArray.length;
 			for (var i = 0;i < nObjects;++i) {
 				sum += this.recordListArray[i].recordList.length;
+				if (extra) {
+					sum += extra;
+				}
 			}
 
 			return sum;
@@ -1128,7 +1166,12 @@
 			gl.bindBuffer(gl.ARRAY_BUFFER, vb);
 			
 			// Source Array
-			var nVertices = this.countAllVertices();
+			var nVertices = this.countAllVertices(1);
+			if (nVertices < 16) {
+				// Minimum required for system rendering
+				nVertices = 16;
+			}
+			
 			this.possSrcArray = new Float32Array( nVertices * this.dimension );
 			this.possSrcArrayShort = new Float32Array( 16 * this.dimension );
 			this.vbPoss = vb;
@@ -1157,18 +1200,53 @@
 			
 			gl.bufferData(gl.ARRAY_BUFFER, this.tcSrcArrayShort, gl.DYNAMIC_DRAW);
 		},
-		
+
+		clearAllLineGroupLists: function() {
+			this.startPositionList.length = 0;
+		},
+
 		fillVertexSource: function(projectionProvider) {
 			var writePos = 0;
+			var currentTime = this.timeOrigin;
 			this.colorBufferWrittenCount = 0;
-			this.startPositionList.length = 0;
+			this.clearAllLineGroupLists();
 
+			var i;
 			var nObjects = this.recordListArray.length;
-			for (var i = 0;i < nObjects;++i) {
-				var rlist = this.recordListArray[i].recordList;
-				this.startPositionList.push( Math.floor(writePos / this.dimension) );
-				writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider, this.colorSrcArray);
+			for (var phase = 0;phase < 2;++phase) {
+				for (i = 0;i < nObjects;++i) {
+					var rlist = this.recordListArray[i].recordList;
+					var rlen = rlist.length;
+					var splitPos = this.splitRecorListAtCurrentTime(rlist, currentTime);
+					//console.log(splitPos)
+					this.startPositionList.push( Math.floor(writePos / this.dimension) );
+					
+					if (phase === 0) {
+						writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider, this.colorSrcArray, 0, splitPos);
+					} else {
+						writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider, this.colorSrcArray, Math.max(0, splitPos - 1), rlen);
+					}
+				}
 			}
+
+			// Finish position
+			this.startPositionList.push( Math.floor(writePos / this.dimension) );
+			
+			//     Num of vertices
+			return (this.colorBufferWrittenCount >> 2);
+		},
+		
+		splitRecorListAtCurrentTime: function(recordList, t) {
+			var len = recordList.length;
+			var nSegs = len-1;
+			for (var i = 0;i < nSegs;++i) {
+				var rec = recordList[i];
+				if (rec._time >= t) {
+					return i;
+				}
+			}
+			
+			return len;
 		},
 		
 		sendBufferData: function(gl, useShortSource) {
@@ -1184,11 +1262,10 @@
 			}
 		},
 		
-		fillPositionsArray: function(dest, startVertexIndex, recordList, projectionProvider, colorDest) {
+		fillPositionsArray: function(dest, startVertexIndex, recordList, projectionProvider, colorDest, srcStartIndex, afterEndIndex) {
 			var i;
 			var vi = 0;
 			var cIndex = this.colorBufferWrittenCount;
-			var len = recordList.length;
 			var a = _tempAntData;
 			
 			var tw2 = projectionProvider.getEntireScreenWidth() * 0.5;
@@ -1202,7 +1279,7 @@
 			
 			var use_color_index = this.shouldUseColorIndexedAttribute();
 
-			for (i = 0;i < len;++i) {
+			for (i = srcStartIndex;i < afterEndIndex;++i) {
 				var rec = recordList[i];
 				a.lat = rec.y;
 				a.lng = rec.x;
@@ -1237,6 +1314,66 @@
 			this.colorBufferWrittenCount = cIndex;
 			return vi;
 		},
+		
+		
+		renderAnnotations: function(gl, controller) {
+			var a_shader = controller.annPointShader;
+			a_shader.use(gl);
+			
+			a_shader.setPointSize(gl, 40);
+			controller.updateViewMatrix(a_shader);
+			this.enableBuffers(gl, a_shader);
+
+			var pj = controller.projectionGird;
+			var nVerteicesToRender = this.fillAnnotationVertices(pj);
+			
+			this.sendBufferData(gl);
+			gl.drawArrays(gl.POINTS, 0, nVerteicesToRender);
+		},
+		
+		fillAnnotationVertices: function(projectionProvider) {
+			var vs = this.possSrcArray;
+			var clrs = this.colorSrcArray;
+
+			var nAnnotations = this.annotations.getCount();
+			var nMax = clrs.length >> 2;
+			
+			var nToDraw = Math.min(nMax, nAnnotations);
+			
+			var vi = 0;
+			var ci = 0;
+			for (var i = 0;i < nToDraw;++i) {
+				var ann = this.annotations.getAt(i);
+				this.addAnnotationVertex(projectionProvider, vs, clrs, vi, ci, ann);
+				
+				vi += 3;
+				ci += 4;
+			}
+			
+			return i;
+		},
+		
+		addAnnotationVertex: function(projectionProvider, vertexArray, colorArray, vi, ci, ann) {
+			var a = _tempAntData;
+			var tw2 = projectionProvider.getEntireScreenWidth() * 0.5;
+			var th2 = projectionProvider.getEntireScreenHeight() * 0.5;
+
+			a.lat = ann.lat;
+			a.lng = ann.lng;
+			projectionProvider.calc(a);
+
+			// Position
+			vertexArray[vi  ] = a.screenX / tw2 - 1.0;
+			vertexArray[vi+1] = (ann.t - this.timeOrigin) * this.timeYScale;
+			vertexArray[vi+2] = a.screenY / th2 - 1.0;
+			
+			// Color
+			colorArray[ci  ] = 1.0;
+			colorArray[ci+1] = 0.5;
+			colorArray[ci+2] =   0;
+			colorArray[ci+3] = 1.0;
+		},
+		
 		
 		enableBuffers: function(gl, shader) {
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbPoss);

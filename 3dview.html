@@ -6,6 +6,7 @@
 	<script type="text/javascript" src="./inner/js/jquery-1.10.2.js"></script>
 	<script type="text/javascript" src="./js/3dview.js"></script>
 	<script type="text/javascript" src="./js/3dview-panel.js"></script>
+	<script type="text/javascript" src="./js/3dview-annotation.js"></script>
 	<script type="text/javascript" src="./js/date-label-texture.js"></script>
 	<script type="text/javascript" src="./inner/js/mm-utils.js"></script>
 	<script type="text/javascript" src="./inner/js/map/mobmap-utils.js"></script>
@@ -58,6 +59,41 @@ body,html {
 	}
 	</script>
 
+
+	<script type="text/plain" id="color-vs-apoint">
+	uniform mat4 uProjTransform;
+	uniform mat4 uViewTransform;
+	uniform float uPointSize;
+	attribute vec4 aPosition;
+	attribute vec4 aColor;
+	varying lowp vec4 vColor;
+	void main() {
+		vColor = aColor;
+		gl_Position = uProjTransform * uViewTransform * aPosition;
+		gl_PointSize = uPointSize / max(gl_Position.w, 0.001);
+	}
+	</script>
+
+	<script type="text/plain" id="color-fs-apoint">
+	#ifdef GL_ES
+		precision lowp float;
+	#endif
+
+		// Input
+		varying vec4 vColor;
+
+		void main()
+		{
+			vec4 clr = vColor;
+			float d = distance(vec2(0.5,0.5), gl_PointCoord);
+			
+			vec2 dvec = vec2(0.5,0.5) - gl_PointCoord;
+			float a = atan(dvec.y, dvec.x);
+			if (d >= 0.5 || d < 0.45 || sin(a*16.0) < -0.5) { discard; }
+			
+			gl_FragColor = clr;
+		}
+	</script>
 
 
 	<script type="text/plain" id="vs-src">
