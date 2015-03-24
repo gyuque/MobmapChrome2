@@ -276,7 +276,8 @@
 			 keydown(this.onKeyDown.bind(this)).
 			 mousedown(this.onMouseDown.bind(this)).
 			 mousemove(this.onMouseMove.bind(this)).
-			 mouseup(this.onMouseUp.bind(this));
+			 mouseup(this.onMouseUp.bind(this)).
+			 dblclick(this.onDoubleClick.bind(this));
 			
 			j[0].addEventListener('mousewheel', this.onMouseWheel.bind(this), false);
 		},
@@ -307,6 +308,19 @@
 
 			this.viewDirty = true;
 			this.render();
+		},
+		
+		onDoubleClick: function(e) {
+			var jContainer = $('html');
+			var w = jContainer.width();
+			var h = jContainer.height();
+			
+			var nx = e.clientX / (w * 0.5) - 1.0;
+			var ny = 1.0 - e.clientY / (h * 0.5);
+			
+			if (this.content && this.content.pickByScreenCoordinate) {
+				this.content.pickByScreenCoordinate(this, nx, ny);
+			}
 		},
 
 		afterCanvasResized: function() {
@@ -412,6 +426,10 @@
 			mat4.lookAt(m, eyePos, [0, ty, 0], [0,1,0]); 
 			
 			targetShader.setViewMatrixUniformValue(this.gl, m);
+		},
+		
+		calcViewProjMatrix: function(outMat) {
+			
 		},
 		
 		calcEyePos: function(outVec) {
@@ -658,6 +676,7 @@
 		this.pickTempRecord = mobmap.MovingData.createEmptyRecord();
 		this.labelTexMan = new ThreeDViewDateLabelTexture(256);
 		this.labelTextureObject = null;
+		this.tempMatViewProj = mat4.create();
 
 		this.annotations = new SpatioTemporalAnnotationManager();
 
@@ -690,6 +709,47 @@
 	}
 	
 	ThreeDViewTrajectoryContent.prototype = {
+		pickByScreenCoordinate: function(controller, sx, sy) {
+			var oldTimeOrigin = this.timeOrigin;
+			this.timeOrigin = -0.01;
+			var pj = controller.projectionGird;
+			controller.calcViewProjMatrix(this.tempMatViewProj);
+
+			this.fillVertexSource(pj);
+			
+			var sl = this.startPositionList;
+			
+			var startPos = (sl.length - 1) >> 1;
+			var lastPos = sl.length - 1;
+			
+			for (var i = startPos;i < lastPos;++i) {
+				var startIndex = sl[i];
+				var vcount = sl[i+1] - startIndex;
+				
+				this.hittestWithLineStrip(this.possSrcArray, startIndex, vcount, sx, sy, oldTimeOrigin);
+				console.log(startIndex, vcount);
+			}
+			
+			this.timeOrigin = oldTimeOrigin;
+		},
+		
+		hittestWithLineStrip: function(vertexArray, startIndex, count, pickSX, pickSY, showingTimeOrigin) {
+			var baseY = showingTimeOrigin * this.timeYScale;
+			var vpos = startIndex * 3;
+			
+			for (var i = 0;i < count;++i) {
+				var x = vertexArray[vpos  ];
+				var y = vertexArray[vpos+1] - baseY;
+				var z = vertexArray[vpos+2];
+				console.log(x,y,z);
+				
+				vpos += 3;
+			}
+			
+			console.log('- - -');
+		},
+		
+		
 		setColoringInfo: function(newVal) {
 			this.coloringInfo = newVal || null;
 			this.updateColoringIndexMap(this.coloringInfo);
@@ -1406,7 +1466,7 @@
 			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.SRC_ALPHA, gl.ONE);
 		}
 	}
-
+	
 	var _tempVecEyePos = [0,0,0];
 	var _tempAntData = {
 		lat:0, lng:0,
