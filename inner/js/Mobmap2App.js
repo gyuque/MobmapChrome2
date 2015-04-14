@@ -18,6 +18,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.layerDeleteDialog = new mobmap.LayerDeleteDialog();
 		this.loadErrorDialog = new mobmap.LoadErrorDialog();
 		this.gateBusyDialog = new mobmap.GateBusyDialog();
+		this.calcSimDialog = new mobmap.CalcSimDialog();
 		this.annotationRemoveDialog = new mobmap.AnnotationRemoveDialog();
 		this.valueFillDialog = new mobmap.FillValueDialog();
 		this.exportSelectionDialog = new mobmap.ExportSelectionDialog();
@@ -645,7 +646,35 @@ if (!window.mobmap) { window.mobmap={}; }
 				});
 			}
 		},
+
+		onMessage_sendSingleSelection: function(params) {
+			var prj = this.getCurrentProject();
+			if (prj) {
+				var layerId = parseInt(params.layerId, 10);
+				var layer = prj.getLayerById(layerId);
+				if (layer && layer.localSelectionPool) {
+					layer.localSelectionPool.clear(true);
+					layer.localSelectionPool.addId(params.objId);
+				}
+			}
+		},
 		
+		onMessage_sendSelectionByList: function(params) {
+			var prj = this.getCurrentProject();
+			if (prj) {
+				var layerId = parseInt(params.layerId, 10);
+				var layer = prj.getLayerById(layerId);
+				if (layer && layer.localSelectionPool) {
+					layer.localSelectionPool.clear(true);
+					for (var i in params.idList) {
+						layer.localSelectionPool.addId(params.idList[i], true);
+					}
+					
+					layer.localSelectionPool.fire();
+				}
+			}
+		},
+
 		generate3DViewTargetData: function(movingObjectsLayer) {
 			var selp = movingObjectsLayer.localSelectionPool;
 			var mdat = movingObjectsLayer.movingData;
@@ -855,6 +884,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!m) { return null; }
 			
 			return m.getViewportInfo();
+		},
+		
+		openCalcSimDialog: function(layerId, objId) {
+			var prj = this.getCurrentProject();
+			var layer = prj.getLayerById(layerId);
+			
+			if (layer) {
+				this.calcSimDialog.open(this.onCalcSimDialogOKClick.bind(this), layer, objId);
+			}
+		},
+
+		onCalcSimDialogOKClick: function() {
+			var lyr = this.calcSimDialog.targetLayer;
+			var oid = this.calcSimDialog.originObjectId;
+			
+			mobmap.CalcSimDialog.calcPositionSimilarity(lyr, oid);
 		}
 	};
 

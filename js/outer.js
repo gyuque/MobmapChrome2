@@ -125,6 +125,8 @@
 				}, function(wnd){
 					wnd.contentWindow.sendRequest3DViewTargetData = sendRequest3DViewTargetData;
 					wnd.contentWindow.sendRequestProjectionData = sendRequestProjectionData;
+					wnd.contentWindow.sendSingleSelection = sendSingleSelection;
+					wnd.contentWindow.sendSelectionByList = sendSelectionByList;
 					wnd.contentWindow.mobmapInitData = {
 						layerId: params.layerId,
 						mapViewport: params.mapViewport
@@ -177,6 +179,14 @@
 		sendInnerMessage('sendRequestProjectionData', {layerId: layerId, viewport: viewport});
 	}
 	
+	function sendSingleSelection(layerId, objId) {
+		sendInnerMessage('sendSingleSelection', {layerId: layerId, objId: objId});
+	}
+
+	function sendSelectionByList(layerId, idList) {
+		sendInnerMessage('sendSelectionByList', {layerId: layerId, idList: idList});
+	}
+
 	function windowGetWidth() {return window.outerWidth;}
 	function windowGetHeight() {return window.outerHeight;}
 	function requestMapRender(requestId, dTime, frameIndex) {

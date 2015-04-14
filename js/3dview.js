@@ -42,6 +42,7 @@
 		
 		this.gl = null;
 		this.viewDirty = true;
+		this.contentUIContainerElement = null;
 		this.projectionGird = new mobmap.FastProjectionGrid(2);
 		this.normalShader = null;
 		this.baseMapPanel = null;
@@ -117,6 +118,7 @@
 			window.sendRequest3DViewTargetData(this.targetLayerId);
 			
 			this.putTimeScaleSlider();
+			this.initializeContentUIArea('content-ui-area');
 		},
 		
 		putTimeScaleSlider: function() {
@@ -429,7 +431,7 @@
 		},
 		
 		calcViewProjMatrix: function(outMat) {
-			
+			mat4.mul(outMat, this.matProj, this.matView);
 		},
 		
 		calcEyePos: function(outVec) {
@@ -507,6 +509,73 @@
 			
 			if (vs.eyePosY < 0.2) { vs.eyePosY=0.2; }
 			else if (vs.eyePosY > 16.0) { vs.eyePosY=16.0; }
+		},
+		
+		notifyTrajectoryPicked: function(objIndex, objId) {
+			if (this.content && this.content.highlightByIndex) {
+				if (objIndex === null) {
+					this.content.cancelHighlight();
+				} else {
+					this.content.highlightByIndex(objIndex);
+				}
+
+				this.viewDirty = true;
+				this.render();
+			}
+		},
+
+		initializeContentUIArea: function(elem_id) {
+			this.contentUIContainerElement = document.getElementById(elem_id);
+			this.contentUIContainerElement.innerHTML = '';
+			
+			$(this.contentUIContainerElement).click( this.onContentAreaClick.bind(this) );
+		},
+		
+		onContentAreaClick: function(e) {
+			var el = e.target;
+			if (el && el.getAttribute) {
+				var cmd = el.getAttribute('data-controller-command');
+				if (cmd && cmd.length > 1) {
+					this.dispatchContentUICommand(cmd, el);
+				}
+			}
+		},
+
+		clearContentUIArea: function() {
+			this.contentUIContainerElement.innerHTML = '';
+		},
+		
+		appendElementOnContentUIArea: function(el) {
+			this.contentUIContainerElement.appendChild(el);
+		},
+		
+		dispatchContentUICommand: function(commandName, rawNode) {
+			switch(commandName) {
+				case 'sel1':
+					var param_objid = rawNode.getAttribute('data-target-id');
+
+					if (this.content && this.content.notifyContentCommandWillBeExecuted) {
+						this.content.notifyContentCommandWillBeExecuted(this, commandName, param_objid);
+					}
+				
+					if (window.sendSingleSelection) {
+						window.sendSingleSelection(this.targetLayerId , param_objid);
+					}
+					break;
+					
+				case 'restore-selection':
+					var param_idlist = rawNode.getAttribute('data-idlist');
+				
+					if (this.content && this.content.notifyContentCommandWillBeExecuted) {
+						this.content.notifyContentCommandWillBeExecuted(this, commandName, param_idlist);
+					}
+
+					if (param_idlist && window.sendSelectionByList) {
+						window.sendSelectionByList(this.targetLayerId, param_idlist.split(/ *, */));
+					}
+					
+					break;
+			}
 		}
 	};
 	
@@ -677,6 +746,8 @@
 		this.labelTexMan = new ThreeDViewDateLabelTexture(256);
 		this.labelTextureObject = null;
 		this.tempMatViewProj = mat4.create();
+		this.tempVec4 = vec4.create();
+		this.tempVec4_2 = vec4.create();
 
 		this.annotations = new SpatioTemporalAnnotationManager();
 
@@ -689,6 +760,7 @@
 		this.coloringIndexMap = new mobmap.LayerMarkerOptions.CustomIndexMapping();
 		this.recordListArray = contentSource.record_list_array;
 		this.timeListArray = this.generateTimeLists(this.recordListArray);
+		this.highlightedIndex = -1;
 //		console.log('*',this.recordListArray)
 
 		this.generateVertexBuffer(gl);
@@ -708,6 +780,28 @@
 		return rawVal;
 	}
 	
+	function p2dot(Ax1, Ay1, Ax2, Ay2,  Bx1, By1, Bx2, By2) {
+		var dxA = Ax2 - Ax1;
+		var dyA = Ay2 - Ay1;
+		var dxB = Bx2 - Bx1;
+		var dyB = By2 - By1;
+		
+		return dxA*dxB + dyA*dyB;
+	}
+
+	function p2cross(Ax1, Ay1, Ax2, Ay2,  Bx1, By1, Bx2, By2) {
+		var dxA = Ax2 - Ax1;
+		var dyA = Ay2 - Ay1;
+		var dxB = Bx2 - Bx1;
+		var dyB = By2 - By1;
+		
+		return dxA * dyB - dyA * dxB;
+	}
+	
+	function v2len(x, y) {
+		return Math.sqrt(x*x + y*y);
+	}
+	
 	ThreeDViewTrajectoryContent.prototype = {
 		pickByScreenCoordinate: function(controller, sx, sy) {
 			var oldTimeOrigin = this.timeOrigin;
@@ -722,33 +816,173 @@
 			var startPos = (sl.length - 1) >> 1;
 			var lastPos = sl.length - 1;
 			
+			var candidateList = [];
 			for (var i = startPos;i < lastPos;++i) {
 				var startIndex = sl[i];
 				var vcount = sl[i+1] - startIndex;
 				
-				this.hittestWithLineStrip(this.possSrcArray, startIndex, vcount, sx, sy, oldTimeOrigin);
-				console.log(startIndex, vcount);
+				var hitDistance = this.hittestWithLineStrip(this.possSrcArray, startIndex, vcount, sx, sy, oldTimeOrigin, this.tempMatViewProj);
+				if (hitDistance !== false) {
+					candidateList.push([i-startPos, hitDistance]);
+				}
 			}
 			
 			this.timeOrigin = oldTimeOrigin;
+			
+			// Check result
+			if (candidateList.length > 0) {
+				candidateList.sort(function(a,b) {
+					return a[1] - b[1];
+				});
+				
+				var nearestIndex = candidateList[0][0];
+				if (controller.notifyTrajectoryPicked) {
+					var selId = this.recordListArray[nearestIndex].id;
+					controller.notifyTrajectoryPicked(nearestIndex, selId);
+					this.updateContentUI(controller, nearestIndex, selId);
+				}
+			} else {
+				if (controller.notifyTrajectoryPicked) {
+					controller.notifyTrajectoryPicked(null, null);
+					this.updateContentUI(controller, null, null);
+				}
+			}
 		},
-		
-		hittestWithLineStrip: function(vertexArray, startIndex, count, pickSX, pickSY, showingTimeOrigin) {
+
+		updateContentUI: function(controller, selectionIndex, selectionId) {
+			if (!controller) {
+				return;
+			}
+
+			controller.clearContentUIArea();
+			if (selectionIndex !== null) {
+				var outer = document.createElement('div');
+				outer.setAttribute('class', 'highlighted-obj-info');
+
+				var titleEl = document.createElement('span');
+				var headingEl = document.createElement('span');
+				headingEl.setAttribute('class', 'highlighted-obj-heading');
+				headingEl.innerHTML = '▪';
+				
+				var selButton = document.createElement('button');
+				selButton.setAttribute('data-controller-command', 'sel1');
+				selButton.setAttribute('data-target-id', selectionId);
+				selButton.appendChild( document.createTextNode("Select only this") );
+
+//				var annButton = document.createElement('button');
+//				annButton.setAttribute('data-command', 'add_ann');
+
+				titleEl.appendChild(headingEl);
+				titleEl.appendChild( document.createTextNode('Highlighted ID='+selectionId ) );
+				outer.appendChild(titleEl);
+				outer.appendChild(selButton);
+				controller.appendElementOnContentUIArea(outer);
+			}
+		},
+
+		showContentUIRestoreButton: function(controller) {
+			var idlist = this.generateIDList();
+
+			var outer = document.createElement('div');
+			outer.setAttribute('class', 'highlighted-obj-info');
+
+			var restoreButton = document.createElement('button');
+			restoreButton.appendChild( document.createTextNode("Restore last selection(" +idlist.length+  ")") );
+			restoreButton.setAttribute('data-controller-command', 'restore-selection');
+			restoreButton.setAttribute('data-idlist', idlist.join(','));
+
+			outer.appendChild(restoreButton);
+			controller.appendElementOnContentUIArea(outer);
+		},
+
+		notifyContentCommandWillBeExecuted: function(controller, commandName, param1) {
+			controller.clearContentUIArea();
+			if (commandName !== 'restore-selection') {
+				this.showContentUIRestoreButton(controller);
+			}
+		},
+
+		hittestWithLineStrip: function(vertexArray, startIndex, count, pickSX, pickSY, showingTimeOrigin, currentTransform) {
 			var baseY = showingTimeOrigin * this.timeYScale;
 			var vpos = startIndex * 3;
-			
-			for (var i = 0;i < count;++i) {
-				var x = vertexArray[vpos  ];
-				var y = vertexArray[vpos+1] - baseY;
-				var z = vertexArray[vpos+2];
-				console.log(x,y,z);
+			var i;
+
+			var tv = this.tempVec4;
+			var tv2 = this.tempVec4_2;
+
+			// Transform and store projected screen coordinates
+			for (i = 0;i < count;++i) {
+				tv[0] = vertexArray[vpos  ];
+				tv[1] = vertexArray[vpos+1] - baseY;
+				tv[2] = vertexArray[vpos+2];
+				tv[3] = 1;
 				
+				vec4.transformMat4(tv2, tv, currentTransform);
+				vertexArray[vpos  ] = tv2[0] / tv2[3];
+				vertexArray[vpos+1] = tv2[1] / tv2[3];
+
 				vpos += 3;
 			}
 			
-			console.log('- - -');
+			// Traverse again... and do hittest
+			vpos = startIndex * 3;
+			for (i = 0;i < (count-1);++i) {
+				var dst = this.hittestPointAndSegment(vertexArray[vpos],vertexArray[vpos+1],
+					                        vertexArray[vpos+3],vertexArray[vpos+4],
+					                        pickSX, pickSY);
+				if (dst < 1.0) {
+					return dst;
+				}
+					
+				vpos += 3;
+			}
+			
+			return false;
 		},
 		
+		hittestPointAndSegment: function(x1, y1, x2, y2,  tx, ty) {
+			var eps = 0.00001;
+			var near_th = 0.02;
+			var swap_tmp;
+			
+			if (x1 > x2) {
+				swap_tmp = x1;
+				x1 = x2;
+				x2 = swap_tmp;
+			}
+
+			if (y1 > y2) {
+				swap_tmp = y1;
+				y1 = y2;
+				y2 = swap_tmp;
+			}
+
+			if (tx < (x1-near_th) || tx > (x2+near_th)) { return; }
+			if (ty < (y1-near_th) || ty > (y2+near_th)) { return; }
+			
+			var distance = 999;
+			if (p2dot(x1, y1, x2, y2,  x1, y1, tx, ty) < eps) {
+				distance = v2len(tx-x1, ty-y1);
+			} else if (p2dot(x2, y2, x1, y1,  x2, y2, tx, ty) < eps) {
+				distance = v2len(tx-x2, ty-y2);
+			} else {
+				distance = Math.abs( p2cross(x1, y1, x2, y2,  x1, y1, tx, ty) / v2len(x2-x1, y2-y1) );
+			}
+			
+			if (distance < near_th) {
+				return distance;
+			}
+			
+			return 999;
+		},
+		
+		highlightByIndex: function(hIndex) {
+			this.highlightedIndex = hIndex;
+		},
+		
+		cancelHighlight: function() {
+			this.highlightedIndex = -1;
+		},
 		
 		setColoringInfo: function(newVal) {
 			this.coloringInfo = newVal || null;
@@ -1281,10 +1515,15 @@
 					//console.log(splitPos)
 					this.startPositionList.push( Math.floor(writePos / this.dimension) );
 					
+					var redOverride = null;
+					if (i == this.highlightedIndex) {
+						redOverride = 0.8;
+					}
+					
 					if (phase === 0) {
-						writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider, this.colorSrcArray, 0, splitPos);
+						writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider, this.colorSrcArray, 0, splitPos,  redOverride);
 					} else {
-						writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider, this.colorSrcArray, Math.max(0, splitPos - 1), rlen);
+						writePos += this.fillPositionsArray(this.possSrcArray, writePos, rlist, projectionProvider, this.colorSrcArray, Math.max(0, splitPos - 1), rlen,  redOverride);
 					}
 				}
 			}
@@ -1322,7 +1561,7 @@
 			}
 		},
 		
-		fillPositionsArray: function(dest, startVertexIndex, recordList, projectionProvider, colorDest, srcStartIndex, afterEndIndex) {
+		fillPositionsArray: function(dest, startVertexIndex, recordList, projectionProvider, colorDest, srcStartIndex, afterEndIndex, redOverride) {
 			var i;
 			var vi = 0;
 			var cIndex = this.colorBufferWrittenCount;
@@ -1358,13 +1597,13 @@
 					var colorIndex = makeColorIndexForAttribute(this.coloringInfo.baseColorList.length, rec, this.coloringInfo.boundAttribute, this.coloringIndexMap);
 					var markerBaseColor = this.coloringInfo.baseColorList[colorIndex];
 					
-					colorDest[cIndex++] = markerBaseColor.r / 255.0;
+					colorDest[cIndex++] = redOverride || (markerBaseColor.r / 255.0);
 					colorDest[cIndex++] = markerBaseColor.g / 255.0;
 					colorDest[cIndex++] = markerBaseColor.b / 255.0;
 
 					colorDest[cIndex++] = 1;
 				} else {
-					colorDest[cIndex++] = 0.1;
+					colorDest[cIndex++] = redOverride || 0.1;
 					colorDest[cIndex++] = 0.2;
 					colorDest[cIndex++] = 1;
 					colorDest[cIndex++] = 1;
@@ -1456,6 +1695,17 @@
 		disableTextureCoordsBuffer: function(gl, shader) {
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbTexCoords);
 			gl.disableVertexAttribArray(shader.params.aTexCoord);
+		},
+		
+		generateIDList: function() {
+			var resultList = [];
+			
+			var ls = this.recordListArray;
+			for (var i in ls) {
+				resultList.push( this.recordListArray[i].id );
+			}
+			
+			return resultList;
 		}
 	};
 	
@@ -1471,5 +1721,5 @@
 	var _tempAntData = {
 		lat:0, lng:0,
 		screenX:0, screenY:0
-	};
+	};	
 })();

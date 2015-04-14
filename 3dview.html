@@ -2,6 +2,7 @@
 <html style="background-color: #555">
 
 <head>
+	<meta charset="UTF-8">
 	<title>Mobmap 3D View</title>
 	<script type="text/javascript" src="./inner/js/jquery-1.10.2.js"></script>
 	<script type="text/javascript" src="./js/3dview.js"></script>
@@ -21,6 +22,37 @@ body,html {
 	padding: 0;
 	color: #fff;
 }
+
+#content-ui-area {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 90;
+}
+
+.highlighted-obj-info {
+	color: #fff;
+	margin: 2px;
+	padding: 2px;
+}
+
+.highlighted-obj-heading {
+	color: #f27;
+}
+
+.highlighted-obj-info button {
+	margin-left: 0.5em;
+	background: linear-gradient(#666, #444);
+	border: 1px solid #222;
+	color: #fff;
+	opacity: 0.9;
+}
+
+.highlighted-obj-info button:hover:active {
+	background: none #444;
+	box-shadow: 0 1px 4px #333 inset;
+}
+
 	</style>
 
 	<script type="text/plain" id="color-vs-src">
@@ -137,6 +169,7 @@ body,html {
 
 <body>
 	<canvas id="main-screen-cv"></canvas>
+	<div id="content-ui-area"></div>
 </body>
 
 </html>

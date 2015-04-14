@@ -244,7 +244,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			var velo  = this.generateRowDetailVelocity(item);
 			var buttons = 
 			 this.generateDetailRowButton('reveal', item, 'images/drowbtn-reveal.png', 'Reveal on map') +
-			 this.generateDetailRowButton('only', item, 'images/drowbtn-only.png', 'Select this only');
+			 this.generateDetailRowButton('only', item, 'images/drowbtn-only.png', 'Select this only') + 
+			 this.generateDetailRowButton('calcsim', item, 'images/drowbtn-sim.png', 'Calc similarity to this');
 			
 			if (this.nowShowingSelectedOnly) {
 				buttons += this.generateDetailRowButton('deselect', item, 'images/drowbtn-remove.png', 'Deselect this');
@@ -691,6 +692,11 @@ if (!window.mobmap) { window.mobmap={}; }
 					this.runGateBy(oid, true, expressionObject);
 					break;
 				}
+				
+				case 'calcsim': {
+					this.openCalcSimDialog(oid);
+					break;
+				}
 			}
 		},
 		
@@ -745,7 +751,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				lyr.localSelectionPool.addId(objId);
 			}
 		},
-		
+
+		openCalcSimDialog: function(objId) {
+			if (this.ownerApp) {
+				this.ownerApp.openCalcSimDialog(this.currentTargetId, objId);
+			}
+		},
+
 		toggleGateOptionBox: function(sourceElement) {
 			$(sourceElement.parentNode).find('.mm-drow-gate-option-box').toggle();
 		},
