@@ -3,6 +3,12 @@ if (!window.mobmap) { window.mobmap={}; }
 (function(aGlobal) {
 	'use strict';
 	
+	var kSimNumType_Float = 0;
+	var kSimNumType_Int   = 1;
+
+	var kSimType_Position = 0;
+	var kSimType_Velocity = 1;
+	
 	function CalcSimDialog() {
 		this.initProperties();
 		this.ensureWindowElement();
@@ -24,24 +30,64 @@ if (!window.mobmap) { window.mobmap={}; }
 		ensureWindowElement: function() {
 			if (!this.element) {
 				this.buildView();
+				
+				this.jMessageArea.empty();
 
+				this.putNumTypeRadio( this.jMessageArea[0] );
+				this.putSimTypeRadio( this.jMessageArea[0] );
+				
 				this.addOKButton();
 				this.addCancelButton();
 			}
 		},
+		
+		putNumTypeRadio: function(containerElement) {
+			var r1 = generateRadioInLabel("float(0.0-1.0)", 'sim-num-type', 'sim-num-type-radio');
+			var r2 = generateRadioInLabel("int(0-10)", 'sim-num-type', 'sim-num-type-radio');
+
+			r1.input.checked = true;
+			r1.input.value = kSimNumType_Float;
+			r2.input.value = kSimNumType_Int;
+
+			containerElement.appendChild(r1.label);
+			containerElement.appendChild(r2.label);
+		},
+		
+		putSimTypeRadio: function(containerElement) {
+			var innerBox = document.createElement('div');
+			innerBox.setAttribute('class', 'mm-simtype-selection-box');
+			
+			var r1 = generateRadioInLabel('Position similarity', 'mm-sim-type', 'mm-simtype-radio');
+			var r2 = generateRadioInLabel('Velocity similarity', 'mm-sim-type', 'mm-simtype-radio');
+
+			r1.input.checked = true;
+			r1.input.value = kSimType_Position;
+			r2.input.value = kSimType_Velocity;
+
+			innerBox.appendChild(r1.label);
+			innerBox.appendChild(r2.label);
+
+			containerElement.appendChild(innerBox);
+		},
 
 		showDialog: function() {
 			this.showDialogOnCenter('Calc trajectories similarity');
+		},
+		
+		getChosenNumType: function() {
+			return parseInt( this.jMessageArea.find('.sim-num-type-radio input:checked').val() , 10);
+		},
+		
+		getChosenSimType: function() {
+			return parseInt( this.jMessageArea.find('.mm-simtype-radio input:checked').val() , 10);
 		}
 	};
 	
-	CalcSimDialog.calcPositionSimilarity = function(layer, originObjectId) {
-		var far_thresh = 10000.0;
+	CalcSimDialog.calcPositionSimilarity = function(layer, originObjectId, numType) {
+		var far_thresh = 20000.0;
 
 		var mdat = layer.movingData;
-		if (!mdat) {
-			return false;
-		}
+		if (!mdat) { return false; }
 		
 		var secInterval = 300;
 		var timeRange = getTimeRangeOfTL(mdat, originObjectId);
@@ -88,10 +134,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			score /= nTimePeriods;
 			score /= far_thresh;
 			
-			resultMap[oid] = Math.max(0, 1.0 - score);
+			var nm_score = Math.max(0, 1.0 - score);
+			resultMap[oid] = nm_score;
 			
 			var tl_writeTarget = mdat.getTimeListOfId(oid);
-			tl_writeTarget.fillValue('psim', resultMap[oid]);
+			if (numType === kSimNumType_Float) {
+				tl_writeTarget.fillValue('psim', nm_score);
+			} else {
+				tl_writeTarget.fillValue('psim', Math.floor(nm_score * 10.0));
+			}
 		}
 		
 		layer.fireDataChange();

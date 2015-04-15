@@ -898,8 +898,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		onCalcSimDialogOKClick: function() {
 			var lyr = this.calcSimDialog.targetLayer;
 			var oid = this.calcSimDialog.originObjectId;
+			var ntype = this.calcSimDialog.getChosenNumType();
+			var simType = this.calcSimDialog.getChosenSimType();
 			
-			mobmap.CalcSimDialog.calcPositionSimilarity(lyr, oid);
+			console.log("ST=", simType);
+			mobmap.CalcSimDialog.calcPositionSimilarity(lyr, oid, ntype);
 		}
 	};
 

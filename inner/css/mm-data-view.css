@@ -184,3 +184,11 @@ div[data-itemname=data_detail] {
 .mm-addattrform-inittype, .mm-addattrform-valtype {
 	margin-left: 0.4em;
 }
+
+.sim-num-type-radio, .mm-simtype-radio {
+	display: block;
+}
+
+.mm-simtype-selection-box {
+	margin-top: 1em;
+}
