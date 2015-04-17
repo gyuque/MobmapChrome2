@@ -896,13 +896,16 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		onCalcSimDialogOKClick: function() {
-			var lyr = this.calcSimDialog.targetLayer;
-			var oid = this.calcSimDialog.originObjectId;
-			var ntype = this.calcSimDialog.getChosenNumType();
-			var simType = this.calcSimDialog.getChosenSimType();
+			var dlg = this.calcSimDialog;
 			
-			console.log("ST=", simType);
-			mobmap.CalcSimDialog.calcPositionSimilarity(lyr, oid, ntype);
+			var lyr = dlg.targetLayer;
+			var oid = dlg.originObjectId;
+			var ntype = dlg.getChosenNumType();
+			var simType = dlg.getChosenSimType();
+			var th = dlg.getThresholdForChosenType();
+			var aname = dlg.getOutputAttributeName();
+			
+			mobmap.CalcSimDialog.calcSimilarity(lyr, oid, ntype, simType, th, aname);
 		}
 	};
 

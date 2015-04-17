@@ -185,10 +185,15 @@ div[data-itemname=data_detail] {
 	margin-left: 0.4em;
 }
 
-.sim-num-type-radio, .mm-simtype-radio {
+.sim-num-type-radio, .mm-simtype-radio, .mm-calcsim-thresh-input {
 	display: block;
 }
 
-.mm-simtype-selection-box {
+.mm-simnumtype-selection-box, .mm-sim-threshold-box, .mm-sim-attrname-box {
 	margin-top: 1em;
+}
+
+.mm-calcsim-box-title {
+	margin-top: 0.3em;
+	margin-bottom: 0;
 }
