@@ -904,8 +904,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			var simType = dlg.getChosenSimType();
 			var th = dlg.getThresholdForChosenType();
 			var aname = dlg.getOutputAttributeName();
+			var intv = dlg.getTimeInterval();
 			
-			mobmap.CalcSimDialog.calcSimilarity(lyr, oid, ntype, simType, th, aname);
+			mobmap.CalcSimDialog.calcSimilarity(lyr, oid, ntype, simType, th, aname, intv);
 		}
 	};
 

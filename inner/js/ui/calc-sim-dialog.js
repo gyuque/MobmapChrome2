@@ -10,9 +10,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	var kSimType_Velocity = 1;
 	
 	function CalcSimDialog() {
-		this.pThreshInputElement = null;
-		this.vThreshInputElement = null;
-		this.outNameInputElement = null;
+		this.pThreshInputElement  = null;
+		this.vThreshInputElement  = null;
+		this.outNameInputElement  = null;
+		this.intervalInputElement = null;
 		
 		this.initProperties();
 		this.ensureWindowElement();
@@ -37,27 +38,20 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				this.jMessageArea.empty();
 
-				this.putSimTypeRadio( this.jMessageArea[0] );
-				this.putNumTypeRadio( this.jMessageArea[0] );
-				this.putThresholdInputBox( this.jMessageArea[0] );
-				this.putAttributeNameInputBox( this.jMessageArea[0] );
+				var bx = this.jMessageArea[0];
+				this.putSimTypeRadio( bx );
+				this.putNumTypeRadio( bx );
+				this.putThresholdInputBox( bx );
+				this.putIntervalInputBox( bx);
+				this.putAttributeNameInputBox( bx );
 				
 				this.addOKButton();
 				this.addCancelButton();
 			}
 		},
 		
-		appendBoxTitle: function(containerElement, title) {
-			var h = document.createElement('h4');
-			h.setAttribute('class', 'mm-calcsim-box-title');
-			h.appendChild( document.createTextNode(title) );
-			containerElement.appendChild(h);
-		},
-		
 		putNumTypeRadio: function(containerElement) {
-			var innerBox = document.createElement('div');
-			innerBox.setAttribute('class', 'mm-simnumtype-selection-box');
-			this.appendBoxTitle(innerBox, 'Result value range');
+			var innerBox = make_form_box(containerElement, 'mm-simnumtype-selection-box', 'Result value range');
 
 			var r1 = generateRadioInLabel("float(0.0-1.0)", 'sim-num-type', 'sim-num-type-radio');
 			var r2 = generateRadioInLabel("int(0-10)", 'sim-num-type', 'sim-num-type-radio');
@@ -72,9 +66,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		putSimTypeRadio: function(containerElement) {
-			var innerBox = document.createElement('div');
-			innerBox.setAttribute('class', 'mm-simtype-selection-box');
-			this.appendBoxTitle(innerBox, 'Similarity type');
+			var innerBox = make_form_box(containerElement, 'mm-simtype-selection-box', 'Similarity type');
 			
 			var r1 = generateRadioInLabel('Position similarity', 'mm-sim-type', 'mm-simtype-radio');
 			var r2 = generateRadioInLabel('Velocity similarity', 'mm-sim-type', 'mm-simtype-radio');
@@ -89,9 +81,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 
 		putThresholdInputBox: function(containerElement) {
-			var innerBox = document.createElement('div');
-			innerBox.setAttribute('class', 'mm-sim-threshold-box');
-			this.appendBoxTitle(innerBox, 'Threshold');
+			var innerBox = make_form_box(containerElement, 'mm-sim-threshold-box', 'Threshold');
 			
 			var pth = generateInputElementInLabel('number', 'For position ', 'mm-calcsim-thresh', 'mm-calcsim-thresh-input', true);
 			var vth = generateInputElementInLabel('number', 'For velocity ', 'mm-calcsim-thresh', 'mm-calcsim-thresh-input', true);
@@ -112,9 +102,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		putAttributeNameInputBox: function(containerElement) {
-			var innerBox = document.createElement('div');
-			innerBox.setAttribute('class', 'mm-sim-attrname-box');
-			this.appendBoxTitle(innerBox, 'Output attribute name');
+			var innerBox = make_form_box(containerElement, 'mm-sim-attrname-box', 'Output attribute name');
 
 			var pair = generateInputElementInLabel('text', 'Name ', 'mm-calcsim-outname', 'mm-calcsim-outname-input', true);
 			this.outNameInputElement = pair.input;
@@ -123,9 +111,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			innerBox.appendChild(pair.label);
 			containerElement.appendChild(innerBox);
 		},
+		
+		putIntervalInputBox: function(containerElement) {
+			var innerBox = make_form_box(containerElement, 'mm-sim-interval-box', 'Time interval');
+			var pair = generateInputElementInLabel('number', ' sec.', 'mm-calcsim-interval', 'mm-calcsim-interval-input', false);
+			pair.input.value = "300";
+			pair.input.setAttribute('min', '1');
+			pair.input.setAttribute('step', '1');
+
+			this.intervalInputElement = pair.input;
+			innerBox.appendChild(pair.label);
+			containerElement.appendChild(innerBox);
+		},
 
 		showDialog: function() {
-			this.showDialogOnCenter('Calc trajectories similarity', false, 280);
+			this.showDialogOnCenter('Calc trajectories similarity', false, 312);
 		},
 		
 		getChosenNumType: function() {
@@ -147,17 +147,23 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			return parseFloat(raw);
 		},
-		
+
 		getOutputAttributeName: function() {
 			return this.outNameInputElement.value;
+		},
+		
+		getTimeInterval: function() {
+			var v = parseInt(this.intervalInputElement.value, 10);
+			if (v < 1) {v=1;}
+			
+			return v;
 		}
 	};
 	
-	CalcSimDialog.calcSimilarity = function(layer, originObjectId, numType, simType, far_thresh, outName) {
+	CalcSimDialog.calcSimilarity = function(layer, originObjectId, numType, simType, far_thresh, outName, secInterval) {
 		var mdat = layer.movingData;
 		if (!mdat) { return false; }
 
-		var secInterval = 300;
 		var timeRange = getTimeRangeOfTL(mdat, originObjectId);
 		if (!timeRange) {
 			return false;
@@ -251,6 +257,22 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		return {begin: r1._time, end: r2._time};
 	}
+	
+	function make_form_box(containerElement, className, titleText) {
+		var innerBox = document.createElement('div');
+		innerBox.setAttribute('class', className);
+		appendBoxTitle(innerBox, titleText);
+
+		return innerBox;
+	}
+	
+	function appendBoxTitle(containerElement, title) {
+		var h = document.createElement('h4');
+		h.setAttribute('class', 'mm-calcsim-box-title');
+		h.appendChild( document.createTextNode(title) );
+		containerElement.appendChild(h);
+	}
+
 	
 	mobmap.MMDialogBaseInstallAPIs(CalcSimDialog.prototype);
 	aGlobal.mobmap.CalcSimDialog = CalcSimDialog;
