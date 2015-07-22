@@ -172,6 +172,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			 mouseup( this.onBarMouseUp.bind(this) ).
 			 dblclick( this.onBarDoubleClick.bind(this) );
 			
+			this.jCanvas[0].
+			 addEventListener('mousewheel', this.onBarMouseWheel.bind(this), false);
+			
 			$(document.body.parentNode).
 			 mouseup( this.onGlobalMouseUp.bind(this) ).
 			 mousemove( this.onGlobalMouseMove.bind(this) ).
@@ -261,6 +264,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.eventDispatcher().trigger(TimelineBar.BAR_MOUSEUP, this);
 		},
 		
+		onBarMouseWheel: function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			var d = e.wheelDelta || 0;
+			
+			this.slideViewport((-d / 60.0) | 0);
+		},
+		
 		onGlobalMouseUp: function(e) {
 			this.dragging = false;
 		},
@@ -343,6 +354,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.tickZoomAnimation();
 
 			this.changeZoomOutButtonVisibility();
+		},
+		
+		slideViewport: function(amount) {
+			var vStart = this.longSpanBar.viewportStartTime;
+			var vEnd = this.longSpanBar.viewportEndTime;
+			var vplen = vEnd - vStart;
+
+			var d = (vplen * 0.01 * amount) | 0;
+			if (amount && d === 0) { d = (amount < 0) ? -1 : 1; }
+
+			this.longSpanBar.setViewportStart(vStart + d, true);
+			this.longSpanBar.setViewportEnd(vEnd + d);
 		},
 
 		resetAndFullViewport: function() {
