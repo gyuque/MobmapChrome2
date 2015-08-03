@@ -172,6 +172,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		var pickedRec = mobmap.MovingData.createEmptyRecord();
 //		console.log(timeRange);
 		var resultMap = {};
+		var histgramMap = {};
 		resultMap[originObjectId] = 0;
 
 		// Origin value
@@ -235,15 +236,35 @@ if (!window.mobmap) { window.mobmap={}; }
 			resultMap[oid] = nm_score;
 
 			var tl_writeTarget = mdat.getTimeListOfId(oid);
-			if (numType === kSimNumType_Float) {
-				tl_writeTarget.fillValue(outName, nm_score);
-			} else {
-				tl_writeTarget.fillValue(outName, Math.floor(nm_score * 10.0));
+			var attr_out_val = (numType === kSimNumType_Float) ?
+			                    nm_score :
+			                    Math.floor(nm_score * 10.0);
+
+			tl_writeTarget.fillValue(outName, attr_out_val);
+			
+			if (numType === kSimNumType_Int) {
+				if (!histgramMap[attr_out_val]) { histgramMap[attr_out_val]=0; }
+				histgramMap[attr_out_val] += 1;
 			}
+		}
+		
+		if (numType === kSimNumType_Int) {
+			dumpHitsgram(histgramMap, originObjectId);
 		}
 
 		layer.fireDataChange();
-	}; 
+	};
+	
+	function dumpHitsgram(h, objId) {
+		var l1 = [];
+		var l2 = [];
+		for (var i = 0;i <= 10;++i) {
+			l1.push(i);
+			l2.push(h[i] || 0);
+		}
+		
+		console.log("id=" +objId+ "\n" + l1.join(',') +"\n"+ l2.join(','));
+	}
 	
 	function getTimeRangeOfTL(mdat, oid) {
 		var tl = mdat.getTimeListOfId(oid);

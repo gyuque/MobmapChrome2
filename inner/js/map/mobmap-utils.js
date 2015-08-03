@@ -138,6 +138,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		getEntireScreenWidth: function() {
 			var ls = this.vertices;
 			var n = this.size;
+			if (!ls[n]) {
+				return 0;
+			}
+			
 			return ls[n].sx - ls[0].sx;
 		},
 		
@@ -145,6 +149,50 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ls = this.vertices;
 			var n = this.size;
 			return ls[0].sy - ls[(n+1)*n].sy;
+		},
+		
+		invertCalc: function(inoutVec2) {
+			var sx = inoutVec2[0];
+			var sy = inoutVec2[1];
+			var scrW = this.getEntireScreenWidth();
+			if (scrW < 1.0) {
+				// not ready
+				return false;
+			}
+			
+			sx = (sx*0.5) + 0.5;
+			sy = (sy*0.5) + 0.5;
+			sx *= scrW;
+			sy *= this.getEntireScreenHeight();
+			
+			var ls = this.vertices;
+			var len = ls.length;
+			var loop_len = (this.size+1) * this.size;
+			for (var i = 0;i < loop_len;++i) {
+				if (!ls[i]) {break;}
+
+				var x1 = ls[i].sx;
+				var x2 = ls[i+1].sx;
+				var y1 = ls[i+this.size+1].sy;
+				var y2 = ls[i].sy;
+				
+				if (sx >= x1 && sy >= y1 && sx <= x2 && sy <= y2) {
+					var xlen = x2-x1;
+					var ylen = y2-y1;
+					var nx = (sx-x1) / xlen;
+					var ny = (sy-y1) / ylen;
+
+					var lat1 = ls[i].lat;
+					var lng1 = ls[i].lng;
+					
+					inoutVec2[0] = lng1 + this.lngCell * nx;
+					inoutVec2[1] = lat1 + this.latCell * (1.0 - ny);
+
+					return true;
+				}
+			}
+			
+			return false;
 		}
 	};
 

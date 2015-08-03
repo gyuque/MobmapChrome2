@@ -29,6 +29,7 @@
 		window.receiveCurrentTime = theController.receiveCurrentTime.bind(theController);
 		window.receiveSelectionChange = theController.receiveSelectionChange.bind(theController);
 		window.receiveMarkerOptionsChange = theController.receiveMarkerOptionsChange.bind(theController);
+		window.receiveGridSubcontentData = theController.receiveGridSubcontentData.bind(theController);
 	}
 	
 	// Global APIs
@@ -50,6 +51,9 @@
 		this.panelBaseTexture = null;
 		this.matView = mat4.create();
 		this.matProj = mat4.create();
+		this._tempM4 = mat4.create();
+		this._tempM2 = mat2.create();
+		this._tempV2 = vec2.create();
 		this.currentInSeconds = 0;
 		this.canvasSize = {
 			width: 320,
@@ -74,6 +78,7 @@
 		this.content = null;
 		
 		this.timescaleInputElement = null;
+		this.observeSubcontentSelectChange();
 	}
 	
 	ThreeDViewController.prototype = {
@@ -179,6 +184,10 @@
 			
 			if (params.layerId === this.targetLayerId && params.content) {
 				this.newTrajectoryContent(params.content);
+				
+				if (params.content.availableDynamicGridLayerList) {
+					this.updateSubContentLayerList(params.content.availableDynamicGridLayerList);
+				}
 			}
 		},
 
@@ -325,6 +334,67 @@
 			}
 		},
 
+		pickMapSurfaceCoordinate: function(mouseEvent) {
+			if (!this.projectionGird) {
+				return;
+			}
+			
+			var jContainer = $('html');
+			var w = jContainer.width();
+			var h = jContainer.height();
+			
+			var nx = mouseEvent.clientX / (w * 0.5) - 1.0;
+			var ny = 1.0 - mouseEvent.clientY / (h * 0.5);
+			
+			var v = this._tempV2;
+			v[0] = nx;
+			v[1] = ny;
+			
+			this.invertTransformY0(v);
+			var success = this.projectionGird.invertCalc(v);
+			
+			if (success && window.showLocationMarker) {
+				window.showLocationMarker(v[1], v[0]);
+			}
+		},
+
+		invertTransformY0: function(inV2) {
+			var sx = inV2[0];
+			var sy = inV2[1];
+			
+			var VP = this._tempM4;
+			this.calcViewProjMatrix(VP);
+			
+			var M = this._tempM2;
+			
+			var m11 = VP[0];
+			var m13 = VP[8];
+			var m14 = VP[12];
+
+			var m21 = VP[1];
+			var m23 = VP[9];
+			var m24 = VP[13];
+
+			var m41 = VP[3];
+			var m43 = VP[11];
+			var m44 = VP[15];
+			
+			M[0] = m11 - sx * m41;
+			M[1] = m13 - sx * m43;
+			
+			M[2] = m21 - sy * m41;
+			M[3] = m23 - sy * m43;
+//		console.log(VP, "\n", M[0],M[1],M[2],M[3])
+					
+			mat2.invert(M, M);
+			
+			var ox = sx*m44 - m14;
+			var oy = sy*m44 - m24;
+
+			inV2[0] = ox*M[0] + oy*M[1];
+			inV2[1] = ox*M[2] + oy*M[3];
+		},
+
 		afterCanvasResized: function() {
 			var cv = this.screenCanvas;
 			var gl = this.gl;
@@ -448,7 +518,9 @@
 		onKeyDown: function(e) {
 			if (this.content && this.content.annotations) {
 				if (e.keyCode === 84) {
-					this.content.annotations.debug_addTestAnnotation();
+//					this.content.annotations.debug_addTestAnnotation();
+					this.content.subContent = new ThreeDViewGridSubContent();
+					this.content.subContent.addTestData();
 					this.afterAnnotationChange();
 				} else if (e.keyCode === 89) {
 					this.content.annotations.debug_addTestAnnotation2();
@@ -482,6 +554,8 @@
 
 				ds.prevPt.x = mx;
 				ds.prevPt.y = my;
+			} else {
+				this.pickMapSurfaceCoordinate(e);
 			}
 		},
 
@@ -521,6 +595,87 @@
 
 				this.viewDirty = true;
 				this.render();
+			}
+		},
+		
+		updateSubContentLayerList: function(subLayerList) {
+			var container = document.getElementById('content-select-area');
+			container.innerHTML = '';
+
+			var lab = document.createElement('label');
+			lab.appendChild( document.createTextNode('Subcontent ') );
+			
+			var sel = document.createElement('select');
+			lab.appendChild(sel);
+			container.appendChild(lab);
+
+			var nop = document.createElement('option');
+			nop.innerHTML = '(none)';
+			nop.value = -1;
+			sel.appendChild(nop);
+
+			for (var i in subLayerList) {
+				var layerInfo = subLayerList[i];
+				
+				var op = document.createElement('option');
+				var labelText = 'Layer ID:' + layerInfo.id + ' ' + layerInfo.name;
+				var tx = document.createTextNode(labelText);
+				
+				op.value = layerInfo.id;
+				op.appendChild(tx);
+				sel.appendChild(op);
+			}
+		},
+		
+		observeSubcontentSelectChange: function() {
+			var j = $('#content-select-area');
+			j.change( this.onSubcontentSelectChange.bind(this, j) );
+		},
+
+		onSubcontentSelectChange: function(jContainer, e) {
+			if (e.target) {
+				var val = parseInt(e.target.value, 10);
+				this.clearSubcontent();
+				if (val >= 0) {
+					window.sendRequest3DViewSubcontentData(val);
+				} 
+			}
+		},
+		
+		receiveGridSubcontentData: function(subContentData) {
+			if (!this.content) {return;}
+			 
+			var subc = new ThreeDViewGridSubContent();			
+//			console.log('==',  subContentData  );
+			
+			this.injectReceivedGridSubcontentData(subc, subContentData);
+			
+			this.content.subContent = subc;
+			this.afterAnnotationChange();
+		},
+		
+		injectReceivedGridSubcontentData: function(target, subContentData) {
+			var i;
+			var recList = subContentData.data;
+			var tstep = subContentData.timeInterval;
+
+			var md = subContentData.meshDefinition;
+			target.setOrigin(md.originLat, md.originLng, subContentData.minTime);
+			target.setStep(md.stepLat, md.stepLng, subContentData.timeInterval);
+
+			for (i in recList) {
+				var rec = recList[i];
+				var tIndex = Math.floor( (rec.t - subContentData.minTime) / tstep );
+				target.add(tIndex, rec.cy, rec.cx, rec.val);
+			}
+			
+			target.close();
+		},
+
+		clearSubcontent: function() {
+			if (this.content) {
+				this.content.subContent = null;
+				this.afterAnnotationChange();
 			}
 		},
 
@@ -765,13 +920,15 @@
 
 		this.generateVertexBuffer(gl);
 		this.updateColoringIndexMap(this.coloringInfo);
+		this.subContent = null;
 	}
 	
 	function makeColorIndexForAttribute(nColors, record, boundAttrName, indexMap) {
-		var rawVal = record[boundAttrName] | 0;
+		var rawValUntyped = record[boundAttrName];
+		var rawVal = rawValUntyped | 0;
 		
 		if (indexMap && indexMap.enabled) {
-			rawVal = indexMap.mapValue(rawVal);
+			rawVal = indexMap.mapValue(rawValUntyped);
 		}
 		
 		if (rawVal < 0) { rawVal = 0; }
@@ -1061,6 +1218,7 @@
 			this.renderLinesByGroupList(gl, this.startPositionList);
 			
 			this.renderAnnotations(gl, controller);
+			this.renderSubContent(gl, controller);
 			// Restore shader
 			controller.colorShader.use(gl);
 			this.enableBuffers(gl, controller.colorShader);
@@ -1389,7 +1547,7 @@
 				}
 				
 				tl.pickAt(null, pickedRec, time, xmap, 0);
-				
+
 				a.lat = pickedRec.y;
 				a.lng = pickedRec.x;
 				projectionProvider.calc(a);
@@ -1461,9 +1619,9 @@
 			
 			// Source Array
 			var nVertices = this.countAllVertices(1);
-			if (nVertices < 16) {
+			if (nVertices < 48) {
 				// Minimum required for system rendering
-				nVertices = 16;
+				nVertices = 48;
 			}
 			
 			this.possSrcArray = new Float32Array( nVertices * this.dimension );
@@ -1628,6 +1786,279 @@
 			
 			this.sendBufferData(gl);
 			gl.drawArrays(gl.POINTS, 0, nVerteicesToRender);
+		},
+		
+		renderSubContent: function(gl, controller) {
+			var subContent = this.subContent;
+			if (!subContent) {
+				return;
+			}
+			
+			var c_shader = controller.colorShader;
+			c_shader.use(gl);
+			this.enableBuffers(gl, c_shader);
+			
+			var pj = controller.projectionGird;
+			this.subContent.forEachCell( (function(timeIndex, latIndex, lngIndex, cellData, existsUpper, existsRight, existsBack) {
+				var ot = subContent.getTimeFromIndex(timeIndex);
+				var oy = subContent.getLatitudeFromIndex(latIndex);
+				var ox = subContent.getLongitudeFromIndex(lngIndex);
+				
+				var t2 = ot + subContent.step.t;
+				var y2 = oy + subContent.step.lat;
+				var x2 = ox + subContent.step.lng;
+				
+				if (cellData && cellData.value >= 1) {
+					this.renderCubeCell(gl, pj,  ot, oy, ox,  t2, y2, x2, cellData.prevTime,  existsUpper, existsRight, existsBack);
+				}
+			}).bind(this)  );
+		},
+		
+		renderCubeCell: function(gl, projectionProvider,  t1,y1,x1,  t2,y2,x2, prevTime,  existsUpper, existsRight, existsBack) {
+			var tw2 = projectionProvider.getEntireScreenWidth() * 0.5;
+			var th2 = projectionProvider.getEntireScreenHeight() * 0.5;
+
+
+			var a = _tempAntData;
+			var sx1, sz1;
+			var sx2, sz2;
+
+			var sy1, sy2;
+
+			// Calc 3D-space coordinates
+			a.lat = y1;
+			a.lng = x1;
+			projectionProvider.calc(a);
+			sy1 = (t1 - this.timeOrigin) * this.timeYScale;
+			
+			sx1 = a.screenX / tw2 - 1.0;
+			sz1 = a.screenY / th2 - 1.0;
+			
+			a.lat = y2;
+			a.lng = x2;
+			projectionProvider.calc(a);
+			sy2 = (t2 - this.timeOrigin) * this.timeYScale;
+
+			sx2 = a.screenX / tw2 - 1.0;
+			sz2 = a.screenY / th2 - 1.0;
+
+			// Write vertex buffer
+			var vi = 0, ci = 0;
+			var vs = this.possSrcArray;
+			var clrs = this.colorSrcArray;
+
+			
+			// Floor
+			
+			vs[vi   ] = sx1;
+			vs[vi+ 1] = sy1;
+			vs[vi+ 2] = sz1;
+
+			vs[vi+ 3] = sx1;
+			vs[vi+ 4] = sy1;
+			vs[vi+ 5] = sz2;
+			vi += 6;
+
+			if (!existsBack) {
+				vs[vi   ] = sx1;
+				vs[vi+ 1] = sy1;
+				vs[vi+ 2] = sz2;
+
+				vs[vi+ 3] = sx2;
+				vs[vi+ 4] = sy1;
+				vs[vi+ 5] = sz2;
+				vi += 6;
+			}
+
+			if (!existsRight) {
+				vs[vi   ] = sx2;
+				vs[vi+ 1] = sy1;
+				vs[vi+ 2] = sz2;
+
+				vs[vi+ 3] = sx2;
+				vs[vi+ 4] = sy1;
+				vs[vi+ 5] = sz1;
+				vi += 6;
+			}
+
+
+			vs[vi   ] = sx2;
+			vs[vi+ 1] = sy1;
+			vs[vi+ 2] = sz1;
+
+			vs[vi+ 3] = sx1;
+			vs[vi+ 4] = sy1;
+			vs[vi+ 5] = sz1;
+			vi += 6;
+
+			// Roof
+
+			if (!existsUpper) {
+				vs[vi   ] = sx1;
+				vs[vi+ 1] = sy2;
+				vs[vi+ 2] = sz1;
+
+				vs[vi+ 3] = sx1;
+				vs[vi+ 4] = sy2;
+				vs[vi+ 5] = sz2;
+				vi += 6;
+
+				if (!existsBack) {
+					vs[vi   ] = sx1;
+					vs[vi+ 1] = sy2;
+					vs[vi+ 2] = sz2;
+
+					vs[vi+ 3] = sx2;
+					vs[vi+ 4] = sy2;
+					vs[vi+ 5] = sz2;
+					vi += 6;
+				}
+
+				if (!existsRight) {
+					vs[vi   ] = sx2;
+					vs[vi+ 1] = sy2;
+					vs[vi+ 2] = sz2;
+
+					vs[vi+ 3] = sx2;
+					vs[vi+ 4] = sy2;
+					vs[vi+ 5] = sz1;
+					vi += 6;
+				}
+			
+
+				vs[vi   ] = sx2;
+				vs[vi+ 1] = sy2;
+				vs[vi+ 2] = sz1;
+
+				vs[vi+ 3] = sx1;
+				vs[vi+ 4] = sy2;
+				vs[vi+ 5] = sz1;
+				vi += 6;
+			}
+
+			// Pillars
+			vs[vi   ] = sx1;
+			vs[vi+ 1] = sy1;
+			vs[vi+ 2] = sz1;
+
+			vs[vi+ 3] = sx1;
+			vs[vi+ 4] = sy2;
+			vs[vi+ 5] = sz1;
+			vi += 6;
+
+
+			if (!existsRight) {
+				vs[vi   ] = sx2;
+				vs[vi+ 1] = sy1;
+				vs[vi+ 2] = sz1;
+
+				vs[vi+ 3] = sx2;
+				vs[vi+ 4] = sy2;
+				vs[vi+ 5] = sz1;
+				vi += 6;
+			}
+
+			if (!existsBack) {
+				vs[vi   ] = sx1;
+				vs[vi+ 1] = sy1;
+				vs[vi+ 2] = sz2;
+
+				vs[vi+ 3] = sx1;
+				vs[vi+ 4] = sy2;
+				vs[vi+ 5] = sz2;
+				vi += 6;
+			}
+
+			if (!existsRight && !existsBack) {
+				vs[vi   ] = sx2;
+				vs[vi+ 1] = sy1;
+				vs[vi+ 2] = sz2;
+
+				vs[vi+ 3] = sx2;
+				vs[vi+ 4] = sy2;
+				vs[vi+ 5] = sz2;
+				vi += 6;
+			}
+
+			var nVertices = Math.floor(vi / 3);
+			for (ci = 0;ci < nVertices;++ci) {
+				clrs[ci*4  ] = 1;
+				clrs[ci*4+1] = 0.5;
+				clrs[ci*4+2] = 0;
+				clrs[ci*4+3] = 1;
+			}
+			
+			if (t1 > this.timeOrigin && prevTime < this.timeOrigin) {
+				// Add foot
+				
+				var footCx = (sx1 + sx2) * 0.5;
+				var footCz = (sz1 + sz2) * 0.5;
+				var footCy = sy1 * 0.95;
+
+				vs[vi++] = footCx;
+				vs[vi++] = footCy;
+				vs[vi++] = footCz;
+
+				clrs[ci*4  ] = 1;
+				clrs[ci*4+1] = 0.5;
+				clrs[ci*4+2] = 0;
+				clrs[ci*4+3] = 1;
+				++ci;
+
+				vs[vi++] = footCx;
+				vs[vi++] = 0;
+				vs[vi++] = footCz;
+
+				clrs[ci*4  ] = 1;
+				clrs[ci*4+1] = 0.5;
+				clrs[ci*4+2] = 0;
+				clrs[ci*4+3] = 0.2;
+				++ci
+
+				// Foot connection
+				vs[vi++] = footCx; vs[vi++] = footCy; vs[vi++] = footCz;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 1;
+				++ci;
+
+				vs[vi++] = sx1; vs[vi++] = sy1; vs[vi++] = sz1;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 0;
+				++ci;
+
+
+				vs[vi++] = footCx; vs[vi++] = footCy; vs[vi++] = footCz;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 1;
+				++ci;
+
+				vs[vi++] = sx2; vs[vi++] = sy1; vs[vi++] = sz1;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 0;
+				++ci;
+
+
+				vs[vi++] = footCx; vs[vi++] = footCy; vs[vi++] = footCz;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 1;
+				++ci;
+
+				vs[vi++] = sx1; vs[vi++] = sy1; vs[vi++] = sz2;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 0;
+				++ci;
+
+
+				vs[vi++] = footCx; vs[vi++] = footCy; vs[vi++] = footCz;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 1;
+				++ci;
+
+				vs[vi++] = sx2; vs[vi++] = sy1; vs[vi++] = sz2;
+				clrs[ci*4  ] = 1; clrs[ci*4+1] = 0.5; clrs[ci*4+2] = 0; clrs[ci*4+3] = 0;
+				++ci;
+
+
+				nVertices += 10;
+			}
+
+			this.sendBufferData(gl);
+			gl.drawArrays(gl.LINES, 0, nVertices);
+			
+			//console.log(sx1, sy1, sz1, sx2, sy1, sz2);
 		},
 		
 		fillAnnotationVertices: function(projectionProvider) {

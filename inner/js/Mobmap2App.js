@@ -23,6 +23,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.valueFillDialog = new mobmap.FillValueDialog();
 		this.exportSelectionDialog = new mobmap.ExportSelectionDialog();
 		this.resetDialog = new mobmap.ResetDialog();
+		this.exportDataDialog = null;
 
 		this.remoteCSVDialog = new mobmap.RemoteSourceDialog(this);
 		this.remoteCSVDialog.okCallback = this.onRemoteCSVDialogOK.bind(this);
@@ -87,6 +88,34 @@ if (!window.mobmap) { window.mobmap={}; }
 		openMovieWindow: function() {
 			Mobmap2App.sendOuterMessage('openMovieRecorderWindow', null);
 		},
+		
+		// Export UIs and APIs
+		openExportDest: function() {
+			Mobmap2App.sendOuterMessage('openExportDest', null);
+		},
+
+		sendExportFileContent: function(content) {
+			Mobmap2App.sendOuterMessage('sendExportFileContent', {content: content});
+		},
+
+		onMessage_notifyExportDestSucceeded: function(params) {
+			if (this.exportDataDialog) {
+				this.exportDataDialog.notifyExportDestSucceeded();
+			}
+		},
+		
+		onMessage_notifyExportDestWriteEnd: function() {
+			if (this.exportDataDialog) {
+				this.exportDataDialog.notifyExportDestWriteEnd();
+			}
+		},
+
+		onMessage_notifyExportDestFailed: function(params) {
+			if (this.exportDataDialog) {
+				this.exportDataDialog.notifyExportDestFailed();
+			}
+		},
+		
 		
 		toggleShowClock: function() {
 			this.clockVisible = !this.clockVisible;
@@ -296,7 +325,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onMessage_loadDigitalTyphoonJson: function(params) {
 			this.readDigitalTyphoonJSON(params.data);
 		},
-		
+
 		afterLocalCSVPick: function(pickedFile) {
 			if (pickedFile) {
 				this.csvPreview.open();
@@ -392,6 +421,15 @@ if (!window.mobmap) { window.mobmap={}; }
 		closeGateBusyDialog: function() { this.gateBusyDialog.close(); },
 		updateGateBusyDialog: function(progressRate) {
 			this.gateBusyDialog.showProgress(progressRate);
+		},
+		
+		showExporterDialog: function() {
+			if (!this.exportDataDialog) {
+				this.exportDataDialog = new mobmap.ExportDataDialog(this);
+			}
+			
+			this.exportDataDialog.open();
+			this.exportDataDialog.fillLayerList(this.getCurrentProject());
 		},
 		
 		// Selection operations
@@ -612,11 +650,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			var layer = prj.getLayerById(params.layerId);
 			if (layer) {
 				var sendData = this.generate3DViewTargetData(layer);
+				sendData.availableDynamicGridLayerList = this.pickupDynamicGridLayers();
+				
 				Mobmap2App.sendOuterMessage('send3DViewTargetData', {
 					content: sendData,
 					layerId: params.layerId,
 					time: prj.getCurrentTimeInSeconds()
 				});
+				
+				console.log(sendData)
 			}
 		},
 		
@@ -646,6 +688,37 @@ if (!window.mobmap) { window.mobmap={}; }
 				});
 			}
 		},
+		
+		onMessage_sendRequest3DViewSubcontentData: function(params) {
+			var prj = this.getCurrentProject();
+			if (prj) {
+				var layerId = parseInt(params.layerId, 10);
+				var layer = prj.getLayerById(layerId);
+
+				if (layer.meshData) {
+					var dat = layer.meshData.exportForSubcontent();
+
+					Mobmap2App.sendOuterMessage('sendGridSubcontentData', {
+						data: dat,
+						meshDefinition: layer.meshData.meshDefinition,
+						timeInterval: layer.meshData.cellTimeInterval,
+						minTime: this.calcMinimumTimeOfExportedMesh(dat)
+					});
+				}
+			}
+		},
+		
+		calcMinimumTimeOfExportedMesh: function(ls) {
+			var mt = Number.POSITIVE_INFINITY;
+			for (var i in ls) {
+				var rec = ls[i];
+				if (rec.t < mt) {
+					mt = rec.t;
+				}
+			}
+			
+			return mt;
+		},
 
 		onMessage_sendSingleSelection: function(params) {
 			var prj = this.getCurrentProject();
@@ -674,6 +747,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 		},
+		
+		onMessage_showLocationMarker: function(params) {
+			this.getMapPane().showAimingMarker(params.lat, params.lng);
+		},
 
 		generate3DViewTargetData: function(movingObjectsLayer) {
 			var selp = movingObjectsLayer.localSelectionPool;
@@ -688,6 +765,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 			
 			var retObj = {
+				availableDynamicGridLayerList: null,
 				coloringInfo: movingObjectsLayer.exportMarkerColoringInfo(),
 				record_list_array: null,
 				nSelected: nSelected
@@ -907,6 +985,29 @@ if (!window.mobmap) { window.mobmap={}; }
 			var intv = dlg.getTimeInterval();
 			
 			mobmap.CalcSimDialog.calcSimilarity(lyr, oid, ntype, simType, th, aname, intv);
+		},
+		
+		pickupDynamicGridLayers: function() {
+			var prj = this.getCurrentProject();
+			if (!prj) { return null; }
+			
+			var retList = [];
+			prj.forEachLayer(function(layerIndex, lyr) {
+				if (lyr.capabilities & mobmap.LayerCapability.MeshRenderable) {
+					if (lyr.meshData && lyr.meshData.dynamic && lyr.meshData.cellTimeInterval) {
+						retList.push({
+							id: lyr.layerId,
+							name: lyr.getShortDescription()
+						});
+					}
+				}
+			});
+			
+			if (retList.length < 1) {
+				return null;
+			} else {
+				return retList;
+			}
 		}
 	};
 

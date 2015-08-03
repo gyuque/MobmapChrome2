@@ -41,7 +41,8 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.meshLoader.readMetadata();
 			this.meshData.meshDefinition = this.meshLoader.meshDefinition;
 			this.meshData.dynamic = this.meshLoader.isDynamic();
-			
+			this.meshData.cellTimeInterval = this.meshLoader.cellTimeInterval;
+		console.log("******", this.meshData.cellTimeInterval)
 			if (this.meshLoader.isValidType()) {
 				if (this.meshLoader.rawMetadataLines) {
 					this.meshLayer.setRawMetadataLines(this.meshLoader.rawMetadataLines);

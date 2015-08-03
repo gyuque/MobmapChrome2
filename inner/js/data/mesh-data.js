@@ -7,6 +7,7 @@ if (!window.mobmap) window.mobmap={};
 		this.meshMap = {};
 		this.cellFlattenList = [];
 		this.dynamic = false;
+		this.cellTimeInterval = 0;
 		this.dynStatProvider = null;
 		this.prefetchedNextCell = null;
 		
@@ -47,7 +48,7 @@ if (!window.mobmap) window.mobmap={};
 				// fast-pass
 
 				this.prefetchedNextCell = pfcell.nextColumnCell;
-				return pfcell.pickAtTime(tSeconds);
+				return this.checkCellTimeInterval( tSeconds, pfcell.pickAtTime(tSeconds) );
 			}
 			
 			// normal pass
@@ -57,12 +58,32 @@ if (!window.mobmap) window.mobmap={};
 			if (m.hasOwnProperty(k)) {
 				var cell = m[k];
 				this.prefetchedNextCell = cell.nextColumnCell;
-				return cell.pickAtTime(tSeconds);
+				return this.checkCellTimeInterval( tSeconds, cell.pickAtTime(tSeconds) );
 			} else {
 				return null;
 			}
 		},
 		
+		checkCellTimeInterval: function(t, pickedCell) {
+			if (!this.cellTimeInterval || !pickedCell) {return pickedCell;}
+
+			if (t < pickedCell.t || t > (pickedCell.t + this.cellTimeInterval)) {
+				return null;
+			}
+
+			return pickedCell;
+		},
+		
+		exportForSubcontent: function() {
+			var retList = [];
+
+			this.forEachCell(function(cellKey, cell) {
+				cell.exportToArray(retList);
+			});
+
+			return retList;
+		},
+
 		forEachCell: function(proc) {
 			var m = this.meshMap;
 			
@@ -310,6 +331,22 @@ if (!window.mobmap) window.mobmap={};
 	}
 	
 	MeshCell.prototype = {
+		exportToArray: function(outArray) {
+			var tl = this.timedList;
+			for (var i in tl) {
+				var rec = tl[i];
+				
+				outArray.push(
+					{
+						cx: this.cellIndexX,
+						cy: this.cellIndexY,
+						t: rec.t,
+						val: rec.val
+					}
+				);
+			}
+		},
+		
 		addRecord: function(tSeconds, value) {
 			var rec = new MeshRecord(tSeconds, value);
 			this.timedList.push(rec);

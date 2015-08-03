@@ -2,6 +2,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 (function(aGlobal) {
 	'use strict';
+	var kExportToolEnabled = true;
 	var editbuttonsSpriteManager = null;
 	
 	function MobmapEditToolBar() {
@@ -24,6 +25,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.movButtonNameMap = this.addMovieButtons('mov');
 		this.clockButtonNameMap = this.addClockButtons('clk');
 		this.resetButtonNameMap = this.addResetButtons('reset');
+		if (kExportToolEnabled) {
+			this.exportButtonNameMap = this.addExportButtons('export');
+		} else {
+			this.exportButtonNameMap = null;
+		}
 		this.allButtonNameMap = this.makeAllButtonNameMap(this.selectionButtonNameMap, this.gateButtonNameMap);
 	}
 	
@@ -47,10 +53,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				["ann",       "Location Annotation"],
 				["mov",       "Movie"],
 				["clk",       "Clock"],
+				["export",    "Export"],
 				["reset",     "Reset",             true]
 			];
 			
 			for (var i in list) {
+				if (!kExportToolEnabled && list[i][0] === 'export') {continue;}
+				
 				this.addGroupColumn(list[i][0], list[i][1], !!list[i][2]);
 			}
 		},
@@ -105,6 +114,14 @@ if (!window.mobmap) { window.mobmap={}; }
 					['reset_app', 13]
 				],
 				this.observeResetButton.bind(this)
+			);
+		},
+		
+		addExportButtons: function(colName) {
+			return this.addButtons(colName, [
+					['export_csv', 8]
+				],
+				this.observeExportButton.bind(this)
 			);
 		},
 		
@@ -187,6 +204,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		observeResetButton: function(btnObj) {
 			btnObj.eventDispatcher().
 			 click(this.onResetButtonClick.bind(this, btnObj));
+		},
+		
+		observeExportButton: function(btnObj) {
+			btnObj.eventDispatcher().
+			 click(this.onExportButtonClick.bind(this, btnObj));
 		},
 		
 		observeClockButton: function(btnObj) {
@@ -287,6 +309,12 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.ownerApp) {
 				this.ownerApp.toggleShowClock();
 			}
+		},
+		
+		onExportButtonClick: function() {
+			if (this.ownerApp) {
+				this.ownerApp.showExporterDialog();
+			}	
 		},
 		
 		onClockVisibilityChange: function(e, f) {

@@ -30,3 +30,25 @@ body,html {
 	background-color: #ddd;
 	border-left: 0px solid #16d;
 }
+
+.mm-expandable-notification {
+	padding: 0.5em;
+	text-align: center;
+	background: linear-gradient(to bottom, #aca, #ded);
+	color: #050;
+	font-weight: bold;
+	font-size: 120%;
+}
+
+#mm-exportdata-preview {
+	background: #eee;
+	border: 1px solid #ccc;
+	padding: 2px;
+	color: #333;
+	font-size: 90%;
+	max-height: 18em;
+	overflow: auto;
+}
+
+.mm-booleangrid-true { color: #000; font-weight:bold; }
+.mm-booleangrid-false { color: #aaa; }

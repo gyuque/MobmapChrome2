@@ -1,7 +1,9 @@
 (function() {
 	var gRemoteDownloadHost = null;
 	var gAutoLoadURL = null;
-	var gAutoLoadForceRefresh = false;;
+	var gAutoLoadForceRefresh = false;
+	
+	var gCurrentExportTarget = null;
 	
 	window.addEventListener("message", onReceiveMessage, false);
 	window.onload = function() {
@@ -43,6 +45,38 @@
 	}
 	
 	var CommandProcs = {
+		openExportDest: function() {
+			gCurrentExportTarget = null;
+
+			chrome.fileSystem.chooseEntry({
+				type         : 'saveFile',
+				suggestedName: 'MobmapExportedLayer.csv'
+			}, function(entry){
+				if (!entry) {
+					console.log("User cancelled. last error=", chrome.runtime.lastError);
+
+					sendInnerMessage('notifyExportDestFailed', null);
+				} else {
+					entry.createWriter(function(fwriter) {
+						gCurrentExportTarget = {writer: fwriter};
+					
+						fwriter.onwriteend = function() {
+							sendInnerMessage('notifyExportDestWriteEnd', null);
+						};
+					
+						fwriter.truncate(0);
+						sendInnerMessage('notifyExportDestSucceeded', null);
+					});
+				}
+			});
+		},
+		
+		sendExportFileContent: function(params) {
+			if (gCurrentExportTarget && gCurrentExportTarget.writer) {
+				gCurrentExportTarget.writer.write(new Blob([params.content], {type: 'text/plain'}));
+			}
+		},
+		
 		setAutoLoadURL: function(params) {
 			gAutoLoadURL = params.url;
 			gAutoLoadForceRefresh = !!(params.force_refresh);
@@ -117,22 +151,28 @@
 		},
 		
 		openLayer3DView: function(params) {
+			var wid = make3DWindowId(params.layerId);
+			
 			chrome.app.window.create('3dview.html', {
+				 id: wid,
 				 minWidth: 512,
 				 minHeight: 384,
 				 width: 512,
 
 				}, function(wnd){
+					wnd.contentWindow.showLocationMarker = showLocationMarker;
 					wnd.contentWindow.sendRequest3DViewTargetData = sendRequest3DViewTargetData;
 					wnd.contentWindow.sendRequestProjectionData = sendRequestProjectionData;
+					wnd.contentWindow.sendRequest3DViewSubcontentData = sendRequest3DViewSubcontentData;
 					wnd.contentWindow.sendSingleSelection = sendSingleSelection;
 					wnd.contentWindow.sendSelectionByList = sendSelectionByList;
 					wnd.contentWindow.mobmapInitData = {
+						appWindowId: wid,
 						layerId: params.layerId,
 						mapViewport: params.mapViewport
 					};
 				});
-			console.log(params);
+			console.log(wid, params);
 		},
 		
 		send3DViewTargetData: function(params) {
@@ -141,6 +181,10 @@
 		
 		sendProjectionGridConfiguration: function(params) {
 			sendParamsTo3DViewWindow('receiveProjectionGridConfiguration', params);
+		},
+		
+		sendGridSubcontentData: function(params) {
+			sendParamsTo3DViewWindow('receiveGridSubcontentData', params);
 		},
 		
 		notifyCurrentTimeChanged: function(params) {
@@ -155,7 +199,11 @@
 			sendParamsTo3DViewWindow('receiveMarkerOptionsChange', params.layerId, params.coloringInfo);
 		}
 	};
-	
+
+	function make3DWindowId(layerId) {
+		return "mm-subwindow-" + layerId;
+	}
+
 	function sendParamsTo3DViewWindow(methodName, params, params2) {
 		var wls = chrome.app.window.getAll();
 		for (var i in wls) {
@@ -178,6 +226,10 @@
 	function sendRequestProjectionData(layerId, viewport) {
 		sendInnerMessage('sendRequestProjectionData', {layerId: layerId, viewport: viewport});
 	}
+
+	function sendRequest3DViewSubcontentData(layerId) {
+		sendInnerMessage('sendRequest3DViewSubcontentData', {layerId: layerId});
+	}
 	
 	function sendSingleSelection(layerId, objId) {
 		sendInnerMessage('sendSingleSelection', {layerId: layerId, objId: objId});
@@ -185,6 +237,10 @@
 
 	function sendSelectionByList(layerId, idList) {
 		sendInnerMessage('sendSelectionByList', {layerId: layerId, idList: idList});
+	}
+	
+	function showLocationMarker(lat, lng) {
+		sendInnerMessage('showLocationMarker', {lat:lat, lng:lng});
 	}
 
 	function windowGetWidth() {return window.outerWidth;}

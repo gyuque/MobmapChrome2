@@ -6,6 +6,7 @@ if (!window.mobmap) { window.mobmap={}; }
 	function MeshCSVLoader(inFile) {
 		this.fileName = inFile.name;
 		this.meshDataListener = null;
+		this.cellTimeInterval = 0;
 		this.baseLoader = new mobmap.HugeCSVLoader(inFile);
 		this.readMode = MeshCSVLoader.RMODE_META;
 		this.dataType = MeshCSVLoader.DTYPE_STATIC;
@@ -66,7 +67,7 @@ if (!window.mobmap) { window.mobmap={}; }
 					var level = fields[1] ? parseInt(fields[1], 10) : 1;
 					this.setupMeshCodeMode( level );
 				} else {
-					this.readDataType(firstCol);
+					this.readDataType(firstCol, fields[1] || null);
 				}
 			} else {
 				this.readMeshDefinitionFields(fields);
@@ -119,12 +120,16 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		},
 
-		readDataType: function(typeStr) {
+		readDataType: function(typeStr, paramCol) {
 			// console.log("typeStr=", typeStr);
 			var lw = typeStr.toLowerCase();
 			
 			if (lw.indexOf('dynamic-mesh') >= 0) {
 				this.dataType = MeshCSVLoader.DTYPE_DYNAMIC;
+
+				if ( paramCol ) {
+					this.cellTimeInterval = parseInt( paramCol, 10);
+				}
 				// console.log("Type: Dynamic mesh");
 			} else if (lw.indexOf('static-mesh') >= 0) {
 				this.dataType = MeshCSVLoader.DTYPE_STATIC;

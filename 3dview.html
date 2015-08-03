@@ -8,6 +8,7 @@
 	<script type="text/javascript" src="./js/3dview.js"></script>
 	<script type="text/javascript" src="./js/3dview-panel.js"></script>
 	<script type="text/javascript" src="./js/3dview-annotation.js"></script>
+	<script type="text/javascript" src="./js/3dview-subcontent.js"></script>
 	<script type="text/javascript" src="./js/date-label-texture.js"></script>
 	<script type="text/javascript" src="./inner/js/mm-utils.js"></script>
 	<script type="text/javascript" src="./inner/js/map/mobmap-utils.js"></script>
@@ -27,6 +28,13 @@ body,html {
 	position: absolute;
 	top: 0;
 	left: 0;
+	z-index: 90;
+}
+
+#content-select-area {
+	position: absolute;
+	top: 0;
+	right: 0;
 	z-index: 90;
 }
 
@@ -170,6 +178,7 @@ body,html {
 <body>
 	<canvas id="main-screen-cv"></canvas>
 	<div id="content-ui-area"></div>
+	<div id="content-select-area"></div>
 </body>
 
 </html>
