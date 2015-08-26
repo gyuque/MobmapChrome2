@@ -519,9 +519,12 @@
 			if (this.content && this.content.annotations) {
 				if (e.keyCode === 84) {
 //					this.content.annotations.debug_addTestAnnotation();
+					
+					/*
 					this.content.subContent = new ThreeDViewGridSubContent();
 					this.content.subContent.addTestData();
 					this.afterAnnotationChange();
+					*/
 				} else if (e.keyCode === 89) {
 					this.content.annotations.debug_addTestAnnotation2();
 					this.afterAnnotationChange();

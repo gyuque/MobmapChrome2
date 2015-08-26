@@ -46,9 +46,10 @@ body,html {
 	padding: 2px;
 	color: #333;
 	font-size: 90%;
-	max-height: 18em;
+	height: 11em;
 	overflow: auto;
 }
 
+.mm-exportdata-selonly-toggle {  display:block; }
 .mm-booleangrid-true { color: #000; font-weight:bold; }
 .mm-booleangrid-false { color: #aaa; }

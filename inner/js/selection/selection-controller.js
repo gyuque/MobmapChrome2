@@ -316,7 +316,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.lineConditionExpressionQuery = null;
 		this.owner = owner;
 		this.chunkSize = 2000;
-		this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
+		this.tempPickRecord  = mobmap.MovingData.createEmptyRecord();
+		this.tempPickRecord2 = mobmap.MovingData.createEmptyRecord();
 		
 		this.targetLayerIndex = -1;
 		this.objectIndex = -1;
@@ -507,7 +508,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			for (;;) {
 				if (currentRecord && segmentPrevRecord) {
 					if (this.doCrossTestBetweenRecords(segmentPrevRecord, currentRecord)) {
-						//console.log("SEL")
+						//console.log("SEL[1]")
 						this.onIDHit(selp, objectID);
 						return true;
 					}
@@ -522,12 +523,17 @@ if (!window.mobmap) { window.mobmap={}; }
 				
 				segmentPrevRecord = currentRecord;
 				currentRecord = recordList[tlIndex];
-				
+
+				if (segmentPrevRecord._time >= maxT) {
+					break;
+				}
+
 				// Is interpolation needed?
 				if (tlIndex > 0) {
 					if (currentRecord._time > maxT) {
-						currentRecord = this.tempPickRecord;
-						timedList.pickIntpRecord(this.tempPickRecord, recordList, tlIndex-1, tlIndex, maxT, null);
+						currentRecord = this.tempPickRecord2;
+						timedList.pickIntpRecord(this.tempPickRecord2, recordList, tlIndex-1, tlIndex, maxT, null);
+				//console.log(currentRecord.x,currentRecord.y,currentRecord._time  ,segmentPrevRecord._time)
 					}
 				}
 			}

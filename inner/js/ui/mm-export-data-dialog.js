@@ -13,6 +13,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.currentLayersSource = null;
 		this.gridDummyDatasource = null;
 		
+		this.jSelectionOnlyBox = null;
+		this.jSelectionOnlyRadioLabel = null;
 		this.jPreviewBox = null;
 		this.jRunButton = null;
 		this.runButtonOriginalText = 'Export';
@@ -47,6 +49,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			this.renewColsGrid();
 			this.renewPreview();
+			this.renewSelectionRadio();
 		},
 		
 		ensureWindowElement: function() {
@@ -59,7 +62,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		showDialog: function() {
 			this.hideCompleteNotification();
-			this.showDialogOnCenter('Export', false, 384);
+			this.initRadioSelection();
+			this.showDialogOnCenter('Export', false, 408);
 		},
 		
 		
@@ -86,6 +90,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			containerElement.appendChild(h_layersel);
 			containerElement.appendChild(l_lab);
+			this.jSelectionOnlyBox = this.putSelectionOnlyBox(containerElement);
+			this.jSelectionOnlyBox.change( this.onSelectionOnlyRadioChange.bind(this) );
 
 			containerElement.appendChild(h_col);
 			this.jAddHeaderCheck = this.putHeaderToggle(containerElement);
@@ -96,6 +102,31 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.putExecuteButton(containerElement);
 			
 			this.jAddHeaderCheck.click( this.onAddHeaderCheckClick.bind(this) );
+		},
+
+		putSelectionOnlyBox: function(container) {
+			var box = document.createElement('div');
+			var pair_1 = generateRadioInLabel("All objects", "mm-exportdata-selonly-toggle", "mm-exportdata-selonly-toggle");
+			var pair_2 = generateRadioInLabel("Selected only", "mm-exportdata-selonly-toggle", "mm-exportdata-selonly-toggle");
+
+			pair_1.input.value = 0;
+			pair_2.input.value = 1;
+
+			box.appendChild(pair_1.label);
+			box.appendChild(pair_2.label);
+			
+			var variable_label = document.createElement('span');
+			pair_2.label.appendChild(variable_label);
+			this.jSelectionOnlyRadioLabel = $(variable_label);
+
+			container.appendChild(box);
+			return $(box);
+		},
+
+		initRadioSelection: function() {
+			if (this.jSelectionOnlyBox) {
+				this.jSelectionOnlyBox.find('input[value=0]').attr('checked', 'checked');
+			}
 		},
 
 		putHeaderToggle: function(container) {
@@ -143,6 +174,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onLayerSelectionChange: function() {
 			this.renewColsGrid();
 			this.renewPreview();
+			this.renewSelectionRadio();
 		},
 
 		onAddHeaderCheckClick: function() {
@@ -182,7 +214,48 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.jGridElement = $(n_el);
 			this.fillColumnsTable(this.jGridElement);
 		},
-		
+
+		renewSelectionRadio: function() {
+			var lyr = this.getSelectedLayer();
+			var n = this.countSelectionOnLayer(lyr);
+			var should_show = (n > 0);
+			
+			if (should_show) {
+				this.jSelectionOnlyRadioLabel.text(' (' + n +')');
+				this.jSelectionOnlyBox.show();
+			} else {
+				this.jSelectionOnlyBox.hide();
+			}
+		},
+
+		getSelectionOnlyState: function() {
+			var lyr = this.getSelectedLayer();
+			var n = this.countSelectionOnLayer(lyr);
+			
+			if (!n) { return false; }
+
+			var r = this.jSelectionOnlyBox.find('input:checked')[0];
+			if (r && r.checked) {
+				if ( parseInt(r.value, 10) === 1) {
+					return true;
+				}
+			}
+			
+			return false;
+		},
+
+		onSelectionOnlyRadioChange: function() {
+			this.renewPreview();
+		},
+
+		countSelectionOnLayer: function(lyr) {
+			if (lyr && lyr.localSelectionPool) {
+				return lyr.localSelectionPool.count();
+			}
+			
+			return 0;
+		},
+
 		fillColumnsTable: function(j) {
 			var targetLayer = this.getSelectedLayer();
 			
@@ -319,7 +392,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		generateExportJobForSelectedLayer: function() {
 			var lyr = this.getSelectedLayer();
-			if (lyr.capabilities & mobmap.LayerCapability.MarkerRenderable) {
+			if (lyr && lyr.capabilities & mobmap.LayerCapability.MarkerRenderable) {
 				return this.generateExportJobForMovementCSV(lyr);
 			}
 			
@@ -328,7 +401,8 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		generateExportJobForMovementCSV: function(layer) {
 			var colFieldList = this.pickColumnOrder();
-			var job = newMovementExportJob(this, layer, colFieldList);
+			var job = newMovementExportJob(this, layer, colFieldList,  this.getSelectionOnlyState());
+			
 			return job;
 		},
 
@@ -402,9 +476,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.advanceClosure = this.advance.bind(this);
 		this.previewMode = false;
 		this.headerEnabled = false;
+		this.selectedOnly = false;
 	}
 	
 	ExportJob.prototype = {
+		setSelectedOnly: function(b) {
+			this.selectedOnly = b;
+		},
+
 		setHeaderEnabled: function(b) {
 			this.headerEnabled = b;
 		},
@@ -417,6 +496,7 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		advance: function() {
 			_rows_tmp.length = 0;
+			var kPreviewMinimum = 50;
 			var n_step = (this.nAdvanceCalled === 0) ? 10 : this.step;
 
 			if (this.nAdvanceCalled === 0 && this.headerEnabled) {
@@ -427,13 +507,17 @@ if (!window.mobmap) { window.mobmap={}; }
 			var i;
 			for (i = 0;i < n_step;++i) {
 				var should_continue = false;
-				
+
 				if (this.bufferOneLine) {
 					if (this.bufferOneLine(_rows_tmp)) {
 						should_continue = true;
 					}
 				}
-				
+
+				if (this.previewMode && _rows_tmp.length < kPreviewMinimum) {
+					++n_step; // need more...
+				}
+
 				if (!should_continue) {
 					break;
 				}
@@ -444,8 +528,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (this.sendProgress && !this.previewMode) {
 				this.sendProgress(this.listener);
 			}
-			
-			if (_rows_tmp.length > 0) {
+
+			var forceContinue = false;
+			if (!this.previewMode && _rows_tmp.length === 0 && should_continue) {
+				// Nothing was exported in this cycle. But don't finish!
+				forceContinue = true;
+			}
+
+			if (_rows_tmp.length > 0 || forceContinue) {
 				// Not finished
 				if (this.previewMode) {
 					if (this.listener.exportJobWritePreivewContent) {
@@ -476,8 +566,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	};
 
 
-	function newMovementExportJob(listener, layer, columnList) {
+	function newMovementExportJob(listener, layer, columnList, selOnly) {
 		var j = new ExportJob();
+		j.setSelectedOnly(selOnly);
+
 		j.sourceLayer = layer;
 		j.listener = listener;
 		
@@ -507,19 +599,30 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		}
 		
-		console.log(nIDs, "IDs to be exported");
+		//console.log(nIDs, "IDs to be exported");
 		
 		this.timeList.length = 0;
 		var i;
-		for (i in tmap) {
-			this.timeList.push(i - 0);
-		}
-		
-		this.posList.length = 0;
-		var tlen = this.timeList.length;
-		for (i = 0;i < nIDs;++i) { this.posList.push(0); }
-		
+		for (i in tmap) { this.timeList.push(i - 0); }
 		this.timeList.sort(function(a,b){ return a-b; });
+
+		// Initialize recordlist-pos list
+		this.posList.length = 0;
+		var tlList = md.tlList;
+		var tlen = this.timeList.length;
+		for (i = 0;i < nIDs;++i) {
+			var initVal = 0;
+			
+			if (this.selectedOnly && this.sourceLayer.localSelectionPool) {
+				if (this.sourceLayer.localSelectionPool.isIDSelected( tlList[i].id )) {
+					initVal = 0;
+				} else {
+					initVal = -1;
+				}
+			}
+			
+			this.posList.push(initVal);
+		}
 		
 		// Make attribute list
 		this.exportAttributeList.length = 0;
@@ -553,6 +656,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var tl = tlList[i];
 	//	if(i>7199 || i <2)console.log(i,tl,this.posList[i])
 			var rlist = tl.getRecordList();
+			if (this.posList[i] < 0) {
+				// Don't export this ID (sel-only mode)
+				continue;
+			}
+			
 			for (;;) {
 				var rec = rlist[ this.posList[i] ];
 

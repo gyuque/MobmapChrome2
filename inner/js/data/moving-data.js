@@ -3,6 +3,7 @@ if (!window.mobmap) window.mobmap={};
 (function(pkg) {
 	'use strict';
 	var PROP_INTERPOLATE = 0x1;
+	var kTLOriginalIndexKey = ',tl-original-index,';
 
 	function MovingData() {
 		this.pickOffset = 0;
@@ -466,6 +467,13 @@ if (!window.mobmap) window.mobmap={};
 		},
 	
 		addRecord: function(r) {
+			Object.defineProperty(r, kTLOriginalIndexKey, {
+			  enumerable:   false,
+			  configurable: false,
+			  writable:     false,
+			  value:        this.recordList.length
+			});
+
 			this.recordList.push(r);
 		},
 		
@@ -553,6 +561,10 @@ if (!window.mobmap) window.mobmap={};
 	};
 	
 	function tlSortFunc(a, b) {
+		if (a._time === b._time) {
+			return a[kTLOriginalIndexKey] - b[kTLOriginalIndexKey];
+		}
+
 		return a._time - b._time;
 	}
 

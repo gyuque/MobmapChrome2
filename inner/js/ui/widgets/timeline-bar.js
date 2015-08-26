@@ -247,7 +247,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		onBarMouseDown: function(e) {
 			this.dragging = true;
 			var localX = this.calcLocalMouseX(e);
-			this.changeByCursorX(localX);
+			this.changeByCursorX(localX, e.shiftKey);
 
 			this.eventDispatcher().trigger(TimelineBar.BAR_MOUSEDOWN, this);
 		},
@@ -285,9 +285,8 @@ if (!window.mobmap) { window.mobmap={}; }
 		onGlobalMouseMove: function(e) {
 			if (this.dragging) {
 				var localX = this.calcLocalMouseX(e); 
-				this.changeByCursorX(localX);
+				this.changeByCursorX(localX, e.shiftKey);
 			}
-//			this.
 		},
 		
 		calcLocalMouseX: function(e) {
@@ -297,9 +296,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			return x;
 		},
 		
-		changeByCursorX: function(cx) {
+		changeByCursorX: function(cx, with_snap) {
 			if (this.boundData) {
-				this.boundData.setCurrentTime(this.calcDateTimeFromX(cx));
+				var t = this.calcDateTimeFromX(cx);
+				if (with_snap) {
+					t = Math.floor((t+150)/300.0) * 300;
+				}
+				
+				this.boundData.setCurrentTime(t);
 			}
 		},
 		

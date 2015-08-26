@@ -12,7 +12,7 @@
   },
 
   "name": "Mobmap2 for Google Chrome™",
-  "version": "2.1.13",
+  "version": "2.1.15",
   "description": "Visualization and analytics tools for moving data",
   "permissions": [
      "desktopCapture", "clipboardWrite", {"fileSystem": ["write"]} ,"storage", "http://*/*.csv","https://*/*.csv", "http://agora.ex.nii.ac.jp/*", "http://maps.googleapis.com/*"
