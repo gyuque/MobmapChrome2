@@ -373,7 +373,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var targetLayer = this.owner.getTargetLayerList().getLayerAt(this.targetLayerIndex);
 			var mdat = targetLayer.movingData;
 			var anySelected = false;
-			
+
 			for (var i = 0;i < this.chunkSize;++i) {
 				var targetIndex = this.objectIndex;
 				if (targetIndex >= idCount) {
@@ -524,7 +524,7 @@ if (!window.mobmap) { window.mobmap={}; }
 				segmentPrevRecord = currentRecord;
 				currentRecord = recordList[tlIndex];
 
-				if (segmentPrevRecord._time >= maxT) {
+				if (segmentPrevRecord && segmentPrevRecord._time >= maxT) {
 					break;
 				}
 
