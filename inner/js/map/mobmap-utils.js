@@ -22,7 +22,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.offsetY = oy;
 		},
 		
-		update: function(pj, latMin, lngMin,  latMax, lngMax) {
+		update: function(pj, latMin, lngMin,  latMax, lngMax, usePointCoord) {
 			var LL = google.maps.LatLng;
 			var size = this.size;
 			var ty, tx;
@@ -42,7 +42,8 @@ if (!window.mobmap) { window.mobmap={}; }
 					tx = x / size;
 					
 					lng = lngMin + tx * dlng;
-					var spos = pj.fromLatLngToDivPixel(new LL(lat, lng));
+					var spos = usePointCoord ? pj.fromLatLngToPoint(new LL(lat, lng))
+											 : pj.fromLatLngToDivPixel(new LL(lat, lng)) ;
 					vls[vi++] = new FastProjectionGrid.Vertex(lat, lng, spos);
 				}
 			}

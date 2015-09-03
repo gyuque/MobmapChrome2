@@ -88,13 +88,27 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.appendLayerAndNotify(lyr);
 			return lyr;
 		},
-		
+
 		addPolygonLayer: function() {
 			var lyr = new mobmap.MMPolygonLayer();
 			this.appendLayerAndNotify(lyr);
 			return lyr;
 		},
-		
+
+		addGeneratedPolygonLayer: function(onGeneratedFunc) {
+			var emptyLoader = mobmap.KMLLoader.createEmptyInstance();
+			var lyr = this.addPolygonLayer();
+
+			if (onGeneratedFunc) {
+				onGeneratedFunc(lyr, emptyLoader);
+			}
+
+			lyr.setSourceLoader(emptyLoader);
+			lyr.afterLoadFinish();
+			
+			return lyr;
+		},
+
 		addMeshLayer: function() {
 			var lyr = new mobmap.MMMeshLayer();
 			this.appendLayerAndNotify(lyr);

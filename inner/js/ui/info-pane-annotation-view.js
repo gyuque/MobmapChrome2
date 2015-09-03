@@ -100,6 +100,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			} else if (sourceItem.typeId === AnnotationItemType.OBJ_COLLECTION) {
 				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/drowbtn-only.png', 'Make selection', 'sel') );
 			} else if (sourceItem.typeId === AnnotationItemType.LOCATION) {
+				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/buffer-button.png', 'Generate buffer', 'buffer') );
 				buttonItems.push( this.generateAnnotationItemButton(sourceItem.id, 'images/annbtn-putpin.png', 'Toggle pin', 'pin') );
 			}
 			

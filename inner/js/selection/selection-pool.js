@@ -29,7 +29,25 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			if (!suppress_event) { this.fire(); }
 		},
-		
+
+		invert: function(sourceLayer, suppress_event) {
+			var i;
+			var m = this.idmap;
+			var tmpList = [];
+			for (var i in m) { tmpList.push(i); }
+
+			this.clear(true);
+			sourceLayer.enumerateIDs( (function(id) {
+				this.addId(id, true);
+			}).bind(this) );
+
+			for (i = 0;i < tmpList.length;++i) {
+				delete m[ tmpList[i] ];
+			}
+
+			if (!suppress_event) { this.fire(); }
+		},
+
 		addId: function(objId, suppress_event) {
 			this.idmap[objId] = true;
 			

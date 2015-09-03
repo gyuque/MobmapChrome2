@@ -32,6 +32,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.sourceLoader;
 		},
 		
+		enumerateIDs: function(proc) {
+			var ls = this.getPolygonDataSource().polygonList;
+			for (var i = 0;i < ls.length;++i) {
+				proc( ls[i].getId() );
+			}
+		},
+		
 		setSourceLoader: function(ldr) {
 			this.sourceLoader = ldr;
 		},

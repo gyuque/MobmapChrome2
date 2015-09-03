@@ -24,6 +24,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.exportSelectionDialog = new mobmap.ExportSelectionDialog();
 		this.resetDialog = new mobmap.ResetDialog();
 		this.exportDataDialog = null;
+		this.bufferConfigDialog = null;
 
 		this.remoteCSVDialog = new mobmap.RemoteSourceDialog(this);
 		this.remoteCSVDialog.okCallback = this.onRemoteCSVDialogOK.bind(this);
@@ -436,7 +437,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		clearSelection: function() {
 			this.selectionController.clear();
 		},
-		
+
+		invertSelection: function() {
+			this.selectionController.invert();
+		},
+
 		getSelectionController: function() {
 			return this.selectionController;
 		},
@@ -839,8 +844,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				case 'pin':
 				this.toggleAnnotatedLocationPin(ann);
 				break;
+
 				case 'remove':
 				this.confirmAnnotationRemove(ann);
+				break;
+
+				case 'buffer':
+				this.generateBufferAroundAnnotation(ann);
 				break;
 			}
 		},
@@ -851,7 +861,35 @@ if (!window.mobmap) { window.mobmap={}; }
 
 			return prj.annotationList.findById(aid);
 		},
-		
+
+		generateBufferAroundAnnotation: function(ann) {
+			this.openBufferConfigDialog(ann);
+		},
+
+		openBufferConfigDialog: function(targetAnnotation) {
+			if  (!this.bufferConfigDialog) {
+				this.bufferConfigDialog = new mobmap.BufferConfigDialog(this);
+			}
+			
+			this.bufferConfigDialog.open(targetAnnotation, this.onBufferConfigDialogOK.bind(this));
+		},
+
+		onBufferConfigDialogOK: function() {
+			var prj = this.getCurrentProject();
+			if (prj) {
+				var r = this.bufferConfigDialog.getRadius();
+				var ann = this.bufferConfigDialog.targetAnnotation;
+
+				var that = this;
+				prj.addGeneratedPolygonLayer(function(lyr, loader) {
+					loader.setFilename(ann.description+ "_buffer_" +r+ "m");
+					
+					mobmap.MMLocationAnnotation.addBufferPolygon(ann, lyr, loader, r);
+					that.layersView.hideWelcomeBox();
+				});
+			}
+		},
+
 		addAnnotatedGate: function(lat1, lng1, lat2, lng2, dir, condition) {
 			var prj = this.getCurrentProject();
 			if (!prj) { return null; }

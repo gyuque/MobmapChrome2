@@ -75,6 +75,15 @@ if (!window.mobmap) { window.mobmap={}; }
 			});
 		},
 		
+		invert: function(suppress_event) {
+			var prj = this.ownerApp.getCurrentProject();
+			prj.forEachLayer(function(index, layer){
+				if (layer.enumerateIDs) {
+					layer.localSelectionPool.invert(layer, suppress_event);
+				}
+			});
+		},
+		
 		addResponder: function(r) {
 			if (this.responders.indexOf(r) >= 0) {
 				return false;

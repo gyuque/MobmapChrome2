@@ -66,9 +66,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		addSelectionButtons: function(colName) {
 			return this.addButtons(colName, [
-					['sel_clear', 0 , 'Clear selection'],
-					['sel_rect' , 1 , 'Rectangle selection'],
-					['sel_poly' , 10, 'Select a polygon']
+					['sel_clear' , 0 , 'Clear selection'],
+					['sel_invert', 18, 'Invert selection'],
+					['sel_rect'  , 1 , 'Rectangle selection'],
+					['sel_poly'  , 10, 'Select a polygon']
 				],
 				this.observeSelectionButton.bind(this)
 			);
@@ -240,7 +241,9 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		onSelectionButtonClick: function(btnObj, e) {
 			switch(btnObj.name) {
-			case 'sel_clear': this.onSelectionClearButtonClick(); break;
+			case 'sel_clear':  this.onSelectionClearButtonClick();  break;
+			case 'sel_invert': this.onSelectionInvertButtonClick(); break;
+
 			case 'sel_rect':
 				if (!this.deselectSelectionRectButton()) {
 					this.onSelectionRectButtonDown();
@@ -345,7 +348,13 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.ownerApp.clearSelection();
 			}
 		},
-		
+
+		onSelectionInvertButtonClick: function() {
+			if (this.ownerApp) {
+				this.ownerApp.invertSelection();
+			}
+		},
+
 		onSelectionRectButtonDown: function() {
 			var c = this.getOwnerSelectionController();
 			if (c) {

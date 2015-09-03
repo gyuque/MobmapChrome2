@@ -166,6 +166,13 @@ if (!window.mobmap) { window.mobmap={}; }
 			return true;
 		},
 
+		enumerateIDs: function(proc) {
+			var ls = this.movingData.getFlattenTLArray();
+			for (var i = 0;i < ls.length;++i) {
+				proc(ls[i].id);
+			}
+		},
+
 		loadFromLoader: function(loader) {
 			this.initTimeRange(); // Set invalid time range at first
 			

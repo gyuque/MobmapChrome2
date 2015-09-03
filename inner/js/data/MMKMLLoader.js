@@ -7,9 +7,11 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.fileName = 'unknown';
 		this.polygonList = [];
 		this.xmlDocument = xmlDocument;
-		this.jXMLDocument = $(xmlDocument);
+		this.jXMLDocument = xmlDocument ? $(xmlDocument) : null;
 		
-		this.parse();
+		if (xmlDocument) {
+			this.parse();
+		}
 	}
 	
 	KMLLoader.createFromFileObject = function(file, callback) {
@@ -38,6 +40,13 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 		
 		reader.readAsText(file);
+	};
+	
+	KMLLoader.createEmptyInstance = function() {
+		var loader = new KMLLoader(null);
+		loader.setFilename('GeneratedPolygonLayer');
+		
+		return loader;
 	};
 	
 	KMLLoader.isDocumentValid = function(xmlDocument) {
@@ -113,7 +122,16 @@ if (!window.mobmap) { window.mobmap={}; }
 				}
 			}
 		},
-		
+
+		addPolygon: function(proc) {
+			var pg = new KMLPolygon();
+			proc(pg);
+			
+			pg.calcCenter();
+			this.polygonList.push(pg);
+			return pg;
+		},
+
 		readPolygon: function(jPolygons) {
 			var pg = null;
 			var outerBoundaries = jPolygons.find("outerBoundaryIs");
@@ -146,7 +164,9 @@ if (!window.mobmap) { window.mobmap={}; }
 			var coords = this.readPolygonBoundary(boundaryElement);
 			outPolygon.addInnerBoundary(coords);
 		},
-		
+
+		// Datasource Interfaces
+
 		getNumOfPolygons: function() {
 			return this.polygonList.length;
 		},
@@ -201,6 +221,18 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		getInnerBoundaryAt: function(i) {
 			return this.innerBoundaries[i] || null;
+		},
+
+		addOuterVertex: function(lat, lng, alt) {
+			if (!this.outerCoordinates) {
+				this.outerCoordinates = [];
+			}
+			
+			this.outerCoordinates.push({
+				x: lng,
+				y: lat,
+				alt: alt || 0
+			});
 		},
 
 		calcCenter: function() {

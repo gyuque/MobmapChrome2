@@ -191,6 +191,22 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.eventDispatcher().trigger(mobmap.MMAnnotationEvent.CONTENT_CHANGE, this);
 		}
 	};
+	
+	MMLocationAnnotation.addBufferPolygon = function(centerLocAnnotation, polygonLayer, kmlLoader, radius) {
+		kmlLoader.addPolygon(function(pg) {
+			var ll_c = new google.maps.LatLng(centerLocAnnotation.coordinate.lat, centerLocAnnotation.coordinate.lng);
+			var nDivs = 60;
+			var aStep = 6;
+			
+			for (var i = 0;i < nDivs;++i) {
+				var a = i * aStep;
+				var ll = google.maps.geometry.spherical.computeOffset(ll_c, radius, a);
+				pg.addOuterVertex(ll.lat(), ll.lng(), 0);
+			}
+	
+//			console.log( centerLocAnnotation, polygonLayer, kmlLoader );
+		});
+	};
 
 	/* test
 	console.log( MMObjectCollectionAnnotation.generateCollectionSummary([10]) );
