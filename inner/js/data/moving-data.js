@@ -201,7 +201,8 @@ if (!window.mobmap) window.mobmap={};
 		// Internal funcs -------------------------------
 		ensureId: function(objId) {
 			if (!this.idMap[objId]) {
-				this.idMap[objId] = new TimeList(objId);
+				var tl_constructor = this.createTimeList;
+				this.idMap[objId] = tl_constructor ? tl_constructor(objId) : (new TimeList(objId));
 			}
 			
 			return this.idMap[objId];
@@ -242,6 +243,43 @@ if (!window.mobmap) window.mobmap={};
 			for (var i = 0;i < len;++i) {
 				ls[i].close();
 			}
+		}
+	};
+	
+	MovingData.installCompatibleMethods = function(targetPrototype) {
+		var methods = [
+			'addExtraProperty',
+			'addAttributeAfterLoad',
+			'clearExtraProperties',
+			'forEachExtraProperty',
+
+			'cropEarlierDays',
+			'cropLaterDays',
+			'setRemainSidesMode',
+			'pickAt',
+			'pickById',
+
+			'getFlattenTLArray',
+			'getTimeListOfId',
+			'isKeyframe',
+			'getKeyFrameRecord',
+			'hasExtraProperties',
+
+			'writePropertyOnAllTime',
+			'cloneExtraProperties',
+
+			'ensureId',
+			'close',
+			'createPickPool',
+			'countIds',
+
+			'buildList',
+			'closeInList'
+		];
+
+		for (var i in methods) if (methods.hasOwnProperty(i)) {
+			var method_name = methods[i];
+			targetPrototype[method_name] = MovingData.prototype[method_name];
 		}
 	};
 
@@ -332,9 +370,64 @@ if (!window.mobmap) window.mobmap={};
 
 		this.cahcedIndex = -1;
 		this.cahcedTime  = -1;
+		
+		this.networkMidPointList = null;
+		this.networkMidFloatIndexList = null;
 	}
+	var midVertexTemp = {x:0, y:0};
 	
 	TimeList.prototype = {
+		countTrajectoryVertices: function() {
+			if (this.networkMidPointList) {
+				return this.networkMidPointList.length;
+			}
+			
+			return this.recordList.length;
+		},
+		
+		getTrajectoryVertexAt: function(vIndex) {
+			var rl = this.getRecordList();
+			
+			if (this.networkMidPointList) {
+				// Networked
+
+				if (vIndex < 0 || vIndex >= this.networkMidPointList.length) {
+					return null;
+				}
+				
+				var r = this.networkMidPointList[vIndex];
+				if (rl[0]) {
+					midVertexTemp.x = rl[0]._network_object.pickLocation(r, false);
+					midVertexTemp.y = rl[0]._network_object.pickLocation(r, true);
+					return midVertexTemp;
+				} else {
+					return null;
+				}
+			} else {
+				// Simple list
+				return rl[vIndex] || null;
+			}
+		},
+
+		getTrajectoryVertexAttributeAt: function(vIndex, attrName, extraPropOptions) {
+			var rl = this.getRecordList();
+			
+			if (this.networkMidFloatIndexList) {
+				// Networked
+				if (vIndex < 0 || vIndex >= this.networkMidFloatIndexList.length) {
+					return null;
+				}
+
+				var fi = this.networkMidFloatIndexList[vIndex];
+				if (rl[0]) {
+					return interpolateSingleProperty(this.recordList, fi, extraPropOptions, attrName) ;
+				}
+			} else {
+				// Simple list
+				return rl[vIndex][attrName];
+			}
+		},
+
 		getRecordList: function() {
 			return this.recordList;
 		},
@@ -594,6 +687,26 @@ if (!window.mobmap) window.mobmap={};
 			} else {
 				outRec[propName] = (ratio < 0.5) ? r1[propName] : r2[propName];
 			}
+		}
+	}
+
+	function interpolateSingleProperty(recordList, positionIndex, extraProps, propName) {
+		var baseIndex = Math.floor( positionIndex );
+		var ratio = positionIndex - baseIndex;
+		var _r = 1.0 - ratio;
+
+		var r1 = recordList[baseIndex];
+		var r2 = recordList[baseIndex+1];
+		
+		if (r1 && !r2) {
+			r2 = r1;
+		}
+		
+		//               v-- special case
+		if (propName == '_time' || (extraProps && extraProps[propName] && (extraProps[propName] & PROP_INTERPOLATE) !== 0)) {
+			return _r * r1[propName] + ratio * r2[propName];
+		} else {
+			return (ratio < 0.5) ? r1[propName] : r2[propName];
 		}
 	}
 

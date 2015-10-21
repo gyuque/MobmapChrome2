@@ -329,8 +329,14 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		afterLocalCSVPick: function(pickedFile) {
 			if (pickedFile) {
-				this.csvPreview.open();
-				this.csvPreview.generatePreview(pickedFile);
+				if (isMobmapMovementFile(pickedFile)) {
+					// .mmm file
+					this.csvPreview.loadNetworkedMovementDataImmediate(pickedFile);
+				} else {
+					// normal CSV
+					this.csvPreview.open();
+					this.csvPreview.generatePreview(pickedFile);
+				}				
 				
 				this.localfilePicker.reset();
 			}
@@ -1048,6 +1054,14 @@ if (!window.mobmap) { window.mobmap={}; }
 			}
 		}
 	};
+
+	function isMobmapMovementFile(file) {
+		if (file && file.name) {
+			return file.name.endsWith(".mmm");
+		}
+		
+		return false;
+	}
 
 	// +++ Export +++
 	aGlobal.mobmap.Mobmap2App = Mobmap2App;

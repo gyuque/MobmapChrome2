@@ -9,6 +9,7 @@ var kDarkMapStyle = [
 ];
 
 var kRequiredAttributes = ['id', 'time', 'x', 'y'];
+var kRequiredAttributesForNetworked = ['id', 'time', 'network', 'position'];
 
 var kInitialValueTypeEmpty      = 0;
 var kInitialValueTypeVelocityMS = 1;

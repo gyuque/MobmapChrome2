@@ -103,6 +103,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		isXColumn:    function(idx) { return this.isColumnNamed(idx, 'x');    },
 		isYColumn:    function(idx) { return this.isColumnNamed(idx, 'y');    },
 
+		// short-hand methods for networked moving data
+		isNetworkColumn:  function(idx) { return this.isColumnNamed(idx, 'network'); },
+		isPositionColumn: function(idx) { return this.isColumnNamed(idx, 'position'); },
+
 		convertToColumnTypeWithAttributeName: function(attrName, rawStr) {
 			var meta = this.getAttributeMetadata(attrName);
 			if (!meta) {
@@ -141,6 +145,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.dataType = AttributeType.STRING;
 		this.csvColumnIndex = -1;
 	}
+	
+	RecordAttributeMeta.prototype.setIntType = function()   { this.dataType = AttributeType.INTEGER; };
+	RecordAttributeMeta.prototype.setFloatType = function() { this.dataType = AttributeType.FLOAT; };
 	
 	// +++ Export +++
 	AttributeMapping.convertFromStringToColumnType = convertFromStringToColumnType;

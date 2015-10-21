@@ -94,7 +94,7 @@
 }
 
 .editbarcol-body-sel .mm-sel-bool-button:last-child,
-.editbarcol-body-sel .mm-sel-bool-button:nth-child(odd) {
+.editbarcol-body-sel .mm-sel-bool-button:nth-child(even) {
 	margin-left: 0;
 }
 

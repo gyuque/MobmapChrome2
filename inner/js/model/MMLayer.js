@@ -55,10 +55,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.remote = false;
 		this.primaryView = null;
 		this.capabilities = LayerCapability.MarkerRenderable | LayerCapability.SpatialSelectable;
-		this.dataTimeRange = {
-			start: 0,
-			end: 0
-		};
+		this.dataTimeRange = new MovingObjectLayer.DataTimeRange();
 
 		this._lvObserved = false;
 		this._markerOptions = new mobmap.LayerMarkerOptions();
@@ -82,6 +79,10 @@ if (!window.mobmap) { window.mobmap={}; }
 		};
 	}
 
+	MovingObjectLayer.DataTimeRange = function() {
+		this.start = 0;
+		this.end   = 0;
+	};
 
 	// Base functions - - - - - - -
 	function layerbase_setParentEventElement(parentEventElement) {
@@ -177,14 +178,20 @@ if (!window.mobmap) { window.mobmap={}; }
 			this.initTimeRange(); // Set invalid time range at first
 			
 			this.sourceLoader = loader;
-			this.newMovingData();
+			this.newMovingData(loader);
 
 			this.eventDispatcher().trigger(LayerEvent.LoadWillStart, this);
 			loader.startFullLoad(this);
 		},
 		
-		newMovingData: function() {
-			this.movingData = new mobmap.MovingData();
+		newMovingData: function(loader) {
+			if (loader) {
+				// Create suitable object for the loader
+				this.movingData = loader.createDataObject();
+			} else {
+				this.movingData = new mobmap.MovingData();
+			}
+
 			return this.movingData;
 		},
 		
@@ -281,12 +288,11 @@ if (!window.mobmap) { window.mobmap={}; }
 				this.eventDispatcher().trigger(LayerEvent.LoadProgressChange, rat);
 			}
 			
-			// Generate and register record
-			var record = mobmap.MovingData.createEmptyRecord();
-			
-			// Copy data from CSV fields to record object
-			mobmap.GeoCSVLoader.applyAttributeMapToFieldList(this.sourceLoader.attrMap, fields, record);
-			this.registerNewMovingObjectRecord(record);
+			// Write field values to new record
+			var record = this.sourceLoader.processDataFields(fields, lineno, this.movingData);
+			if (record) { // record may be null when the line is not data body
+				this.registerNewMovingObjectRecord(record);
+			}
 		},
 		
 		registerNewMovingObjectRecord: function(record) {
@@ -403,30 +409,35 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (!md) { return 0;}
 			
 			var tls = md.getFlattenTLArray();
-			return tls[polylineIndex].getRecordList().length;
+			return tls[polylineIndex].countTrajectoryVertices();
 		},
 		
 		tpGetVertexLatitude: function(polylineIndex, vertexIndex) {
 			var tls = this.movingData.getFlattenTLArray();
-			var recs = tls[polylineIndex].getRecordList();
+//			var recs = tls[polylineIndex].getRecordList();
+//			var rc = recs[vertexIndex];
 			
-			var rc = recs[vertexIndex];
+			var rc = tls[polylineIndex].getTrajectoryVertexAt(vertexIndex);			
 			return rc ? rc.y : null;
 		},
 
 		tpGetVertexLongitude: function(polylineIndex, vertexIndex) {
 			var tls = this.movingData.getFlattenTLArray();
-			var recs = tls[polylineIndex].getRecordList();
-			
-			var rc = recs[vertexIndex];
+//			var recs = tls[polylineIndex].getRecordList();
+//			var rc = recs[vertexIndex];
+
+			var rc = tls[polylineIndex].getTrajectoryVertexAt(vertexIndex);			
 			return rc ? rc.x : null;
 		},
 		
 		tpGetVertexTimestamp: function(polylineIndex, vertexIndex) {
 			var tls = this.movingData.getFlattenTLArray();
-			var recs = tls[polylineIndex].getRecordList();
+//			var recs = tls[polylineIndex].getRecordList();
 			
-			return recs[vertexIndex]._time + this.mdataOffset;
+			return tls[polylineIndex].getTrajectoryVertexAttributeAt(vertexIndex, '_time', this.movingData.extraProps);
+			
+			// Todo: replace with abstract function
+//			return recs[vertexIndex]._time + this.mdataOffset;
 		},
 
 		tpGetOwnerObjectId: function(polylineIndex) {

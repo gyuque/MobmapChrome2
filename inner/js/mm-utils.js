@@ -6,6 +6,9 @@ if (!window.mobmap) { window.mobmap={}; }
 	aGlobal.isMMRequiredAttribute = function(name)
 		{ return (kRequiredAttributes.indexOf(name) >= 0); };
 
+	aGlobal.isMMRequiredAttributeForNetworked = function(name)
+		{ return (kRequiredAttributesForNetworked.indexOf(name) >= 0); }
+
 	aGlobal.replaceParentEventElement = function(selfElement, parentEventElement) {
 		var cur = selfElement.parentNode;
 		if (cur === parentEventElement) { return; }

@@ -19,6 +19,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.previewTable = null;
 		this.autoDetector = null;
 		this.attrMap = null;
+		this.immediateLoadEnabled = false;
 		// ----------------------------------
 		this.buildElements();
 	}
@@ -67,7 +68,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		},
 		
 		syncAttributeMap: function() {
-			this.previewTable.writeSetting(this.attrMap);
+			if (this.attrMap) {
+				this.previewTable.writeSetting(this.attrMap);
+			}
 			return this.attrMap;
 		},
 
@@ -108,11 +111,21 @@ if (!window.mobmap) { window.mobmap={}; }
 			return this.jIgnoreFirstLineCheck[0].checked;
 		},
 
+		// Immediate load =======================
+		loadNetworkedMovementDataImmediate: function(sourceFile) {
+			this.immediateLoadEnabled = true;
+			this.attrMap = null;
+			this.csvLoader = new mobmap.NetworkedMovingCSVLoader(sourceFile);
+			this.csvLoader.preload(this);
+		},
+
 		// Preload and preview ===================
 		generatePreview: function(sourceFile) {
 			this.clearPreviewArea();
 			this.showTrigger(false);
 			
+			this.immediateLoadEnabled = false;
+			this.attrMap = null;
 			this.csvLoader = new mobmap.GeoCSVLoader(sourceFile);
 			this.csvLoader.preload(this);
 		},
@@ -121,7 +134,11 @@ if (!window.mobmap) { window.mobmap={}; }
 			var lineCount = this.csvLoader.countLines();
 			console.log(lineCount);
 			
-			this.csvLoader.startPreviewLoad( this.onPreviewLoadFinish.bind(this) );
+			if (this.immediateLoadEnabled) {
+				this.ownerApp.loadCSVWithLoader(this.csvLoader);
+			} else {
+				this.csvLoader.startPreviewLoad( this.onPreviewLoadFinish.bind(this) );
+			}
 		},
 		
 		csvloaderPreloadError: function() {

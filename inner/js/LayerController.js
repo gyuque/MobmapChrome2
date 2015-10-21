@@ -592,15 +592,19 @@ if (!window.mobmap) { window.mobmap={}; }
 			var chipW = overlay.markerTextureConf.chipWidth;
 			var chipH = overlay.markerTextureConf.chipHeight;
 			
-//var benchT1 = new Date();
+var ENABLE_PICK_BENCH = true;
+var benchT1 = 0;
+
+if (ENABLE_PICK_BENCH) {benchT1 = new Date();}
+
 			// Get prepared pick pool (create if not ready)
 			var pickPool = this.ensureOverlayPickPool(overlay);
 
 			pickPool.clear();
 			movingData.pickAt(pickPool, targetTimeSec, 0, tailLength, tailInterval);
 			var count = pickPool.pickedCount;
-//var benchT2 = new Date();
-//console.log("Pick time: " + (benchT2 - benchT1));
+
+if (ENABLE_PICK_BENCH) { console.log("Pick time: " + (( new Date() ) - benchT1)); }
 			
 			// console.log(count + " points on layer");
 

@@ -12,7 +12,7 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.refTargetSelectedIDs = null;
 		this.dataSource = null;
 		this.doMarchingAnimationClosure = this.doMarchingAnimation.bind(this);
-		
+
 		this.timeRange = {
 			start: null,
 			end: null
@@ -24,6 +24,11 @@ if (!window.mobmap) { window.mobmap={}; }
 	ExploreMapType.ViewType = {
 		Trajectory: 0,
 		Marching: 1
+	};
+	
+	var _tempAntObj = {
+		screenX:0,screenY:0,
+		lat:0,lng:0
 	};
 	
 	ExploreMapType.prototype.setVisibility = function(v) {
@@ -244,7 +249,9 @@ if (!window.mobmap) { window.mobmap={}; }
 		this.jobFinishedCount = 0;
 		this.nowJobRunning = false;
 		this.nextDelayStartJob = false;
-		
+
+		this.grid = new mobmap.FastProjectionGrid(9);
+
 		this.tileSize = tileSize;
 		this.ownerMap = ownerMap;
 		this.ownerMapType = ownerMapType;
@@ -267,7 +274,10 @@ if (!window.mobmap) { window.mobmap={}; }
 
 		this.defaultStrokeStyle = '#35d';
 		this.renderNodes = false;
-		this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
+		this.tempPickRecord = null;
+		if (mobmap.MovingData) {
+			this.tempPickRecord = mobmap.MovingData.createEmptyRecord();
+		}
 		this.dirtyMap = {};
 	}
 
@@ -401,7 +411,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var g = this.canvas.getContext('2d');
 			var shouldContinue = false;
 			var n = this.jobChunkSize;
-			if (this.jobFinishedCount === 0) {
+			if (this.jobFinishedCount < 2) {
 				n >>= 2;
 			}
 			
@@ -420,6 +430,9 @@ if (!window.mobmap) { window.mobmap={}; }
 				g.globalCompositeOperation = 'lighter';
 			}
 
+			// Update projection grid for this job chunk
+			this.updateProjectionGrid();
+
 			for (var i = 0;i < n;++i) {
 				var nextIndex = this.jobFinishedCount;
 				this.renderOffscreen(g, nextIndex, anySelected, defaultColor, use_mkclr);
@@ -437,6 +450,18 @@ if (!window.mobmap) { window.mobmap={}; }
 			if (shouldContinue) {
 				this.reserveJobNext();
 			}
+		},
+
+		updateProjectionGrid: function() {
+			// Fetch map status
+			var map = this.ownerMap;
+			var pj = map.getProjection();
+			if (!pj) {return false;}
+
+			var mapNE = map.getBounds().getNorthEast();
+			var mapSW = map.getBounds().getSouthWest();
+
+			this.grid.update(pj, mapSW.lat(), mapSW.lng(), mapNE.lat(), mapNE.lng(), true);
 		},
 
 		reserveJobNext: function(delay) {
@@ -541,6 +566,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			
 			g.strokeStyle = defaultColor || this.defaultStrokeStyle;
 			g.beginPath();
+			var ant = _tempAntObj;
 			for (var i = startIndex;i < endIndex;++i) {
 				var lat = ds.tpGetVertexLatitude(polylineIndex, i);
 				var lng = ds.tpGetVertexLongitude(polylineIndex, i);
@@ -555,9 +581,14 @@ if (!window.mobmap) { window.mobmap={}; }
 					}
 				}
 
-				var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
-				var sx = wPos.x * wsize - tox;
-				var sy = wPos.y * wsize - toy;
+				ant.lat = lat;
+				ant.lng = lng;
+				this.grid.calc(ant);
+				var sx = ant.screenX * wsize - tox;
+				var sy = ant.screenY * wsize - toy;
+				//var wPos = pj.fromLatLngToPoint( new google.maps.LatLng(lat, lng) );
+				//var sx = wPos.x * wsize - tox;
+				//var sy = wPos.y * wsize - toy;
 
 				if (i === 0) {
 					g.moveTo(sx, sy);
@@ -721,6 +752,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ox = this.canvasStatus.minCX;
 			var oy = this.canvasStatus.minCY;
 			var sourceImage = this.canvas;
+			var srcG = sourceImage.getContext('2d');
 
 			var m = this.tileKeyMap;
 			for (var k in m) if (m.hasOwnProperty(k)) {
@@ -733,16 +765,19 @@ if (!window.mobmap) { window.mobmap={}; }
 				var cx = tileObject._cx;
 				var cy = tileObject._cy;
 				var g = tileObject.getContext('2d');
-				g.clearRect(0, 0, tw, th);
+				//g.clearRect(0, 0, tw, th);
 
 				var rx = cx - ox;
 				var ry = cy - oy;
 				if (rx < 0 || ry < 0) {
 					continue;
 				}
+				
+				var imd = srcG.getImageData(rx*tw, ry*th, tw, th);
+				g.putImageData(imd, 0, 0);
 
 				tileObject._lastRenderedIndex = lastRenderedPolylineIndex;
-				g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
+//				g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
 
 			}
 		},
@@ -805,6 +840,7 @@ if (!window.mobmap) { window.mobmap={}; }
 			var ox = this.canvasStatus.minCX;
 			var oy = this.canvasStatus.minCY;
 			var sourceImage = this.canvas;
+			var srcG = sourceImage.getContext('2d');
 
 			var cx = tileObject._cx;
 			var cy = tileObject._cy;
@@ -817,8 +853,10 @@ if (!window.mobmap) { window.mobmap={}; }
 				return;
 			}
 
+			var imd = srcG.getImageData(rx*tw, ry*th, tw, th);
+			g.putImageData(imd, 0, 0);
+
 			tileObject._lastRenderedIndex = this.jobFinishedCount - 1;
-			g.drawImage(sourceImage, rx*tw, ry*th, tw, th, 0, 0, tw, th);
 		},
 		
 		renderOffscreenMarching: function(objIDlist) {

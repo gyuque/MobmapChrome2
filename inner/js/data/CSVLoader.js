@@ -14,6 +14,10 @@ if (!window.mobmap) { window.mobmap={}; }
 	}
 
 	GeoCSVLoader.prototype = {
+		createDataObject: function() {
+			return new mobmap.MovingData();
+		},
+		
 		preload: function(listenerObject) { this.baseLoader.preload(listenerObject); },
 		countLines: function() {
 			if (this.lineCountCache >= 0) { return this.lineCountCache; }
@@ -38,6 +42,14 @@ if (!window.mobmap) { window.mobmap={}; }
 		
 		setIgnoreFirstLine: function(ig) {
 			this.baseLoader.ignoreFirstLineEnabled = ig;
+		},
+
+		// SHOULD BE CALLED BY THE USER!
+		// Loader never calls this itself.
+		processDataFields: function(fields, lineno, destMovingData) {
+			var record = mobmap.MovingData.createEmptyRecord();
+			GeoCSVLoader.applyAttributeMapToFieldList(this.attrMap, fields, record);
+			return record;
 		}
 	};
 
@@ -77,6 +89,46 @@ if (!window.mobmap) { window.mobmap={}; }
 		outRecord._time = absTime;
 		outRecord.x     = f_lng;
 		outRecord.y     = f_lat;
+	};
+
+	GeoCSVLoader.applyAttributeMapToFieldListNetworked = function(attrMap, fieldList, outRecord) {
+		var int_id, int_net, f_pos, absTime;
+		
+		var nCols = fieldList.length;
+		for (var i = 0;i < nCols;++i) {
+			var val = fieldList[i];
+
+			// Parse field value
+			//    Standard attributes
+			if (attrMap.isIDColumn(i)) {
+				// : : :  Read ID  : : :
+				int_id = parseInt(val, 10);
+			} else if (attrMap.isNetworkColumn(i)) {
+				int_net = parseInt(val, 10);
+			} else if (attrMap.isPositionColumn(i)) {
+				f_pos   = parseFloat(val);
+			} else if (attrMap.isTimeColumn(i)) {
+				// : : :  Read Time  : : :
+				absTime = parseFieldTime(val);
+			} else {
+				// Extra attributes
+				if (attrMap.isColumnRegistered(i)) {
+					var convertedValue = attrMap.convertToColumnType(i, val);
+					var attrName = attrMap.getColumnName(i);
+
+					outRecord[attrName] = convertedValue;
+				}
+			}
+			
+//			isNetworkColumn
+//			isPositionColumn
+	
+		}
+		
+		outRecord._id   = int_id;
+		outRecord._time = absTime;
+		Object.defineProperty(outRecord, "_network", { value: int_net });
+		Object.defineProperty(outRecord, "_ratio"  , { value: f_pos });
 	};
 
 	function parseFieldTime(rawVal) {
